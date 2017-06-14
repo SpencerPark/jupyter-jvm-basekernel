@@ -1,0 +1,71 @@
+import groovy.text.SimpleTemplateEngine
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.5'
+}
+
+def TEMPLATE_PATH = file('kernel.json.template')
+
+subprojects {
+    group 'io.github.spencerpark'
+    version '1.0-SNAPSHOT'
+
+    apply plugin: 'java'
+
+    sourceCompatibility = 1.8
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+
+    configurations {
+        shade
+        shade.transitive = false
+        compile.extendsFrom(shade)
+    }
+
+    dependencies {
+        shade group: 'io.github.spencerpark', name: 'jupyter-jvm-basekernel', version: '1.0.0-SNAPSHOT'
+    }
+
+    jar {
+        //Include all shaded dependencies in the jar
+        from configurations.shade
+                .collect {it.isDirectory() ? it : zipTree(it)}
+    }
+
+    //Define the install task after the project has been evaluated to give the subprojects
+    //a chance to override the various properties.
+    afterEvaluate {
+        task installJupterKernel(type: Copy, dependsOn: jar) {
+            //TODO copy a 'logo-32x32.png' and '...64x64...' logo into the same directory as the kernel.json
+            def KERNEL_DISPLAY_NAME = project.findProperty('KERNEL_DISPLAY_NAME') ?: project.name
+            def KERNEL_NAME = project.findProperty('KERNEL_NAME') ?: project.name
+
+            def INSTALL_PATH = project.findProperty('KERNEL_INSTALL_PATH') ?: "${System.getProperty('user.home').replace(File.separator, '/')}/.ipython/kernels/$KERNEL_NAME"
+
+            def KERNEL_JAR_PATH = "$INSTALL_PATH/$jar.archiveName"
+
+            inputs.file(TEMPLATE_PATH)
+            inputs.property('KERNEL_JAR_PATH', KERNEL_JAR_PATH)
+            inputs.property('KERNEL_DISPLAY_NAME', KERNEL_DISPLAY_NAME)
+            inputs.property('KERNEL_NAME', KERNEL_NAME)
+
+            from jar.outputs
+            into INSTALL_PATH
+
+            doLast {
+                def templateEngine = new SimpleTemplateEngine()
+                def compiledSpec = templateEngine.createTemplate(TEMPLATE_PATH).make(
+                        'KERNEL_JAR_PATH': KERNEL_JAR_PATH,
+                        'KERNEL_DISPLAY_NAME': KERNEL_DISPLAY_NAME,
+                        'KERNEL_NAME': KERNEL_NAME
+                )
+
+                compiledSpec.writeTo(file("$INSTALL_PATH/kernel.json").newWriter()).close()
+            }
+        }
+    }
+
+}
