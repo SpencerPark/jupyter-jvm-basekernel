@@ -1,0 +1,84 @@
+import groovy.text.SimpleTemplateEngine
+import org.apache.tools.ant.filters.*
+
+group 'io.github.spencerpark'
+version '1.0.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'maven-publish'
+
+sourceCompatibility = 1.8
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.5'
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs << '-parameters'
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+configurations {
+    shade
+    shade.transitive = false
+    compile.extendsFrom(shade)
+}
+
+dependencies {
+    shade group: 'org.zeromq', name: 'jeromq', version: '0.4.0'
+    shade group: 'com.google.code.gson', name: 'gson', version: '2.8.0'
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+jar {
+    //Include all shaded dependencies in the jar
+    from configurations.shade
+            .collect {it.isDirectory() ? it : zipTree(it)}
+
+    manifest {
+        attributes('Main-class': 'org.mellowd.jupyter.IMellowD')
+    }
+}
+
+processResources {
+    def tokens = [
+            'version': project.version,
+            'project': project.name
+    ]
+    inputs.properties(tokens)
+    filter ReplaceTokens, tokens: tokens
+}
+
+def installPath = project.hasProperty('installPath') ? project.getProperty('installPath')
+        : "${System.getProperty('user.home').replace(File.separator, '/')}/.ipython/kernels/mellowd"
+
+task installJupyterKernel(type: Copy, dependsOn: jar) {
+    def templateFile = file('jupyter/kernel.json.template')
+    inputs.file(templateFile)
+    inputs.property('jarPath', "$installPath/$jar.archiveName")
+
+    from jar.outputs
+    into installPath
+
+    doLast {
+        def templateEngine = new SimpleTemplateEngine()
+        def compiledSpec = templateEngine.createTemplate(templateFile).make(
+                'KERNEL_JAR_PATH': "$installPath/$jar.archiveName"
+        )
+
+        compiledSpec.writeTo(file("$installPath/kernel.json").newWriter()).close()
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}
