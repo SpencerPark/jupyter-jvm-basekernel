@@ -54,27 +54,6 @@ processResources {
     filter ReplaceTokens, tokens: tokens
 }
 
-def installPath = project.hasProperty('installPath') ? project.getProperty('installPath')
-        : "${System.getProperty('user.home').replace(File.separator, '/')}/.ipython/kernels/mellowd"
-
-task installJupyterKernel(type: Copy, dependsOn: jar) {
-    def templateFile = file('jupyter/kernel.json.template')
-    inputs.file(templateFile)
-    inputs.property('jarPath', "$installPath/$jar.archiveName")
-
-    from jar.outputs
-    into installPath
-
-    doLast {
-        def templateEngine = new SimpleTemplateEngine()
-        def compiledSpec = templateEngine.createTemplate(templateFile).make(
-                'KERNEL_JAR_PATH': "$installPath/$jar.archiveName"
-        )
-
-        compiledSpec.writeTo(file("$installPath/kernel.json").newWriter()).close()
-    }
-}
-
 publishing {
     publications {
         mavenJava(MavenPublication) {
