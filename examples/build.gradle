@@ -8,7 +8,7 @@ def TEMPLATE_PATH = file('kernel.json.template')
 
 subprojects {
     group 'io.github.spencerpark'
-    version '1.0-SNAPSHOT'
+    version '1.0.0-SNAPSHOT'
 
     apply plugin: 'java'
 
@@ -26,7 +26,7 @@ subprojects {
     }
 
     dependencies {
-        shade group: 'io.github.spencerpark', name: 'jupyter-jvm-basekernel', version: '1.0.0-SNAPSHOT'
+        shade group: 'io.github.spencerpark', name: 'jupyter-jvm-basekernel', version: '1.0.+'
     }
 
     jar {

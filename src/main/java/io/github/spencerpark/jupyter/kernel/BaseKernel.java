@@ -1,29 +1,57 @@
 package io.github.spencerpark.jupyter.kernel;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import io.github.spencerpark.jupyter.channels.JupyterConnection;
 import io.github.spencerpark.jupyter.channels.JupyterInputStream;
 import io.github.spencerpark.jupyter.channels.JupyterOutputStream;
 import io.github.spencerpark.jupyter.channels.ShellReplyEnvironment;
-import io.github.spencerpark.jupyter.messages.*;
+import io.github.spencerpark.jupyter.messages.Header;
+import io.github.spencerpark.jupyter.messages.MIMEBundle;
+import io.github.spencerpark.jupyter.messages.Message;
+import io.github.spencerpark.jupyter.messages.MessageType;
 import io.github.spencerpark.jupyter.messages.publish.PublishExecuteInput;
 import io.github.spencerpark.jupyter.messages.publish.PublishExecuteResult;
 import io.github.spencerpark.jupyter.messages.reply.*;
 import io.github.spencerpark.jupyter.messages.request.*;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 public abstract class BaseKernel {
     protected final AtomicInteger executionCount = new AtomicInteger(1);
+    private static final Map<String, String> KERNEL_META = ((Supplier<Map<String, String>>) () -> {
+        Map<String, String> meta = null;
+
+        InputStream metaStream = BaseKernel.class.getResourceAsStream("kernel-metadata.json");
+        if (metaStream != null) {
+            Reader metaReader = new InputStreamReader(metaStream);
+            try {
+                meta = new Gson().fromJson(metaReader, new TypeToken<Map<String, String>>(){}.getType());
+            } finally {
+                try {
+                    metaReader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        if (meta == null) {
+            meta = new HashMap<>(2);
+            meta.put("version", "unknown");
+            meta.put("project", "unknown");
+        }
+
+        return meta;
+    }).get();
 
     private JupyterOutputStream stdOut;
     private JupyterOutputStream stdErr;
     private JupyterInputStream stdIn;
+
 
     public BaseKernel() {
         this.stdOut = new JupyterOutputStream(true);
@@ -60,10 +88,9 @@ public abstract class BaseKernel {
      * @throws Exception if the code cannot be inspected for some reason (such as it not
      *                   compiling)
      */
-    public abstract MIMEBundle inspect(String code, int at, boolean extraDetail) throws Exception;
-
-    //TODO more default implementations for things like inspect and complete so that a simple
-    //kernel can be written to get off the group quickly
+    public MIMEBundle inspect(String code, int at, boolean extraDetail) throws Exception {
+        return null;
+    }
 
     /**
      * Try to autocomplete code at a user's cursor such as finishing a method call or
@@ -88,7 +115,9 @@ public abstract class BaseKernel {
      *                   similar. This should not be thrown if not replacements are available but rather just
      *                   an empty replacements returned.
      */
-    public abstract ReplacementOptions complete(String code, int at) throws Exception;
+    public ReplacementOptions complete(String code, int at) throws Exception {
+        return null;
+    }
 
     //TODO external history implementation. There doesn't need to be a handler for it but rather just a default storage
 
@@ -222,9 +251,6 @@ public abstract class BaseKernel {
         }
     }
 
-    //TODO we need the JSON serialization/deserialization to be much faster
-    //Consider storing the common instances as byte[] for a very quick reply and
-    //for the json serialization switch over to the streaming api or a faster implementation
     private void handleInspectRequest(ShellReplyEnvironment env, Message<InspectRequest> inspectRequestMessage) {
         InspectRequest request = inspectRequestMessage.getContent();
         env.setBusyDeferIdle();
@@ -287,8 +313,8 @@ public abstract class BaseKernel {
         env.setBusyDeferIdle();
         env.reply(new KernelInfoReply(
                         Header.PROTOCOL_VERISON,
-                        "jupyter-jvm-basekernel", //TODO parse from metadata.json
-                        "1.0.0",  //same here
+                        KERNEL_META.get("project"),
+                        KERNEL_META.get("version"),
                         this.getLanguageInfo(),
                         this.getBanner(),
                         this.getHelpLinks()

@@ -7,6 +7,9 @@ import java.util.function.Function;
 
 public class MIMEBundle implements Map<String, Object> {
     public static final MIMEBundle EMPTY = new MIMEBundle(Collections.emptyMap());
+
+    public static final MIMEBundle EMPTY_STRING = new MIMEBundle("");
+
     public static MIMEBundle emptyIfNull(MIMEBundle bundle) {
         return bundle == null ? EMPTY : bundle;
     }
