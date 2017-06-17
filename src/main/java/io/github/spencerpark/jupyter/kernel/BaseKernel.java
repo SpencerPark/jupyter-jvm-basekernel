@@ -2,6 +2,7 @@ package io.github.spencerpark.jupyter.kernel;
 
 import io.github.spencerpark.jupyter.channels.JupyterConnection;
 import io.github.spencerpark.jupyter.channels.JupyterInputStream;
+import io.github.spencerpark.jupyter.channels.JupyterOutputStream;
 import io.github.spencerpark.jupyter.channels.ShellReplyEnvironment;
 import io.github.spencerpark.jupyter.messages.*;
 import io.github.spencerpark.jupyter.messages.publish.PublishExecuteInput;
@@ -20,13 +21,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 public abstract class BaseKernel {
     protected final AtomicInteger executionCount = new AtomicInteger(1);
 
-    private ByteArrayOutputStream stdOut;
-    private ByteArrayOutputStream stdErr;
+    private JupyterOutputStream stdOut;
+    private JupyterOutputStream stdErr;
     private JupyterInputStream stdIn;
 
     public BaseKernel() {
-        this.stdOut = new ByteArrayOutputStream();
-        this.stdErr = new ByteArrayOutputStream();
+        this.stdOut = new JupyterOutputStream(true);
+        this.stdErr = new JupyterOutputStream(false);
         this.stdIn = new JupyterInputStream();
     }
 
@@ -168,10 +169,21 @@ public abstract class BaseKernel {
 
         env.publish(new PublishExecuteInput(request.getCode(), count));
 
-        //TODO write an output stream around the socket that implements flush -> publish
         //Intercept the output streams
         PrintStream oldStdOut = System.out;
         PrintStream oldStdErr = System.err;
+
+        this.stdOut.setEnv(env);
+        env.defer(() -> {
+            System.setOut(oldStdOut);
+            this.stdOut.retractEnv(env);
+        });
+        this.stdErr.setEnv(env);
+        env.defer(() -> {
+            System.setErr(oldStdErr);
+            this.stdErr.retractEnv(env);
+        });
+
         System.setOut(new PrintStream(this.stdOut, true));
         System.setErr(new PrintStream(this.stdErr, true));
 
@@ -207,20 +219,6 @@ public abstract class BaseKernel {
             ErrorReply error = ErrorReply.of(e);
             error.setExecutionCount(count);
             env.defer().replyError(ExecuteReply.MESSAGE_TYPE.error(), error);
-        }
-
-        //Replace the output streams
-        System.setOut(oldStdOut);
-        System.setErr(oldStdErr);
-
-        //Publish the streams if they have any data written to them
-        if (this.stdOut.size() > 0) {
-            env.writeToStdOut(this.stdOut.toString());
-            this.stdOut.reset();
-        }
-        if (this.stdErr.size() > 0) {
-            env.writeToStdErr(this.stdErr.toString());
-            this.stdErr.reset();
         }
     }
 

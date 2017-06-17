@@ -1,5 +1,4 @@
-import groovy.text.SimpleTemplateEngine
-import org.apache.tools.ant.filters.*
+import org.apache.tools.ant.filters.ReplaceTokens
 
 group 'io.github.spencerpark'
 version '1.0.0-SNAPSHOT'

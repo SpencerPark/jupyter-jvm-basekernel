@@ -39,6 +39,8 @@ public abstract class JupyterSocket extends ZMQ.Socket {
     private static final JsonParser json = new JsonParser();
     private static final byte[] EMPTY_JSON_OBJECT = "{}".getBytes();
 
+    public static final Logger JUPYTER_LOGGER = Logger.getLogger("Jupyter");
+
     protected final ZMQ.Context ctx;
     protected final HMACGenerator hmacGenerator;
     protected final Logger logger;
@@ -48,13 +50,13 @@ public abstract class JupyterSocket extends ZMQ.Socket {
         super(context, type);
         this.ctx = context;
         this.hmacGenerator = hmacGenerator;
+        logger.setParent(JUPYTER_LOGGER);
         this.logger = logger;
         this.closed = false;
     }
 
     public abstract void bind(KernelConnectionProperties connProps);
 
-    //TODO fromJson is what takes the longest
     public synchronized Message<?> readMessage() {
         if (this.closed)
             return null;

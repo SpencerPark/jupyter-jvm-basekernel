@@ -1,11 +1,14 @@
 package io.github.spencerpark.jupyter;
 
 import io.github.spencerpark.jupyter.channels.JupyterConnection;
+import io.github.spencerpark.jupyter.channels.JupyterSocket;
 import io.github.spencerpark.jupyter.kernel.KernelConnectionProperties;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
 
 public class INashornJS {
     public static void main(String[] args) throws Exception {
@@ -18,6 +21,8 @@ public class INashornJS {
             throw new IllegalArgumentException("Connection file '" + connectionFile + "' isn't a file.");
 
         String contents = new String(Files.readAllBytes(connectionFile));
+
+        JupyterSocket.JUPYTER_LOGGER.setLevel(Level.OFF);
 
         KernelConnectionProperties connProps = KernelConnectionProperties.parse(contents);
         JupyterConnection connection = new JupyterConnection(connProps);
