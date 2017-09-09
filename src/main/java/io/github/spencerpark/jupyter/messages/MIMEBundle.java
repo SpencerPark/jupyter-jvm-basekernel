@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 public class MIMEBundle implements Map<String, Object> {
     public static final MIMEBundle EMPTY = new MIMEBundle(Collections.emptyMap());
@@ -15,6 +16,7 @@ public class MIMEBundle implements Map<String, Object> {
     }
 
     private final Map<String, Object> data;
+    private Map<String, Object> metadata = null;
 
     public MIMEBundle(Map<String, Object> data) {
         this.data = data;
@@ -29,6 +31,15 @@ public class MIMEBundle implements Map<String, Object> {
         this.putText(text);
     }
 
+    public void putData(String mimeType, Object data) {
+        this.data.put(mimeType, data);
+    }
+
+    public void putMetaData(String key, Object value) {
+        if (this.metadata == null) this.metadata = new LinkedHashMap<>();
+        this.metadata.put(key, value);
+    }
+
     public void putText(String text) {
         this.data.put("text/plain", text);
     }
@@ -37,7 +48,41 @@ public class MIMEBundle implements Map<String, Object> {
         this.data.put("text/html", html);
     }
 
-    //TODO add some typesafe setters for the commonly supported MIME types
+    public void putLatex(String latex) {
+        this.data.put("text/latex", latex);
+    }
+
+    /**
+     * Add some latex math to the output.
+     * @param math the latex math code EXCLUDING the starting and
+     *             trailing {@code $$} or other latex math mode switchers
+     */
+    public void putMath(String math) {
+        this.putLatex("$$" + math + "$$");
+    }
+
+    public void putMarkdown(String markdown) {
+        this.data.put("text/markdown", markdown);
+    }
+
+    public void putJavaScript(String javascript) {
+        this.data.put("application/javascript", javascript);
+    }
+
+    public void putJSON(String json) {
+        this.data.put("application/json", json);
+    }
+
+    public void putJSON(String json, boolean expanded) {
+        this.putJSON(json);
+        this.putMetaData("expanded", expanded);
+    }
+
+    public void putSVG(String svg) {
+        this.data.put("image/svg+xml", svg);
+    }
+
+    //TODO add some more typesafe setters for the commonly supported MIME types
     //https://github.com/ipython/ipython/blob/master/IPython/core/display.py
     public Map<String, Object> getData() {
         return data;

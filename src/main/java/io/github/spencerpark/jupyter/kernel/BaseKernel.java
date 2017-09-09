@@ -6,6 +6,7 @@ import io.github.spencerpark.jupyter.channels.JupyterConnection;
 import io.github.spencerpark.jupyter.channels.JupyterInputStream;
 import io.github.spencerpark.jupyter.channels.JupyterOutputStream;
 import io.github.spencerpark.jupyter.channels.ShellReplyEnvironment;
+import io.github.spencerpark.jupyter.kernel.comm.CommManager;
 import io.github.spencerpark.jupyter.messages.Header;
 import io.github.spencerpark.jupyter.messages.MIMEBundle;
 import io.github.spencerpark.jupyter.messages.Message;
@@ -16,7 +17,10 @@ import io.github.spencerpark.jupyter.messages.reply.*;
 import io.github.spencerpark.jupyter.messages.request.*;
 
 import java.io.*;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
@@ -29,7 +33,8 @@ public abstract class BaseKernel {
         if (metaStream != null) {
             Reader metaReader = new InputStreamReader(metaStream);
             try {
-                meta = new Gson().fromJson(metaReader, new TypeToken<Map<String, String>>(){}.getType());
+                meta = new Gson().fromJson(metaReader, new TypeToken<Map<String, String>>() {
+                }.getType());
             } finally {
                 try {
                     metaReader.close();
@@ -51,7 +56,7 @@ public abstract class BaseKernel {
     private JupyterOutputStream stdOut;
     private JupyterOutputStream stdErr;
     private JupyterInputStream stdIn;
-
+    protected CommManager commManager;
 
     public BaseKernel() {
         this.stdOut = new JupyterOutputStream(true);
@@ -119,8 +124,6 @@ public abstract class BaseKernel {
         return null;
     }
 
-    //TODO external history implementation. There doesn't need to be a handler for it but rather just a default storage
-
     protected static final String IS_COMPLETE_YES = "complete";
     protected static final String IS_COMPLETE_BAD = "invalid";
     protected static final String IS_COMPLETE_MAYBE = "unknown";
@@ -152,8 +155,6 @@ public abstract class BaseKernel {
         return IS_COMPLETE_MAYBE;
     }
 
-    //TODO external comm handler
-
     public abstract LanguageInfo getLanguageInfo();
 
     /**
@@ -183,12 +184,22 @@ public abstract class BaseKernel {
         connection.setHandler(MessageType.COMPLETE_REQUEST, this::handleCompleteRequest);
         connection.setHandler(MessageType.HISTORY_REQUEST, this::handleHistoryRequest);
         connection.setHandler(MessageType.IS_COMPLETE_REQUEST, this::handleIsCodeCompeteRequest);
-        connection.setHandler(MessageType.COMM_INFO_REQUEST, this::handleCommInfoRequest);
         connection.setHandler(MessageType.KERNEL_INFO_REQUEST, this::handleKernelInfoRequest);
         connection.setHandler(MessageType.SHUTDOWN_REQUEST, this::handleShutdownRequest);
+
+        if (this.commManager != null)
+            this.commManager.setIOPubChannel(connection.getIOPub());
+        else
+            this.commManager = new CommManager(connection.getIOPub());
+        connection.setHandler(MessageType.COMM_OPEN_COMMAND, commManager::handleCommOpenCommand);
+        connection.setHandler(MessageType.COMM_MSG_COMMAND, commManager::handleCommMsgCommand);
+        connection.setHandler(MessageType.COMM_CLOSE_COMMAND, commManager::handleCommCloseCommand);
+        connection.setHandler(MessageType.COMM_INFO_REQUEST, commManager::handleCommInfoRequest);
     }
 
     private synchronized void handleExecuteRequest(ShellReplyEnvironment env, Message<ExecuteRequest> executeRequestMessage) {
+        this.commManager.setMessageContext(executeRequestMessage);
+
         ExecuteRequest request = executeRequestMessage.getContent();
 
         int count = executionCount.getAndIncrement();
@@ -216,18 +227,17 @@ public abstract class BaseKernel {
         System.setOut(new PrintStream(this.stdOut, true));
         System.setErr(new PrintStream(this.stdErr, true));
 
-        if (request.isStdinEnabled()) {
-            InputStream oldStdIn = System.in;
-            this.stdIn.setEnv(env);
-            System.setIn(this.stdIn);
-            //TODO implement Console and pass in a non intrusive way to eval
-            //The regular input stream doesn't take advantage of the prompt or password
-            //options that the client supports
-            env.defer(() -> {
-                System.setIn(oldStdIn);
-                this.stdIn.retractEnv(env);
-            });
-        }
+        InputStream oldStdIn = System.in;
+        this.stdIn.setEnv(env);
+        this.stdIn.setEnabled(request.isStdinEnabled());
+        System.setIn(this.stdIn);
+        //TODO implement Console and pass in a non intrusive way to eval
+        //The regular input stream doesn't take advantage of the prompt or password
+        //options that the client supports
+        env.defer(() -> {
+            System.setIn(oldStdIn);
+            this.stdIn.retractEnv(env);
+        });
 
         try {
             MIMEBundle out = eval(request.getCode());
@@ -278,7 +288,9 @@ public abstract class BaseKernel {
     }
 
     private void handleHistoryRequest(ShellReplyEnvironment env, Message<HistoryRequest> historyRequestMessage) {
-        //TODO
+        //Only the qt console uses this one and it only uses the tail search to get where the
+        //user left off. Implementing this is not worth the storage overhead as it rarely gets used
+        //and in the event that the front end may use it everything still functions fine without it.
     }
 
     private void handleIsCodeCompeteRequest(ShellReplyEnvironment env, Message<IsCompleteRequest> isCompleteRequestMessage) {
@@ -303,10 +315,6 @@ public abstract class BaseKernel {
                 break;
         }
         env.reply(reply);
-    }
-
-    private void handleCommInfoRequest(ShellReplyEnvironment env, Message<CommInfoRequest> commInfoRequestMessage) {
-        //TODO implement comm info request
     }
 
     private void handleKernelInfoRequest(ShellReplyEnvironment env, Message<KernelInfoRequest> kernelInfoRequestMessage) {

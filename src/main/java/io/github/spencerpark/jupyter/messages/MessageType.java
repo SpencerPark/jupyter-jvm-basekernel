@@ -1,5 +1,8 @@
 package io.github.spencerpark.jupyter.messages;
 
+import io.github.spencerpark.jupyter.messages.comm.CommCloseCommand;
+import io.github.spencerpark.jupyter.messages.comm.CommMsgCommand;
+import io.github.spencerpark.jupyter.messages.comm.CommOpenCommand;
 import io.github.spencerpark.jupyter.messages.publish.*;
 import io.github.spencerpark.jupyter.messages.reply.*;
 import io.github.spencerpark.jupyter.messages.request.*;
@@ -52,6 +55,11 @@ public class MessageType<T> {
     public static final MessageType<InputRequest> INPUT_REQUEST = new MessageType<>("input_request", InputRequest.class);
 
     public static final MessageType<InputReply> INPUT_REPLY = new MessageType<>("input_reply", InputReply.class);
+
+    //Comm
+    public static final MessageType<CommOpenCommand> COMM_OPEN_COMMAND = new MessageType<>("comm_open", CommOpenCommand.class);
+    public static final MessageType<CommMsgCommand> COMM_MSG_COMMAND = new MessageType<>("comm_msg", CommMsgCommand.class);
+    public static final MessageType<CommCloseCommand> COMM_CLOSE_COMMAND = new MessageType<>("comm_close", CommCloseCommand.class);
 
     public static final MessageType<?> UNKNOWN = new MessageType<>("none", Object.class);
 

@@ -8,7 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 
 public class INashornJS {
     public static void main(String[] args) throws Exception {
@@ -22,7 +21,7 @@ public class INashornJS {
 
         String contents = new String(Files.readAllBytes(connectionFile));
 
-        JupyterSocket.JUPYTER_LOGGER.setLevel(Level.OFF);
+        JupyterSocket.JUPYTER_LOGGER.setLevel(Level.WARNING);
 
         KernelConnectionProperties connProps = KernelConnectionProperties.parse(contents);
         JupyterConnection connection = new JupyterConnection(connProps);

@@ -31,10 +31,12 @@ public class JupyterOutputStream extends ByteArrayOutputStream {
     public void flush() {
         if (this.env != null) {
             String contents = super.toString();
-            if (this.isOut)
-                this.env.writeToStdOut(contents);
-            else
-                this.env.writeToStdErr(contents);
+            if (contents != null && !contents.isEmpty()) {
+                if (this.isOut)
+                    this.env.writeToStdOut(contents);
+                else
+                    this.env.writeToStdErr(contents);
+            }
         }
 
         super.reset();

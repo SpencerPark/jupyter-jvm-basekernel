@@ -95,7 +95,7 @@ public class NashornKernel extends BaseKernel {
 
     @Override
     public MIMEBundle inspect(String code, int at, boolean extraDetail) throws Exception {
-        int[] coords = StringSearch.findLongestMatchingAt(code, at, this.idChar);
+        int[] coords = StringSearch.findLongestMatchingAt(code, at, idChar);
         String id = "";
         Object val = null;
         if (coords != null) {
@@ -108,10 +108,10 @@ public class NashornKernel extends BaseKernel {
 
     @Override
     public ReplacementOptions complete(String code, int at) throws Exception {
-        int[] coords = StringSearch.findLongestMatchingAt(code, at, this.idChar);
+        int[] coords = StringSearch.findLongestMatchingAt(code, at, idChar);
         if (coords == null)
             return null;
         String prefix = code.substring(coords[0], coords[1]);
-        return new ReplacementOptions(this.autoCompleter.autocomplete(prefix), coords[0], coords[1]);
+        return new ReplacementOptions(autoCompleter.autocomplete(prefix), coords[0], coords[1]);
     }
 }

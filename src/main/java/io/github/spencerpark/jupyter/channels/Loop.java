@@ -1,13 +1,19 @@
 package io.github.spencerpark.jupyter.channels;
 
+import java.util.Deque;
+import java.util.LinkedList;
+import java.util.Queue;
+
 public class Loop extends Thread {
     private boolean running = false;
     private final long sleep;
     private Runnable callback;
+    private final Queue<Runnable> runNextQueue;
 
     public Loop(String name, long sleep, Runnable target) {
         super(target, name);
         this.sleep = sleep;
+        this.runNextQueue = new LinkedList<>();
     }
 
     public void onClose(Runnable callback) {
@@ -22,10 +28,21 @@ public class Loop extends Thread {
         }
     }
 
+    public void doNext(Runnable next) {
+        this.runNextQueue.offer(next);
+    }
+
     @Override
     public void run() {
+        Runnable next;
         while (running) {
+            // Run the loop body
             super.run();
+
+            // Run all queued tasks
+            while ((next = runNextQueue.poll()) != null)
+                next.run();
+
             if (sleep > 0) {
                 try {
                     Thread.sleep(sleep);

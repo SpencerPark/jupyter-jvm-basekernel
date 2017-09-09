@@ -1,9 +1,9 @@
 package io.github.spencerpark.jupyter.messages;
 
-import com.google.gson.JsonObject;
-
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class Message<T> implements MessageContext {
     private List<byte[]> identities;
@@ -17,32 +17,40 @@ public class Message<T> implements MessageContext {
      */
     private Header<?> parentHeader;
 
-    private JsonObject metadata;
+    private Map<String, Object> metadata;
 
     private T content;
 
     private List<byte[]> blobs;
 
     public Message(MessageContext ctx, MessageType<T> type, T content) {
-        this.identities = ctx.getIdentities();
-        this.header = new Header<>(ctx, type);
-        this.content = content;
-        this.parentHeader = ctx.getHeader();
-        this.metadata = null;
-        this.content = content;
-        this.blobs = null;
+        this(ctx, type, content, null, null);
+    }
+
+    public Message(MessageContext ctx, MessageType<T> type, T content, List<byte[]> blobs, Map<String, Object> metadata) {
+        this(
+                ctx != null ? ctx.getIdentities() : Collections.emptyList(),
+                new Header<>(ctx, type),
+                ctx != null ? ctx.getHeader() : null,
+                metadata,
+                content,
+                blobs
+        );
+    }
+
+    public Message(Header<T> header, T content) {
+        this(Collections.emptyList(), header, null, null, content, null);
+    }
+
+    public Message(Header<T> header, T content, Map<String, Object> metadata, List<byte[]> blobs) {
+        this(Collections.emptyList(), header, null, metadata, content, blobs);
     }
 
     public Message(List<byte[]> identities, Header<T> header, T content) {
-        this.identities = identities;
-        this.header = header;
-        this.parentHeader = null;
-        this.metadata = null;
-        this.content = content;
-        this.blobs = null;
+        this(identities, header, null, null, content, null);
     }
 
-    public Message(List<byte[]> identities, Header<T> header, Header<?> parentHeader, JsonObject metadata, T content, List<byte[]> blobs) {
+    public Message(List<byte[]> identities, Header<T> header, Header<?> parentHeader, Map<String, Object> metadata, T content, List<byte[]> blobs) {
         this.identities = identities;
         this.header = header;
         this.parentHeader = parentHeader;
@@ -73,7 +81,7 @@ public class Message<T> implements MessageContext {
         return metadata != null;
     }
 
-    public JsonObject getMetadata() {
+    public Map<String, Object> getMetadata() {
         return metadata;
     }
 

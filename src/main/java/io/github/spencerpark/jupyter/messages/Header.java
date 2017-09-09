@@ -22,22 +22,30 @@ public class Header<T> {
 
     private final String version;
 
+    public Header(MessageType<T> type) {
+        this("", type);
+    }
+
     public Header(String sessionId, MessageType<T> type) {
-        this.id = UUID.randomUUID().toString();
-        this.username = KERNEL_USERNAME;
-        this.sessionId = sessionId;
-        this.timestamp = KernelTimestamp.now();
-        this.type = type;
-        this.version = PROTOCOL_VERISON;
+        this(
+                UUID.randomUUID().toString(),
+                KERNEL_USERNAME,
+                sessionId,
+                KernelTimestamp.now(),
+                type,
+                PROTOCOL_VERISON
+        );
     }
 
     public Header(MessageContext ctx, MessageType<T> type) {
-        this.id = UUID.randomUUID().toString();
-        this.username = ctx.getHeader().getUsername();
-        this.sessionId = ctx.getHeader().getSessionId();
-        this.timestamp = KernelTimestamp.now();
-        this.type = type;
-        this.version = PROTOCOL_VERISON;
+        this(
+                UUID.randomUUID().toString(),
+                ctx != null ? ctx.getHeader().getUsername() : KERNEL_USERNAME,
+                ctx != null ? ctx.getHeader().getSessionId() : null,
+                KernelTimestamp.now(),
+                type,
+                PROTOCOL_VERISON
+        );
     }
 
     public Header(String id, String username, String sessionId, KernelTimestamp timestamp, MessageType<T> type, String version) {

@@ -19,7 +19,7 @@ public class JupyterConnection {
     protected final ShellChannel shell;
     protected final ShellChannel control;
     protected final StdinChannel stdin;
-    protected final JupyterSocket iopub;
+    protected final IOPubChannel iopub;
 
     private final Map<MessageType, ShellHandler> handlers;
 
@@ -32,11 +32,15 @@ public class JupyterConnection {
         this.shell = new ShellChannel(this.ctx, hmacGenerator, false, this);
         this.control = new ShellChannel(this.ctx, hmacGenerator, true, this);
         this.stdin = new StdinChannel(this.ctx, hmacGenerator);
-        this.iopub = JupyterSocket.makeIopub(this.ctx, hmacGenerator);
+        this.iopub = new IOPubChannel(this.ctx, hmacGenerator);
 
         this.handlers = new HashMap<>();
 
         forEachSocket(s -> s.bind(connProps));
+    }
+
+    public IOPubChannel getIOPub() {
+        return this.iopub;
     }
 
     public <T> void setHandler(MessageType<T> type, ShellHandler<T> handler) {

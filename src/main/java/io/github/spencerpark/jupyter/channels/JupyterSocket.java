@@ -1,30 +1,23 @@
 package io.github.spencerpark.jupyter.channels;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 import io.github.spencerpark.jupyter.kernel.KernelConnectionProperties;
 import io.github.spencerpark.jupyter.messages.*;
 import io.github.spencerpark.jupyter.messages.adapters.*;
 import io.github.spencerpark.jupyter.messages.publish.PublishStatus;
 import org.zeromq.ZMQ;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.lang.reflect.Type;
+import java.util.*;
 import java.util.logging.Logger;
 
 public abstract class JupyterSocket extends ZMQ.Socket {
     protected static String formatAddress(String transport, String ip, int port) {
         return transport + "://" + ip + ":" + Integer.toString(port);
-    }
-
-    public static JupyterSocket makeIopub(ZMQ.Context ctx, HMACGenerator generator) {
-        return new JupyterSocket(ctx, ZMQ.PUB, generator, Logger.getLogger("IOPubChannel")) {
-            @Override
-            public void bind(KernelConnectionProperties connProps) {
-                super.bind(formatAddress(connProps.getTransport(), connProps.getIp(), connProps.getIopubPort()));
-            }
-        };
     }
 
     private static final byte[] IDENTITY_BLOB_DELIMITER = "<IDS|MSG>".getBytes();
@@ -38,6 +31,8 @@ public abstract class JupyterSocket extends ZMQ.Socket {
             .create();
     private static final JsonParser json = new JsonParser();
     private static final byte[] EMPTY_JSON_OBJECT = "{}".getBytes();
+    private static final Type JSON_OBJ_AS_MAP = new TypeToken<Map<String, Object>>() {
+    }.getType();
 
     public static final Logger JUPYTER_LOGGER = Logger.getLogger("Jupyter");
 
@@ -91,19 +86,17 @@ public abstract class JupyterSocket extends ZMQ.Socket {
         if (parentHeaderJson.isJsonObject() && parentHeaderJson.getAsJsonObject().size() > 0)
             parentHeader = gson.fromJson(parentHeaderJson, Header.class);
 
-        JsonObject metadata = json.parse(new String(metadataRaw)).getAsJsonObject();
+        Map<String, Object> metadata = gson.fromJson(new String(metadataRaw), JSON_OBJ_AS_MAP);
         Object content = gson.fromJson(new String(contentRaw), header.getType().getContentType());
 
-        Message message = new Message(identities, header, parentHeader, metadata, content, blobs);
+        Message<?> message = new Message(identities, header, parentHeader, metadata, content, blobs);
 
         logger.finer(() -> "Received from " + super.base().getsockoptx(zmq.ZMQ.ZMQ_LAST_ENDPOINT) + ":\n" + gson.toJson(message));
 
         return message;
     }
 
-    //This doesn't necessarily need to be marked synchronized but the underlying call
-    //to readMessage() is and this makes it clearer that the bulk of the method is synchronized
-    public synchronized <T> Message<T> readMessage(MessageType<T> type) {
+    public <T> Message<T> readMessage(MessageType<T> type) {
         Message<?> message = readMessage();
         if (message.getHeader().getType() != type) {
             throw new RuntimeException("Expected a " + type + " message but received a " + message.getHeader().getType() + " message.");
@@ -159,5 +152,6 @@ public abstract class JupyterSocket extends ZMQ.Socket {
         this.closed = true;
     }
 
-    public void waitUntilClose() { }
+    public void waitUntilClose() {
+    }
 }
