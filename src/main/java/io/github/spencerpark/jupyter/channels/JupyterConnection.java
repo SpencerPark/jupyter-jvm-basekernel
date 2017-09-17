@@ -1,9 +1,11 @@
 package io.github.spencerpark.jupyter.channels;
 
 import io.github.spencerpark.jupyter.kernel.KernelConnectionProperties;
+import io.github.spencerpark.jupyter.messages.Message;
 import io.github.spencerpark.jupyter.messages.MessageContext;
 import io.github.spencerpark.jupyter.messages.HMACGenerator;
 import io.github.spencerpark.jupyter.messages.MessageType;
+import io.github.spencerpark.jupyter.messages.publish.PublishStatus;
 import org.zeromq.ZMQ;
 
 import java.security.InvalidKeyException;
@@ -13,6 +15,9 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 public class JupyterConnection {
+    private final KernelConnectionProperties connProps;
+
+    private boolean isConnected = false;
     private final ZMQ.Context ctx;
 
     protected final HeartbeatChannel heartbeat;
@@ -24,6 +29,7 @@ public class JupyterConnection {
     private final Map<MessageType, ShellHandler> handlers;
 
     public JupyterConnection(KernelConnectionProperties connProps) throws NoSuchAlgorithmException, InvalidKeyException {
+        this.connProps = connProps;
         this.ctx = ZMQ.context(1);
 
         HMACGenerator hmacGenerator = connProps.createHMACGenerator();
@@ -35,8 +41,15 @@ public class JupyterConnection {
         this.iopub = new IOPubChannel(this.ctx, hmacGenerator);
 
         this.handlers = new HashMap<>();
+    }
 
-        forEachSocket(s -> s.bind(connProps));
+    public void connect() {
+        if (!isConnected) {
+            forEachSocket(s -> s.bind(this.connProps));
+            PublishStatus publishStatus = PublishStatus.STARTING;
+            this.getIOPub().sendMessage(new Message<>(null, PublishStatus.MESSAGE_TYPE, publishStatus));
+            this.isConnected = true;
+        }
     }
 
     public IOPubChannel getIOPub() {

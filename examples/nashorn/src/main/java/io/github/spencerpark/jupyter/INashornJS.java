@@ -29,6 +29,7 @@ public class INashornJS {
         NashornKernel kernel = new NashornKernel();
         kernel.becomeHandlerForConnection(connection);
 
+        connection.connect();
         connection.waitUntilClose();
     }
 }

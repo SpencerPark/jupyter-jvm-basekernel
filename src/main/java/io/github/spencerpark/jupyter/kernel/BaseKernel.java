@@ -13,6 +13,7 @@ import io.github.spencerpark.jupyter.messages.Message;
 import io.github.spencerpark.jupyter.messages.MessageType;
 import io.github.spencerpark.jupyter.messages.publish.PublishExecuteInput;
 import io.github.spencerpark.jupyter.messages.publish.PublishExecuteResult;
+import io.github.spencerpark.jupyter.messages.publish.PublishStatus;
 import io.github.spencerpark.jupyter.messages.reply.*;
 import io.github.spencerpark.jupyter.messages.request.*;
 
