@@ -71,26 +71,21 @@ public class NashornKernel extends BaseKernel {
 
     @Override
     public MIMEBundle eval(String expr) throws Exception {
-        try {
-            ScriptContext ctx = engine.getContext();
+        ScriptContext ctx = engine.getContext();
 
-            //Redirect the streams
-            ctx.setWriter(new OutputStreamWriter(System.out));
-            ctx.setErrorWriter(new OutputStreamWriter(System.err));
-            ctx.setReader(new InputStreamReader(System.in));
+        //Redirect the streams
+        ctx.setWriter(new OutputStreamWriter(System.out));
+        ctx.setErrorWriter(new OutputStreamWriter(System.err));
+        ctx.setReader(new InputStreamReader(System.in));
 
-            //Evaluate the code
-            Object res = engine.eval(expr, ctx);
+        //Evaluate the code
+        Object res = engine.eval(expr, ctx);
 
-            //If the evaluation returns a non-null value (the code is an expression like
-            // 'a + b') then the return value should be this result as text. Otherwise
-            //return null for nothing to be emitted for 'Out[n]'. Side effects may have
-            //still printed something
-            return res != null ? new MIMEBundle(res.toString()) : null;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
-        }
+        //If the evaluation returns a non-null value (the code is an expression like
+        // 'a + b') then the return value should be this result as text. Otherwise
+        //return null for nothing to be emitted for 'Out[n]'. Side effects may have
+        //still printed something
+        return res != null ? new MIMEBundle(res.toString()) : null;
     }
 
     @Override

@@ -11,6 +11,7 @@ import io.github.spencerpark.jupyter.messages.Header;
 import io.github.spencerpark.jupyter.messages.MIMEBundle;
 import io.github.spencerpark.jupyter.messages.Message;
 import io.github.spencerpark.jupyter.messages.MessageType;
+import io.github.spencerpark.jupyter.messages.publish.PublishError;
 import io.github.spencerpark.jupyter.messages.publish.PublishExecuteInput;
 import io.github.spencerpark.jupyter.messages.publish.PublishExecuteResult;
 import io.github.spencerpark.jupyter.messages.publish.PublishStatus;
@@ -258,6 +259,7 @@ public abstract class BaseKernel {
         } catch (Exception e) {
             ErrorReply error = ErrorReply.of(e);
             error.setExecutionCount(count);
+            env.publish(PublishError.of(e));
             env.defer().replyError(ExecuteReply.MESSAGE_TYPE.error(), error);
         }
     }
