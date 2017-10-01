@@ -7,6 +7,7 @@ import io.github.spencerpark.jupyter.channels.JupyterInputStream;
 import io.github.spencerpark.jupyter.channels.JupyterOutputStream;
 import io.github.spencerpark.jupyter.channels.ShellReplyEnvironment;
 import io.github.spencerpark.jupyter.kernel.comm.CommManager;
+import io.github.spencerpark.jupyter.kernel.util.TextColors;
 import io.github.spencerpark.jupyter.messages.Header;
 import io.github.spencerpark.jupyter.messages.MIMEBundle;
 import io.github.spencerpark.jupyter.messages.Message;
@@ -14,17 +15,14 @@ import io.github.spencerpark.jupyter.messages.MessageType;
 import io.github.spencerpark.jupyter.messages.publish.PublishError;
 import io.github.spencerpark.jupyter.messages.publish.PublishExecuteInput;
 import io.github.spencerpark.jupyter.messages.publish.PublishExecuteResult;
-import io.github.spencerpark.jupyter.messages.publish.PublishStatus;
 import io.github.spencerpark.jupyter.messages.reply.*;
 import io.github.spencerpark.jupyter.messages.request.*;
 
 import java.io.*;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 public abstract class BaseKernel {
     protected final AtomicInteger executionCount = new AtomicInteger(1);
@@ -174,6 +172,32 @@ public abstract class BaseKernel {
         //no-op
     }
 
+    private static final Pattern NEWLINE_PATTERN = Pattern.compile("\\r?\\n");
+
+    /**
+     * Formats an error into a human friendly format. The default implementation aims
+     * to format the error as similar to the ipython format.
+     * @param e the error to format
+     * @return a list of lines that make up the formatted error. This format should
+     * not include strings with newlines but rather separate strings each to go on a
+     * new line.
+     */
+    public List<String> formatError(Exception e) {
+        List<String> lines = new LinkedList<>();
+        lines.add(TextColors.BOLD_RED_FG + "---------------------------------------------------------------------------");
+
+        StringWriter stringWriter = new StringWriter();
+        PrintWriter printWriter = new PrintWriter(stringWriter);
+        e.printStackTrace(printWriter);
+        printWriter.close();
+
+        String stackTrace = stringWriter.toString();
+        for (String line : NEWLINE_PATTERN.split(stackTrace))
+            lines.add(TextColors.BOLD_RED_FG + line);
+
+        return lines;
+    }
+
     /*
      * ===================================
      * | Default handler implementations |
@@ -259,7 +283,7 @@ public abstract class BaseKernel {
         } catch (Exception e) {
             ErrorReply error = ErrorReply.of(e);
             error.setExecutionCount(count);
-            env.publish(PublishError.of(e));
+            env.publish(PublishError.of(e, this::formatError));
             env.defer().replyError(ExecuteReply.MESSAGE_TYPE.error(), error);
         }
     }

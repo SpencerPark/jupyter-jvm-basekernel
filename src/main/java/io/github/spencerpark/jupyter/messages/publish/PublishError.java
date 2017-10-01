@@ -15,15 +15,10 @@ import java.util.stream.Collectors;
 public class PublishError implements ContentType<PublishError> {
     public static final MessageType<PublishError> MESSAGE_TYPE = MessageType.PUBLISH_ERROR;
 
-    //TODO The traceback is the only thing printed and acts more like a multiline print then an
-    //     actual traceback. The python kernel prints a nice ------ line and colored explanation of
-    //     the error.
-    public static PublishError of(Exception exception) {
+    public static PublishError of(Exception exception, ErrorFormatter formatter) {
         String name = exception.getClass().getSimpleName();
         String msg = exception.getLocalizedMessage();
-        List<String> stacktrace = Arrays.stream(exception.getStackTrace())
-                .map(StackTraceElement::toString)
-                .collect(Collectors.toList());
+        List<String> stacktrace = formatter.format(exception);
 
         return new PublishError(name, msg, stacktrace);
     }
