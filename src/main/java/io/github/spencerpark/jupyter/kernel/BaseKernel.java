@@ -172,15 +172,17 @@ public abstract class BaseKernel {
         //no-op
     }
 
-    private static final Pattern NEWLINE_PATTERN = Pattern.compile("\\r?\\n");
+    protected static final Pattern NEWLINE_PATTERN = Pattern.compile("\\r?\\n");
 
     /**
      * Formats an error into a human friendly format. The default implementation aims
      * to format the error as similar to the ipython format.
+     *
      * @param e the error to format
+     *
      * @return a list of lines that make up the formatted error. This format should
-     * not include strings with newlines but rather separate strings each to go on a
-     * new line.
+     *         not include strings with newlines but rather separate strings each to go on a
+     *         new line.
      */
     public List<String> formatError(Exception e) {
         List<String> lines = new LinkedList<>();
