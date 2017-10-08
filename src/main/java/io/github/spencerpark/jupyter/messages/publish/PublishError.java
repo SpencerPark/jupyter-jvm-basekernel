@@ -20,7 +20,7 @@ public class PublishError implements ContentType<PublishError> {
         String msg = exception.getLocalizedMessage();
         List<String> stacktrace = formatter.format(exception);
 
-        return new PublishError(name, msg, stacktrace);
+        return new PublishError(name, msg == null ? "" : msg, stacktrace);
     }
 
     @Override

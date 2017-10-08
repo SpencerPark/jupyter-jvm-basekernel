@@ -7,7 +7,8 @@ import io.github.spencerpark.jupyter.channels.JupyterInputStream;
 import io.github.spencerpark.jupyter.channels.JupyterOutputStream;
 import io.github.spencerpark.jupyter.channels.ShellReplyEnvironment;
 import io.github.spencerpark.jupyter.kernel.comm.CommManager;
-import io.github.spencerpark.jupyter.kernel.util.TextColors;
+import io.github.spencerpark.jupyter.kernel.util.StringStyler;
+import io.github.spencerpark.jupyter.kernel.util.TextColor;
 import io.github.spencerpark.jupyter.messages.Header;
 import io.github.spencerpark.jupyter.messages.MIMEBundle;
 import io.github.spencerpark.jupyter.messages.Message;
@@ -22,14 +23,13 @@ import java.io.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
-import java.util.regex.Pattern;
 
 public abstract class BaseKernel {
     protected final AtomicInteger executionCount = new AtomicInteger(1);
-    private static final Map<String, String> KERNEL_META = ((Supplier<Map<String, String>>) () -> {
+    protected static final Map<String, String> KERNEL_META = ((Supplier<Map<String, String>>) () -> {
         Map<String, String> meta = null;
 
-        InputStream metaStream = BaseKernel.class.getResourceAsStream("kernel-metadata.json");
+        InputStream metaStream = BaseKernel.class.getClassLoader().getResourceAsStream("kernel-metadata.json");
         if (metaStream != null) {
             Reader metaReader = new InputStreamReader(metaStream);
             try {
@@ -58,10 +58,19 @@ public abstract class BaseKernel {
     private JupyterInputStream stdIn;
     protected CommManager commManager;
 
+    protected StringStyler errorStyler;
+
     public BaseKernel() {
         this.stdOut = new JupyterOutputStream(true);
         this.stdErr = new JupyterOutputStream(false);
         this.stdIn = new JupyterInputStream();
+
+        this.errorStyler = new StringStyler.Builder()
+                .addPrimaryStyle(TextColor.BOLD_BLACK_FG)
+                .addSecondaryStyle(TextColor.BOLD_RED_FG)
+                .addHighlightStyle(TextColor.BOLD_BLACK_FG)
+                .addHighlightStyle(TextColor.RED_BG)
+                .build();
     }
 
     public String getBanner() {
@@ -172,11 +181,14 @@ public abstract class BaseKernel {
         //no-op
     }
 
-    protected static final Pattern NEWLINE_PATTERN = Pattern.compile("\\r?\\n");
-
     /**
-     * Formats an error into a human friendly format. The default implementation aims
-     * to format the error as similar to the ipython format.
+     * Formats an error into a human friendly format. The default implementation prints
+     * the stack trace as written by {@link Throwable#printStackTrace()} with a dividing
+     * separator as a prefix.
+     * <p>
+     * Subclasses may override this method write better messages for specific errors but
+     * may choose to still use this to display the stack trace. In this case it is recommended
+     * to add the output of this call to the end of the output list.
      *
      * @param e the error to format
      *
@@ -186,7 +198,7 @@ public abstract class BaseKernel {
      */
     public List<String> formatError(Exception e) {
         List<String> lines = new LinkedList<>();
-        lines.add(TextColors.BOLD_RED_FG + "---------------------------------------------------------------------------");
+        lines.add(this.errorStyler.secondary("---------------------------------------------------------------------------"));
 
         StringWriter stringWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(stringWriter);
@@ -194,8 +206,7 @@ public abstract class BaseKernel {
         printWriter.close();
 
         String stackTrace = stringWriter.toString();
-        for (String line : NEWLINE_PATTERN.split(stackTrace))
-            lines.add(TextColors.BOLD_RED_FG + line);
+        lines.addAll(this.errorStyler.secondaryLines(stackTrace));
 
         return lines;
     }

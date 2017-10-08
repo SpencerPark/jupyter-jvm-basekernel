@@ -15,7 +15,7 @@ public class ErrorReply implements ExpressionValue {
                 .map(StackTraceElement::toString)
                 .collect(Collectors.toList());
 
-        return new ErrorReply(name, msg, stacktrace);
+        return new ErrorReply(name, msg == null ? "" : msg, stacktrace);
     }
 
     protected final String status = "error";

@@ -106,7 +106,7 @@ public class HistoryRequest {
         protected final int n;
 
         /**
-         * Glob style filter with '*' and '?'. Default to '*'
+         * Glob primary filter with '*' and '?'. Default to '*'
          */
         protected final String pattern;
 

@@ -3,7 +3,7 @@ package io.github.spencerpark.jupyter.kernel.util;
 /**
  * A collection of ANSI escapes that are supported by the Jupyter notebook.
  */
-public enum TextColors {
+public enum TextColor {
     BLACK_FG(30),
     BOLD_BLACK_FG(1, 30),
     RED_FG(31),
@@ -50,7 +50,7 @@ public enum TextColors {
 
     private final String ansiEscape;
 
-    TextColors(int... codes) {
+    TextColor(int... codes) {
         StringBuilder ansiEscape = new StringBuilder();
         for (int code : codes) ansiEscape.append(escape(code));
         this.ansiEscape = ansiEscape.toString();
