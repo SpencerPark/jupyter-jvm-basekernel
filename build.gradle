@@ -1,7 +1,7 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
 group 'io.github.spencerpark'
-version '1.0.6-SNAPSHOT'
+version '1.1.1-SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'maven-publish'
@@ -38,10 +38,6 @@ jar {
     //Include all shaded dependencies in the jar
     from configurations.shade
             .collect {it.isDirectory() ? it : zipTree(it)}
-
-    manifest {
-        attributes('Main-class': 'org.mellowd.jupyter.IMellowD')
-    }
 }
 
 processResources {
