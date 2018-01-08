@@ -26,7 +26,6 @@ public abstract class JupyterSocket extends ZMQ.Socket {
             .registerTypeAdapter(Header.class, HeaderAdapter.INSTANCE)
             .registerTypeAdapter(MessageType.class, MessageTypeAdapter.INSTANCE)
             .registerTypeAdapter(PublishStatus.class, PublishStatusAdapter.INSTANCE)
-            .registerTypeAdapter(MIMEBundle.class, MIMEBundleAdapter.INSTANCE)
             //.setPrettyPrinting()
             .create();
     private static final JsonParser json = new JsonParser();

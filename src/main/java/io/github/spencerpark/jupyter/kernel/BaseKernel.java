@@ -9,8 +9,8 @@ import io.github.spencerpark.jupyter.channels.ShellReplyEnvironment;
 import io.github.spencerpark.jupyter.kernel.comm.CommManager;
 import io.github.spencerpark.jupyter.kernel.util.StringStyler;
 import io.github.spencerpark.jupyter.kernel.util.TextColor;
+import io.github.spencerpark.jupyter.messages.DisplayData;
 import io.github.spencerpark.jupyter.messages.Header;
-import io.github.spencerpark.jupyter.messages.MIMEBundle;
 import io.github.spencerpark.jupyter.messages.Message;
 import io.github.spencerpark.jupyter.messages.MessageType;
 import io.github.spencerpark.jupyter.messages.publish.PublishError;
@@ -82,7 +82,7 @@ public abstract class BaseKernel {
         return null;
     }
 
-    public abstract MIMEBundle eval(String expr) throws Exception;
+    public abstract DisplayData eval(String expr) throws Exception;
 
     /**
      * Inspect the code to get things such as documentation for a function. This is
@@ -102,7 +102,7 @@ public abstract class BaseKernel {
      * @throws Exception if the code cannot be inspected for some reason (such as it not
      *                   compiling)
      */
-    public MIMEBundle inspect(String code, int at, boolean extraDetail) throws Exception {
+    public DisplayData inspect(String code, int at, boolean extraDetail) throws Exception {
         return null;
     }
 
@@ -279,10 +279,10 @@ public abstract class BaseKernel {
         });
 
         try {
-            MIMEBundle out = eval(request.getCode());
+            DisplayData out = eval(request.getCode());
 
             if (out != null) {
-                PublishExecuteResult result = new PublishExecuteResult(count, out, new HashMap<>());
+                PublishExecuteResult result = new PublishExecuteResult(count, out);
                 env.publish(result);
             }
 
@@ -305,9 +305,8 @@ public abstract class BaseKernel {
         InspectRequest request = inspectRequestMessage.getContent();
         env.setBusyDeferIdle();
         try {
-            MIMEBundle inspection = this.inspect(request.getCode(), request.getCursorPos(), request.getDetailLevel() > 0);
-            boolean found = inspection != null && !inspection.isEmpty();
-            env.reply(new InspectReply(found, MIMEBundle.emptyIfNull(inspection), Collections.emptyMap()));
+            DisplayData inspection = this.inspect(request.getCode(), request.getCursorPos(), request.getDetailLevel() > 0);
+            env.reply(new InspectReply(inspection != null, DisplayData.emptyIfNull(inspection)));
         } catch (Exception e) {
             env.replyError(InspectReply.MESSAGE_TYPE.error(), ErrorReply.of(e));
         }

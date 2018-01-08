@@ -26,7 +26,7 @@ subprojects {
     }
 
     dependencies {
-        shade group: 'io.github.spencerpark', name: 'jupyter-jvm-basekernel', version: '1.0.+'
+        shade group: 'io.github.spencerpark', name: 'jupyter-jvm-basekernel', version: '2.0.0-SNAPSHOT'
     }
 
     jar {

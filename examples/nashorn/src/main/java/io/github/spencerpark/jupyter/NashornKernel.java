@@ -6,7 +6,7 @@ import io.github.spencerpark.jupyter.kernel.ReplacementOptions;
 import io.github.spencerpark.jupyter.kernel.util.CharPredicate;
 import io.github.spencerpark.jupyter.kernel.util.SimpleAutoCompleter;
 import io.github.spencerpark.jupyter.kernel.util.StringSearch;
-import io.github.spencerpark.jupyter.messages.MIMEBundle;
+import io.github.spencerpark.jupyter.messages.DisplayData;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 
 import javax.script.ScriptContext;
@@ -70,7 +70,7 @@ public class NashornKernel extends BaseKernel {
     }
 
     @Override
-    public MIMEBundle eval(String expr) throws Exception {
+    public DisplayData eval(String expr) throws Exception {
         ScriptContext ctx = engine.getContext();
 
         //Redirect the streams
@@ -85,11 +85,11 @@ public class NashornKernel extends BaseKernel {
         // 'a + b') then the return value should be this result as text. Otherwise
         //return null for nothing to be emitted for 'Out[n]'. Side effects may have
         //still printed something
-        return res != null ? new MIMEBundle(res.toString()) : null;
+        return res != null ? new DisplayData(res.toString()) : null;
     }
 
     @Override
-    public MIMEBundle inspect(String code, int at, boolean extraDetail) throws Exception {
+    public DisplayData inspect(String code, int at, boolean extraDetail) throws Exception {
         StringSearch.Range match = StringSearch.findLongestMatchingAt(code, at, idChar);
         String id = "";
         Object val = null;
@@ -98,7 +98,7 @@ public class NashornKernel extends BaseKernel {
             val = this.engine.getContext().getAttribute(id);
         }
 
-        return new MIMEBundle(val == null ? "No memory value for '" + id + "'" : val.toString());
+        return new DisplayData(val == null ? "No memory value for '" + id + "'" : val.toString());
     }
 
     @Override
