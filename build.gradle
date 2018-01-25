@@ -9,7 +9,7 @@ apply plugin: 'maven-publish'
 sourceCompatibility = 1.8
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '3.5'
+    gradleVersion = '4.2.1'
 }
 
 tasks.withType(JavaCompile) {
