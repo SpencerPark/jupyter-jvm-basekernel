@@ -52,7 +52,12 @@ public class JupyterInputStream extends InputStream {
         }
         if (this.bufferPos >= this.data.length) {
             this.data = null;
-            return -1;
+            if (this.env != null && this.enabled) {
+                this.data = this.readFromFrontend();
+                this.bufferPos = 0;
+            } else {
+                return -1;
+            }
         }
 
         return this.data[this.bufferPos++];
