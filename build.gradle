@@ -1,10 +1,12 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
-group 'io.github.spencerpark'
-version '2.0.0-SNAPSHOT'
+group = 'io.github.spencerpark'
+version = '2.0.0-SNAPSHOT'
 
 apply plugin: 'java'
+apply plugin: 'maven'
 apply plugin: 'maven-publish'
+apply plugin: 'signing'
 
 sourceCompatibility = 1.8
 
@@ -21,23 +23,11 @@ repositories {
     mavenCentral()
 }
 
-configurations {
-    shade
-    shade.transitive = false
-    compile.extendsFrom(shade)
-}
-
 dependencies {
-    shade group: 'org.zeromq', name: 'jeromq', version: '0.4.0'
-    shade group: 'com.google.code.gson', name: 'gson', version: '2.8.0'
+    compile group: 'org.zeromq', name: 'jeromq', version: '0.4.0'
+    compile group: 'com.google.code.gson', name: 'gson', version: '2.8.0'
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
-}
-
-jar {
-    //Include all shaded dependencies in the jar
-    from configurations.shade
-            .collect {it.isDirectory() ? it : zipTree(it)}
 }
 
 processResources {
@@ -47,6 +37,71 @@ processResources {
     ]
     inputs.properties(tokens)
     filter ReplaceTokens, tokens: tokens
+}
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+signing {
+    sign configurations.archives
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            // ossrhUsername and ossrhPassword are defined in the global gradle.properties on the
+            // machine uploading the artifacts (including the keys).
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            pom.project {
+                name = 'Jupyter JVM Base Kernel'
+                packaging = 'jar'
+                description = 'An abstract kernel implementation for Jupyter kernels running on the Java virtual machine.'
+                url = 'https://github.com/SpencerPark/jupyter-jvm-basekernel'
+
+                scm {
+                    url = 'https://github.com/SpencerPark/jupyter-jvm-basekernel.git'
+                    connection = 'scm:git:https://github.com/SpencerPark/jupyter-jvm-basekernel.git'
+                    developerConnection = 'scm:git:git@github.com:SpencerPark/jupyter-jvm-basekernel.git'
+                }
+
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url = 'http://opensource.org/licenses/MIT'
+                        distribution = 'repo'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'SpencerPark'
+                        name = 'Spencer Park'
+                        email = 'spinnr95@gmail.com'
+                    }
+                }
+            }
+        }
+    }
 }
 
 publishing {

@@ -14,7 +14,7 @@ public class ExecuteRequest {
     protected final String code;
 
     /**
-     *  silent -> !store_history
+     *  silent -&gt; !store_history
      *
      *  if silent:
      *      - no broadcast on IOPUB channel

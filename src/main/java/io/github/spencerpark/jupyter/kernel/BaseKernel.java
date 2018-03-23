@@ -146,14 +146,14 @@ public abstract class BaseKernel {
      * There are 4 cases to consider:
      * <p>
      * 1. {@link #IS_COMPLETE_MAYBE} is returned by default and is the equivalent
-     * of abstaining from answering the request.<br\>
+     * of abstaining from answering the request. <br>
      * 2. {@link #IS_COMPLETE_BAD} should be returned for invalid code that will
-     * result in an error when being parsed/compiled.<br\>
+     * result in an error when being parsed/compiled. <br>
      * 3. {@link #IS_COMPLETE_YES} if the code is a complete, well formed, statement
-     * and may be executed. <br\>
+     * and may be executed. <br>
      * 4. The code is valid but not yet complete (like the for loop example above). In
      * this case a string describing the prefix to start the next line with (such as 4 spaces
-     * following the for loop). <br/>
+     * following the for loop). <br>
      *
      * @param code the code to analyze
      *
