@@ -20,6 +20,8 @@ public class MIMEType {
 
     public static final MIMEType APPLICATION_XML = MIMEType.parse("application/xml");
     public static final MIMEType APPLICATION_JSON = MIMEType.parse("application/json");
+    public static final MIMEType APPLICATION_JAVASCRIPT = MIMEType.parse("application/javascript");
+    public static final MIMEType APPLICATION_PDF = MIMEType.parse("application/pdf");
 
     public static final MIMEType APPLICATION_FASTINFOSET = MIMEType.parse("application/fastinfoset");
     public static final MIMEType APPLICATION_VND_WAP_WBXML = MIMEType.parse("application/vnd.wap.wbxml");
@@ -30,6 +32,15 @@ public class MIMEType {
     public static final MIMEType APPLICATION_CBOR = MIMEType.parse("application/cbor");
 
     public static final MIMEType TEXT_HTML = MIMEType.parse("text/html");
+    public static final MIMEType TEXT_MARKDOWN = MIMEType.parse("text/markdown");
+    public static final MIMEType TEXT_LATEX = MIMEType.parse("text/latex");
+    public static final MIMEType TEXT_PLAIN = MIMEType.parse("text/plain");
+    public static final MIMEType TEXT_CSS = MIMEType.parse("text/css");
+
+    public static final MIMEType IMAGE_PNG = MIMEType.parse("image/png");
+    public static final MIMEType IMAGE_JPEG = MIMEType.parse("image/jpeg");
+    public static final MIMEType IMAGE_GIF = MIMEType.parse("image/gif");
+    public static final MIMEType IMAGE_SVG = MIMEType.parse("image/svg+xml");
 
     /**
      * Construct a {@link MIMEType} from a string representation. The grammar

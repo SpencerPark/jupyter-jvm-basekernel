@@ -104,7 +104,8 @@ public class Renderer {
     }
 
     public <T> void register(Set<MIMEType> supported, Set<MIMEType> preferred, Set<Class<? extends T>> types, RenderFunction<T> function) {
-
+        // TODO support multiple functions per type based on the types they support.
+        // TODO also implement this
     }
 
     private DisplayData initializeDisplayData(Object value) {

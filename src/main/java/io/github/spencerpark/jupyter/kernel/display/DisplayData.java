@@ -93,6 +93,20 @@ public class DisplayData {
         return this.data.containsKey(type.toString());
     }
 
+    public void assign(DisplayData data) {
+        this.data.putAll(data.data);
+
+        if (this.metadata == null)
+            this.metadata = data.metadata;
+        else if (data.metadata != null)
+            this.metadata.putAll(data.metadata);
+
+        if (this.transientData == null)
+            this.transientData = data.transientData;
+        else if (data.transientData != null)
+            this.transientData.putAll(data.transientData);
+    }
+
     public void putText(String text) {
         this.putData("text/plain", text);
     }

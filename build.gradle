@@ -1,7 +1,7 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
 group 'io.github.spencerpark'
-version '2.1.0-SNAPSHOT'
+version '2.1.1-SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'maven-publish'

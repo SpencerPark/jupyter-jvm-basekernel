@@ -2,6 +2,7 @@ package io.github.spencerpark.jupyter.kernel.display;
 
 import io.github.spencerpark.jupyter.kernel.display.mime.MIMEType;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -26,6 +27,10 @@ public class RenderContext {
 
     public DisplayData getOutputContainer() {
         return this.out;
+    }
+
+    public Map<String, Object> getParams() {
+        return Collections.unmodifiableMap(this.params);
     }
 
     public Object getParameter(String key) {
@@ -96,21 +101,30 @@ public class RenderContext {
         return this.requestedTypes.resolveSupportedType(supported);
     }
 
-    public void renderIfRequested(MIMEType supportedType, BiConsumer<MIMEType, DisplayData> renderFunction) {
+    public boolean renderIfRequested(MIMEType supportedType, BiConsumer<MIMEType, DisplayData> renderFunction) {
         MIMEType resolvedType = this.requestedTypes.resolveSupportedType(supportedType);
-        if (resolvedType != null)
+        if (resolvedType != null) {
             renderFunction.accept(resolvedType, this.getOutputContainer());
+            return true;
+        }
+        return false;
     }
 
-    public void renderIfRequested(MIMEType supportedType, Function<MIMEType, Object> renderFunction) {
+    public boolean renderIfRequested(MIMEType supportedType, Function<MIMEType, Object> renderFunction) {
         MIMEType resolvedType = this.requestedTypes.resolveSupportedType(supportedType);
-        if (resolvedType != null)
+        if (resolvedType != null) {
             this.getOutputContainer().putData(resolvedType, renderFunction.apply(resolvedType));
+            return true;
+        }
+        return false;
     }
 
-    public void renderIfRequested(MIMEType supportedType, Supplier<Object> render) {
+    public boolean renderIfRequested(MIMEType supportedType, Supplier<Object> render) {
         MIMEType resolvedType = this.requestedTypes.resolveSupportedType(supportedType);
-        if (resolvedType != null)
+        if (resolvedType != null) {
             this.getOutputContainer().putData(resolvedType, render.get());
+            return true;
+        }
+        return false;
     }
 }
