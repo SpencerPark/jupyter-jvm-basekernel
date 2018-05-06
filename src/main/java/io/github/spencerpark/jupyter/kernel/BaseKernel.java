@@ -9,7 +9,7 @@ import io.github.spencerpark.jupyter.channels.ShellReplyEnvironment;
 import io.github.spencerpark.jupyter.kernel.comm.CommManager;
 import io.github.spencerpark.jupyter.kernel.util.StringStyler;
 import io.github.spencerpark.jupyter.kernel.util.TextColor;
-import io.github.spencerpark.jupyter.messages.DisplayData;
+import io.github.spencerpark.jupyter.kernel.display.DisplayData;
 import io.github.spencerpark.jupyter.messages.Header;
 import io.github.spencerpark.jupyter.messages.Message;
 import io.github.spencerpark.jupyter.messages.MessageType;

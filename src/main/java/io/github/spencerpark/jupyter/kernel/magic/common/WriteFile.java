@@ -1,4 +1,4 @@
-package io.github.spencerpark.jupyter.kernel.magic.core;
+package io.github.spencerpark.jupyter.kernel.magic.common;
 
 import io.github.spencerpark.jupyter.kernel.magic.registry.CellMagic;
 

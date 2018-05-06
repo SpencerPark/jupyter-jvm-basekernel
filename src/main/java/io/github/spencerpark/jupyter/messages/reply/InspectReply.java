@@ -1,7 +1,7 @@
 package io.github.spencerpark.jupyter.messages.reply;
 
 import io.github.spencerpark.jupyter.messages.ContentType;
-import io.github.spencerpark.jupyter.messages.DisplayData;
+import io.github.spencerpark.jupyter.kernel.display.DisplayData;
 import io.github.spencerpark.jupyter.messages.MessageType;
 
 public class InspectReply extends DisplayData implements ContentType<InspectReply> {
