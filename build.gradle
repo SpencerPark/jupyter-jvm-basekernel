@@ -19,7 +19,6 @@ tasks.withType(JavaCompile) {
 }
 
 repositories {
-    mavenLocal()
     mavenCentral()
 }
 
@@ -61,9 +60,13 @@ uploadArchives {
     repositories {
         mavenDeployer {
             beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
+            
             // ossrhUsername and ossrhPassword are defined in the global gradle.properties on the
-            // machine uploading the artifacts (including the keys).
+            // machine uploading the artifacts (including the keys). If not present only `publish`
+            // should fail, not `publishToMavenLocal`. Essential defer the failure as long as possible.
+            def ossrhUsername = project.findProperty('ossrhUsername')
+            def ossrhPassword = project.findProperty('ossrhPassword')
+
             repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
                 authentication(userName: ossrhUsername, password: ossrhPassword)
             }
