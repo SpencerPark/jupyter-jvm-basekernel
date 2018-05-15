@@ -1,7 +1,6 @@
 package io.github.spencerpark.jupyter.kernel.display;
 
 import io.github.spencerpark.jupyter.kernel.display.mime.MIMEType;
-import io.github.spencerpark.jupyter.kernel.display.mime.MIMETypeParseException;
 import io.github.spencerpark.jupyter.kernel.util.InheritanceIterator;
 
 import java.util.*;
@@ -91,7 +90,7 @@ public class Renderer {
         }
     }
 
-    private final Map<Class, RenderFunctionProps> renderFunctions;
+    private final Map<Class, List<RenderFunctionProps>> renderFunctions;
     private final Map<String, MIMEType> suffixMappings;
 
     public Renderer() {
@@ -104,8 +103,13 @@ public class Renderer {
     }
 
     public <T> void register(Set<MIMEType> supported, Set<MIMEType> preferred, Set<Class<? extends T>> types, RenderFunction<T> function) {
-        // TODO support multiple functions per type based on the types they support.
-        // TODO also implement this
+        RenderFunctionProps props = new RenderFunctionProps(function, supported, preferred);
+
+        types.forEach(c -> this.renderFunctions.compute(c, (k, v) -> {
+            List<RenderFunctionProps> functions = v != null ? v : new LinkedList<>();
+            functions.add(props);
+            return functions;
+        }));
     }
 
     private DisplayData initializeDisplayData(Object value) {
@@ -113,63 +117,59 @@ public class Renderer {
     }
 
     /**
-     * Render the data with toString at text/plain.
+     * Render the object with the preferred render type.
+     * <p>
+     * The rendering algorithm is as follows:
      * <ol>
-     * <li>Render the data with {@link Object#toString()} and store it at {@code text/plain}.</li>
      * <li>
-     * If data {@code instanceof} {@link DisplayDataRenderable} then use that
-     * to render the data.
+     * The object is rendered as {@code text/plain} with {@link String#valueOf(Object)}.
      * </li>
      * <li>
-     * Try to resolve an external render function for the type by looking for function
-     * registrations on:
-     * <ol>
-     * <li>the type of {@code value}</li>
-     * <li>
-     * any implemented interface of {@code value} in the left to right order
-     * it is declared.
+     * If the object is {@link DisplayDataRenderable} ask it to render itself as the {@link DisplayDataRenderable#getPreferredRenderTypes() preferred types}.
      * </li>
      * <li>
-     * for each implemented interface of {@code value} try to use a
-     * superinterface of that type. Search the entire hierarchy from left
-     * to right.
-     * </li>
-     * <li>
-     * repeat the steps with the supertype
-     * </li>
-     * </ol>
+     * Else iterate over the implemented with the {@link InheritanceIterator} until a render function is found. Use this
+     * function to render the object.
      * </li>
      * </ol>
      *
-     * @param value the object to render.
-     * @param params a map of render parameter keys to values.
+     * @param value  the object to render.
+     * @param params a map of parameters that render functions may use.
      *
      * @return the data container holding the rendered view of the {@code value}.
      */
     public DisplayData render(Object value, Map<String, Object> params) {
         DisplayData out = this.initializeDisplayData(value);
 
-        RenderRequestTypes.Builder requestTypes = new RenderRequestTypes.Builder(this.suffixMappings::get);
-
         if (value instanceof DisplayDataRenderable) {
             DisplayDataRenderable renderable = (DisplayDataRenderable) value;
+
+            RenderRequestTypes.Builder requestTypes = new RenderRequestTypes.Builder(this.suffixMappings::get);
             renderable.getPreferredRenderTypes().forEach(requestTypes::withType);
+
             renderable.render(
                     new RenderContext(requestTypes.build(), this, params, out)
             );
+
             return out;
         }
 
         Iterator<Class> inheritedTypes = new InheritanceIterator(value.getClass());
         while (inheritedTypes.hasNext()) {
             Class type = value.getClass();
-            RenderFunctionProps renderFunctionProps = this.renderFunctions.get(type);
-            if (renderFunctionProps != null) {
-                renderFunctionProps.getPreferredTypes().forEach(requestTypes::withType);
-                renderFunctionProps.getFunction().render(
-                        value,
-                        new RenderContext(requestTypes.build(), this, params, out)
-                );
+
+            List<RenderFunctionProps> allRenderFunctionProps = this.renderFunctions.get(type);
+            if (allRenderFunctionProps != null && !allRenderFunctionProps.isEmpty()) {
+                for (RenderFunctionProps renderFunctionProps : allRenderFunctionProps) {
+                    RenderRequestTypes.Builder requestTypes = new RenderRequestTypes.Builder(this.suffixMappings::get);
+                    renderFunctionProps.getPreferredTypes().forEach(requestTypes::withType);
+
+                    renderFunctionProps.getFunction().render(
+                            value,
+                            new RenderContext(requestTypes.build(), this, params, out)
+                    );
+                }
+
                 return out;
             }
         }
@@ -177,45 +177,48 @@ public class Renderer {
         return out;
     }
 
+    /**
+     * A {@link #render(Object, Map)} variant that supplies an empty parameter map.
+     *
+     * @param value the object to render.
+     *
+     * @return a {@link DisplayData} container with all the rendered data.
+     */
     public DisplayData render(Object value) {
         return render(value, new LinkedHashMap<>());
     }
 
     /**
-     * TODO this javadoc no longer makes any sense
-     * Render the data with toString at text/plain.
+     * Render the object as the specified types if possible.
      * <p>
-     * For each type:
+     * The rendering algorithm is as follows:
      * <ol>
-     * <li>if just a group then resolve use the default else use first match</li>
-     * <li>else if a renderer is defined for the type use it</li>
-     * <li>else if the type has a suffix with a delegate resolve that</li>
-     * <li>else if supertype supports the renderer use that</li>
-     * <li>skip it</li>
+     * <li>
+     * The object is rendered as {@code text/plain} with {@link String#valueOf(Object)} no
+     * matter what types are requested.
+     * </li>
+     * <li>
+     * If the object is {@link DisplayDataRenderable} and any of it's {@link DisplayDataRenderable#getSupportedRenderTypes() supported types}
+     * are requested, it is asked to render itself.
+     * </li>
+     * <li>
+     * While all of the requested types have not be rendered yet:
+     * <ol>
+     * <li>
+     * For every type in the {@link InheritanceIterator}, apply the same scheme as step 2.
+     * </li>
+     * <li>
+     * Remove all rendered types from the request.
+     * </li>
      * </ol>
-     * <p>
-     * image/svg+xml can be triggered via image/svg or application/xml
-     * MIMEPattern.parse("image/svg+xml")
-     * .matches("image/svg") // true
-     * .matches("application/xml") // true
-     * <p>
-     * renderAs("application/xml") works on a render function that accepts "image/svg+xml"
-     * <p>
-     * <pre>
-     * {@code
-     * renderFunc(data, into, as, context) {
-     *     // Called with "application/xml"
-     *     if (as contains "image/svg+xml") {
-     *         // Render as svg into data at "image/svg+xml"?
-     *         // We asked for "application/xml"!
-     *     }
-     * }
-     * </pre>
+     * </li>
+     * </ol>
      *
-     * @param value
-     * @param types
+     * @param value  the object to render.
+     * @param params a map of parameters that render functions may use.
+     * @param types  the {@link MIMEType#parse(String) MIME types} to render the object as.
      *
-     * @return
+     * @return a {@link DisplayData} container with all the rendered data.
      */
     public DisplayData renderAs(Object value, Map<String, Object> params, String... types) {
         DisplayData out = this.initializeDisplayData(value);
@@ -238,17 +241,28 @@ public class Renderer {
         Iterator<Class> inheritedTypes = new InheritanceIterator(value.getClass());
         while (inheritedTypes.hasNext() && !requestTypes.isEmpty()) {
             Class type = value.getClass();
-            RenderFunctionProps renderFunctionProps = this.renderFunctions.get(type);
-            if (renderFunctionProps != null
-                    && requestTypes.anyIsRequested(renderFunctionProps.getSupportedTypes())) {
-                renderFunctionProps.getFunction().render(value, context);
-                requestTypes.removeFulfilledRequests(out);
+            List<RenderFunctionProps> allRenderFunctionProps = this.renderFunctions.get(type);
+            if (allRenderFunctionProps != null) {
+                for (RenderFunctionProps renderFunctionProps : allRenderFunctionProps) {
+                    if (requestTypes.anyIsRequested(renderFunctionProps.getSupportedTypes())) {
+                        renderFunctionProps.getFunction().render(value, context);
+                        requestTypes.removeFulfilledRequests(out);
+                    }
+                }
             }
         }
 
         return out;
     }
 
+    /**
+     * A {@link #renderAs(Object, Map, String...)} variant that supplies an empty parameter map.
+     *
+     * @param value the object to render.
+     * @param types the {@link MIMEType#parse(String) MIME types} to render the object as.
+     *
+     * @return a {@link DisplayData} container with all the rendered data.
+     */
     public DisplayData renderAs(Object value, String... types) {
         return this.renderAs(value, new LinkedHashMap<>(), types);
     }
