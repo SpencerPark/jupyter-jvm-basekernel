@@ -53,7 +53,7 @@ public class ShellReplyEnvironment {
      * <p>
      * The use case that inspired this functionality is the busy-idle protocol
      * component required by Jupyter.
-     * <p>
+     *
      * <pre>
      *      ShellReplyEnvironment env = ...;
      *

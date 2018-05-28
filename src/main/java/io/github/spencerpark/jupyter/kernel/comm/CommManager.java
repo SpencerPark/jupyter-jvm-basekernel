@@ -84,6 +84,7 @@ public class CommManager implements Iterable<Comm> {
      *
      * @param targetName the name of the target on the frontend to message
      * @param factory    a comm producer. This is used to create the comm.
+     * @param <T>        the type of {@link Comm} that the {@code factory} produces.
      *
      * @return a comm who's {@link Comm#send(JsonObject) send} method is targeted at a new comm
      *         create on the frontend by the target registered with the {@code targetName} or

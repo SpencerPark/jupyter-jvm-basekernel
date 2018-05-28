@@ -45,7 +45,6 @@ public class MIMEType {
     /**
      * Construct a {@link MIMEType} from a string representation. The grammar
      * is from <a href="https://tools.ietf.org/html/rfc6838">RFC 6838 Section 4.2</a>.
-     * <p>
      * <pre>
      *     type-name = restricted-name
      *     subtype-name = restricted-name
@@ -53,13 +52,12 @@ public class MIMEType {
      *     restricted-name = restricted-name-first *126restricted-name-chars
      *     restricted-name-first  = ALPHA / DIGIT
      *     restricted-name-chars  = ALPHA / DIGIT / "!" / "#" /
-     *                              "$" / "&" / "-" / "^" / "_"
+     *                              "$" / "&amp;" / "-" / "^" / "_"
      *     restricted-name-chars =/ "." ; Characters before first dot always
      *                                  ; specify a facet name
      *     restricted-name-chars =/ "+" ; Characters after last plus always
      *                                  ; specify a structured syntax suffix
      * </pre>
-     * <p>
      * The parser makes some modifications to the specification:
      * <ol>
      * <li>No length restriction on the segments</li>

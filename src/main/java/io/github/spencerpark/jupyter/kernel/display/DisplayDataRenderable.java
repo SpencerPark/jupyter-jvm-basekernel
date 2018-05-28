@@ -18,6 +18,8 @@ public interface DisplayDataRenderable {
      * <p>
      * In particular {@link Renderer#render(Object)} will request that the object
      * is rendered as the {@link #getPreferredRenderTypes()} types.
+     *
+     * @return The set of {@link MIMEType}s that this object can be rendered as.
      */
     public Set<MIMEType> getSupportedRenderTypes();
 
