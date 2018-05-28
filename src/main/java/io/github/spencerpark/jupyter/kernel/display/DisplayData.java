@@ -89,6 +89,10 @@ public class DisplayData {
         this.putMetaData(type, metadata);
     }
 
+    public Object getData(MIMEType type) {
+        return this.data.get(type.toString());
+    }
+
     public boolean hasDataForType(MIMEType type) {
         return this.data.containsKey(type.toString());
     }

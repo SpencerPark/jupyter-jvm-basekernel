@@ -49,7 +49,7 @@ public class Renderer {
         private final Set<MIMEType> preferred;
         private final Set<Class<? extends T>> types;
 
-        public RenderRegistration(Class<T> type) {
+        public RenderRegistration(Class<? extends T> type) {
             this.supported = new LinkedHashSet<>();
             this.preferred = new LinkedHashSet<>();
             this.types = new LinkedHashSet<>();
@@ -156,7 +156,7 @@ public class Renderer {
 
         Iterator<Class> inheritedTypes = new InheritanceIterator(value.getClass());
         while (inheritedTypes.hasNext()) {
-            Class type = value.getClass();
+            Class type = inheritedTypes.next();
 
             List<RenderFunctionProps> allRenderFunctionProps = this.renderFunctions.get(type);
             if (allRenderFunctionProps != null && !allRenderFunctionProps.isEmpty()) {
@@ -240,7 +240,7 @@ public class Renderer {
 
         Iterator<Class> inheritedTypes = new InheritanceIterator(value.getClass());
         while (inheritedTypes.hasNext() && !requestTypes.isEmpty()) {
-            Class type = value.getClass();
+            Class type = inheritedTypes.next();
             List<RenderFunctionProps> allRenderFunctionProps = this.renderFunctions.get(type);
             if (allRenderFunctionProps != null) {
                 for (RenderFunctionProps renderFunctionProps : allRenderFunctionProps) {

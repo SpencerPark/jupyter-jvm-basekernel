@@ -11,10 +11,10 @@ import java.io.InputStream;
 import java.util.Base64;
 
 public class Image {
-    public static MIMEType PNG = MIMEType.IMAGE_PNG;
-    public static MIMEType JPEG = MIMEType.IMAGE_JPEG;
-    public static MIMEType GIF = MIMEType.IMAGE_GIF;
-    public static MIMEType SVG = MIMEType.IMAGE_SVG;
+    public static final MIMEType PNG = MIMEType.IMAGE_PNG;
+    public static final MIMEType JPEG = MIMEType.IMAGE_JPEG;
+    public static final MIMEType GIF = MIMEType.IMAGE_GIF;
+    public static final MIMEType SVG = MIMEType.IMAGE_SVG;
 
     public static void registerAll(Renderer renderer) {
         renderer.createRegistration(java.awt.image.RenderedImage.class)
