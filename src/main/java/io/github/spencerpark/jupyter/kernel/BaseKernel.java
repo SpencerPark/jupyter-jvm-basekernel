@@ -2,10 +2,7 @@ package io.github.spencerpark.jupyter.kernel;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import io.github.spencerpark.jupyter.channels.JupyterConnection;
-import io.github.spencerpark.jupyter.channels.JupyterInputStream;
-import io.github.spencerpark.jupyter.channels.JupyterOutputStream;
-import io.github.spencerpark.jupyter.channels.ShellReplyEnvironment;
+import io.github.spencerpark.jupyter.channels.*;
 import io.github.spencerpark.jupyter.kernel.comm.CommManager;
 import io.github.spencerpark.jupyter.kernel.util.StringStyler;
 import io.github.spencerpark.jupyter.kernel.util.TextColor;
@@ -13,6 +10,7 @@ import io.github.spencerpark.jupyter.kernel.display.DisplayData;
 import io.github.spencerpark.jupyter.messages.Header;
 import io.github.spencerpark.jupyter.messages.Message;
 import io.github.spencerpark.jupyter.messages.MessageType;
+import io.github.spencerpark.jupyter.messages.publish.PublishDisplayData;
 import io.github.spencerpark.jupyter.messages.publish.PublishError;
 import io.github.spencerpark.jupyter.messages.publish.PublishExecuteInput;
 import io.github.spencerpark.jupyter.messages.publish.PublishExecuteResult;
@@ -56,6 +54,7 @@ public abstract class BaseKernel {
     private JupyterOutputStream stdOut;
     private JupyterOutputStream stdErr;
     private JupyterInputStream stdIn;
+    private ShellReplyEnvironment execEnv;
     protected CommManager commManager;
 
     protected StringStyler errorStyler;
@@ -71,6 +70,12 @@ public abstract class BaseKernel {
                 .addHighlightStyle(TextColor.BOLD_BLACK_FG)
                 .addHighlightStyle(TextColor.RED_BG)
                 .build();
+    }
+
+    public void display(DisplayData data) {
+        if (this.execEnv != null) {
+            this.execEnv.publish(new PublishDisplayData(data));
+        }
     }
 
     public String getBanner() {
@@ -236,7 +241,12 @@ public abstract class BaseKernel {
         connection.setHandler(MessageType.COMM_INFO_REQUEST, commManager::handleCommInfoRequest);
     }
 
+    protected void setMostRecentReplyEnv(ShellReplyEnvironment env) {
+        this.execEnv = env;
+    }
+
     private synchronized void handleExecuteRequest(ShellReplyEnvironment env, Message<ExecuteRequest> executeRequestMessage) {
+        this.setMostRecentReplyEnv(env);
         this.commManager.setMessageContext(executeRequestMessage);
 
         ExecuteRequest request = executeRequestMessage.getContent();
@@ -313,6 +323,8 @@ public abstract class BaseKernel {
     }
 
     private void handleCompleteRequest(ShellReplyEnvironment env, Message<CompleteRequest> completeRequestMessage) {
+        this.setMostRecentReplyEnv(env);
+
         CompleteRequest request = completeRequestMessage.getContent();
         env.setBusyDeferIdle();
         try {
@@ -327,12 +339,16 @@ public abstract class BaseKernel {
     }
 
     private void handleHistoryRequest(ShellReplyEnvironment env, Message<HistoryRequest> historyRequestMessage) {
+        this.setMostRecentReplyEnv(env);
+
         //Only the qt console uses this one and it only uses the tail search to get where the
         //user left off. Implementing this is not worth the storage overhead as it rarely gets used
         //and in the event that the front end may use it everything still functions fine without it.
     }
 
     private void handleIsCodeCompeteRequest(ShellReplyEnvironment env, Message<IsCompleteRequest> isCompleteRequestMessage) {
+        this.setMostRecentReplyEnv(env);
+
         IsCompleteRequest request = isCompleteRequestMessage.getContent();
         env.setBusyDeferIdle();
 
@@ -357,6 +373,8 @@ public abstract class BaseKernel {
     }
 
     private void handleKernelInfoRequest(ShellReplyEnvironment env, Message<KernelInfoRequest> kernelInfoRequestMessage) {
+        this.setMostRecentReplyEnv(env);
+
         env.setBusyDeferIdle();
         env.reply(new KernelInfoReply(
                         Header.PROTOCOL_VERISON,
@@ -370,6 +388,8 @@ public abstract class BaseKernel {
     }
 
     private void handleShutdownRequest(ShellReplyEnvironment env, Message<ShutdownRequest> shutdownRequestMessage) {
+        this.setMostRecentReplyEnv(env);
+
         ShutdownRequest request = shutdownRequestMessage.getContent();
         env.setBusyDeferIdle();
 
