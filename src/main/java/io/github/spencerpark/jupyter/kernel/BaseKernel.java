@@ -4,6 +4,10 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.github.spencerpark.jupyter.channels.*;
 import io.github.spencerpark.jupyter.kernel.comm.CommManager;
+import io.github.spencerpark.jupyter.kernel.display.Renderer;
+import io.github.spencerpark.jupyter.kernel.display.common.Image;
+import io.github.spencerpark.jupyter.kernel.display.common.Text;
+import io.github.spencerpark.jupyter.kernel.display.common.Url;
 import io.github.spencerpark.jupyter.kernel.util.StringStyler;
 import io.github.spencerpark.jupyter.kernel.util.TextColor;
 import io.github.spencerpark.jupyter.kernel.display.DisplayData;
@@ -57,6 +61,8 @@ public abstract class BaseKernel {
     private ShellReplyEnvironment execEnv;
     protected CommManager commManager;
 
+    protected Renderer renderer;
+
     protected StringStyler errorStyler;
 
     public BaseKernel() {
@@ -64,12 +70,21 @@ public abstract class BaseKernel {
         this.stdErr = new JupyterOutputStream(false);
         this.stdIn = new JupyterInputStream();
 
+        this.renderer = new Renderer();
+        Image.registerAll(this.renderer);
+        Url.registerAll(this.renderer);
+        Text.registerAll(this.renderer);
+
         this.errorStyler = new StringStyler.Builder()
                 .addPrimaryStyle(TextColor.BOLD_BLACK_FG)
                 .addSecondaryStyle(TextColor.BOLD_RED_FG)
                 .addHighlightStyle(TextColor.BOLD_BLACK_FG)
                 .addHighlightStyle(TextColor.RED_BG)
                 .build();
+    }
+
+    public Renderer getRenderer() {
+        return this.renderer;
     }
 
     public void display(DisplayData data) {
