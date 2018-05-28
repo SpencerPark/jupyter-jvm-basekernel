@@ -1,6 +1,7 @@
-package io.github.spencerpark.jupyter.messages;
+package io.github.spencerpark.jupyter.kernel.display;
 
 import com.google.gson.annotations.SerializedName;
+import io.github.spencerpark.jupyter.kernel.display.mime.MIMEType;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -75,6 +76,40 @@ public class DisplayData {
         this.transientData.put(key, value);
     }
 
+    public void putData(MIMEType type, Object data) {
+        this.putData(type.toString(), data);
+    }
+
+    public void putMetaData(MIMEType type, Object data) {
+        this.putMetaData(type.toString(), data);
+    }
+
+    public void putData(MIMEType type, Object data, Object metadata) {
+        this.putData(type, data);
+        this.putMetaData(type, metadata);
+    }
+
+    public Object getData(MIMEType type) {
+        return this.data.get(type.toString());
+    }
+
+    public boolean hasDataForType(MIMEType type) {
+        return this.data.containsKey(type.toString());
+    }
+
+    public void assign(DisplayData data) {
+        this.data.putAll(data.data);
+
+        if (this.metadata == null)
+            this.metadata = data.metadata;
+        else if (data.metadata != null)
+            this.metadata.putAll(data.metadata);
+
+        if (this.transientData == null)
+            this.transientData = data.transientData;
+        else if (data.transientData != null)
+            this.transientData.putAll(data.transientData);
+    }
 
     public void putText(String text) {
         this.putData("text/plain", text);

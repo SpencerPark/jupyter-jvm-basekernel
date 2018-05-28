@@ -1,7 +1,7 @@
 package io.github.spencerpark.jupyter.messages.publish;
 
 import io.github.spencerpark.jupyter.messages.ContentType;
-import io.github.spencerpark.jupyter.messages.DisplayData;
+import io.github.spencerpark.jupyter.kernel.display.DisplayData;
 import io.github.spencerpark.jupyter.messages.ExpressionValue;
 import io.github.spencerpark.jupyter.messages.MessageType;
 
