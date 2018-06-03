@@ -115,8 +115,9 @@ public class RenderRequestTypes {
 
             // If the type association of the suffix is supported then use the association.
             MIMEType suffixDelegate = this.suffixAssociation.resolveSuffix(supportedType.getSuffix());
-            if (this.requestedTypes.contains(suffixDelegate)
-                    || this.entireGroupRequests.contains(suffixDelegate.getGroup()))
+            if (suffixDelegate != null && (
+                    this.requestedTypes.contains(suffixDelegate)
+                            || this.entireGroupRequests.contains(suffixDelegate.getGroup())))
                 return cache(supportedType, suffixDelegate);
         }
 

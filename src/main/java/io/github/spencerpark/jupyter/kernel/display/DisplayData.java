@@ -18,7 +18,7 @@ public class DisplayData {
 
     private final Map<String, Object> data;
 
-    private Map<String, Object> metadata = null;
+    private Map<String, Object> metadata = new LinkedHashMap<>();
 
     @SerializedName("transient")
     private Map<String, Object> transientData = null;
@@ -38,11 +38,6 @@ public class DisplayData {
         this.putText(textData);
     }
 
-    private void ensureMetadataInitialized() {
-        if (this.metadata == null)
-            this.metadata = new LinkedHashMap<>();
-    }
-
     private void ensureTransientDataInitialized() {
         if (this.transientData == null)
             this.transientData = new LinkedHashMap<>();
@@ -53,7 +48,6 @@ public class DisplayData {
     }
 
     public void putMetaData(String key, Object value) {
-        this.ensureMetadataInitialized();
         this.metadata.put(key, value);
     }
 
