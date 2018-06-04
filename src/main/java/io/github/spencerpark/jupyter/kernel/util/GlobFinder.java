@@ -1,19 +1,24 @@
 package io.github.spencerpark.jupyter.kernel.util;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * A simplified glob implementation designed for finding files. The current implementation supports
+ * {@code "*"} to match 0 or more characters <strong>between {@code "/"}</strong> and {@code "?"} to
+ * match a single character. A glob ending in {@code "/"} will match all files in a directories matching
+ * the glob.
+ * <p></p>
+ * <strong>Important note for Windows file systems:</strong> Globs should use {@code "/"} to separate the
+ * glob despite it not being the platform separator.
+ */
 public class GlobFinder {
     private static class GlobSegment implements DirectoryStream.Filter<Path> {
         public static final GlobSegment ANY_FILE = new GlobSegment(Pattern.compile("^.*$"), true);
-        public static final GlobSegment ANY_DIR = new GlobSegment(Pattern.compile("^.*$"), false);
 
         private final String literal;
         private final Pattern regex;
