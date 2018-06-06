@@ -32,6 +32,10 @@ public class JupyterInputStream extends InputStream {
             this.env = null;
     }
 
+    public boolean isAttached() {
+        return this.env != null;
+    }
+
     private byte[] readFromFrontend() {
         if (this.enabled)
             return this.env.readFromStdIn().getBytes();

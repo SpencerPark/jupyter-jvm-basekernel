@@ -27,6 +27,10 @@ public class JupyterOutputStream extends ByteArrayOutputStream {
             this.env = null;
     }
 
+    public boolean isAttached() {
+        return this.env != null;
+    }
+
     @Override
     public void flush() {
         if (this.env != null) {
