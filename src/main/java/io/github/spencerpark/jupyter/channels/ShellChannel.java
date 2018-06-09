@@ -37,7 +37,8 @@ public class ShellChannel extends JupyterSocket {
         ZMQ.Poller poller = super.ctx.poller(1);
         poller.register(this, ZMQ.Poller.POLLIN);
 
-        this.ioloop = new Loop("Shell-" + SHELL_ID.getAndIncrement(), 50, () -> {
+        String channelThreadName = "Shell-" + SHELL_ID.getAndIncrement();
+        this.ioloop = new Loop(channelThreadName, 50, () -> {
             int events = poller.poll(0);
             if (events > 0) {
                 Message message = super.readMessage();
@@ -60,12 +61,15 @@ public class ShellChannel extends JupyterSocket {
                 }
             }
         });
+
         this.ioloop.onClose(() -> {
-            logger.log(Level.INFO, this.ioloop.getName() + " shutdown.");
+            logger.log(Level.INFO, channelThreadName + " shutdown.");
             this.ioloop = null;
         });
+
         this.ioloop.start();
-        logger.log(Level.INFO, "Polling on " + this.ioloop.getName());
+
+        logger.log(Level.INFO, "Polling on " + channelThreadName);
     }
 
     @Override

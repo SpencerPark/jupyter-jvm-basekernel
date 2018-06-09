@@ -31,7 +31,8 @@ public class HeartbeatChannel extends JupyterSocket {
         ZMQ.Poller poller = super.ctx.poller(1);
         poller.register(this, ZMQ.Poller.POLLIN);
 
-        this.pulse = new Loop("Heartbeat-" + HEARTBEAT_ID.getAndIncrement(), 500, () -> {
+        String channelThreadName = "Heartbeat-" + HEARTBEAT_ID.getAndIncrement();
+        this.pulse = new Loop(channelThreadName, 500, () -> {
             int events = poller.poll(0);
             if (events > 0) {
                 byte[] msg = this.recv();
@@ -47,11 +48,11 @@ public class HeartbeatChannel extends JupyterSocket {
             }
         });
         this.pulse.onClose(() -> {
-            logger.log(Level.INFO, this.pulse.getName() + " shutdown.");
+            logger.log(Level.INFO, channelThreadName + " shutdown.");
             this.pulse = null;
         });
         this.pulse.start();
-        logger.log(Level.INFO, "Polling on " + this.pulse.getName());
+        logger.log(Level.INFO, "Polling on " + channelThreadName);
     }
 
     @Override
