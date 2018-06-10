@@ -2,11 +2,11 @@ package io.github.spencerpark.jupyter.kernel.display;
 
 import io.github.spencerpark.jupyter.kernel.display.mime.MIMEType;
 
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
+/**
+ * A smarter set of {@link MIMEType}s.
+ */
 public class RenderRequestTypes {
     public static class Builder {
         private final MIMESuffixAssociation suffixAssociation;
@@ -57,36 +57,39 @@ public class RenderRequestTypes {
     private final boolean requestsWildcard;
     private final Set<String> entireGroupRequests;
     private final Set<MIMEType> requestedTypes;
+    private final Map<String, List<MIMEType>> requestedTypesByGroup;
 
-    public RenderRequestTypes(MIMESuffixAssociation suffixAssociation, boolean requestsWildcard, Set<String> entireGroupRequests, Set<MIMEType> requestedTypes) {
+    private RenderRequestTypes(MIMESuffixAssociation suffixAssociation, boolean requestsWildcard, Set<String> entireGroupRequests, Set<MIMEType> requestedTypes) {
         this.suffixAssociation = suffixAssociation;
         this.requestsWildcard = requestsWildcard;
         this.entireGroupRequests = entireGroupRequests;
         this.requestedTypes = requestedTypes;
+
+        this.requestedTypesByGroup = new LinkedHashMap<>();
+        requestedTypes.forEach(t ->
+                this.requestedTypesByGroup.compute(t.getGroup(), (k, v) -> {
+                    List<MIMEType> l = v == null ? new LinkedList<>() : v;
+                    l.add(t);
+                    return l;
+                })
+        );
     }
 
-    // Store the last resolution as when used manually many of the calls will require the
-    // same information.
-    private MIMEType cachedSupportedType;
-    private MIMEType cachedResolvedType;
-
-    private MIMEType checkResolutionCache(MIMEType supportedType) {
-        if (Objects.equals(this.cachedSupportedType, supportedType))
-            return this.cachedResolvedType;
-        return null;
-    }
-
-    private void invalidateCache() {
-        this.cachedSupportedType = null;
-        this.cachedResolvedType = null;
-    }
-
-    private MIMEType cache(MIMEType supported, MIMEType resolved) {
-        this.cachedSupportedType = supported;
-        this.cachedResolvedType = resolved;
-        return resolved;
-    }
-
+    /**
+     * Resolve the requested {@link MIMEType} from a supported type. This query usually returns
+     * {@code null} or the original {@code supportedType} except in special cases with the suffix.
+     * <p>
+     * If the {@code supportedType} with the {@link MIMEType#getSuffix() suffix} dropped is requested
+     * then the resolved type is the {@code supportedType} with the {@link MIMEType#getSuffix() suffix} dropped.
+     * <p>
+     * If the {@code supportedType}'s {@link MIMEType#getSuffix() suffix} has a {@link MIMESuffixAssociation#resolveSuffix(String) resolved suffix type}
+     * (like {@code +json} being compatible with {@code application/json}) and the {@link MIMESuffixAssociation#resolveSuffix(String) resolved suffix type}
+     * is requested, then the {@link MIMESuffixAssociation#resolveSuffix(String) resolved suffix type} is the resolved type.
+     *
+     * @param supportedType the type to resolve to one of the requested types.
+     *
+     * @return the requested type or {@code null} if the type is not requested.
+     */
     public MIMEType resolveSupportedType(MIMEType supportedType) {
         if (supportedType.isWildcard() || supportedType.subtypeIsWildcard())
             throw new IllegalArgumentException("Cannot resolve type of wildcard MIME type: '" + supportedType.toString() + "'");
@@ -94,11 +97,6 @@ public class RenderRequestTypes {
         // Everything is supported
         if (this.requestsWildcard)
             return supportedType;
-
-        // Check cache
-        MIMEType cached = this.checkResolutionCache(supportedType);
-        if (cached != null)
-            return cached;
 
         // If the exact type is supported or the group is supported then the exact type
         // is supported.
@@ -111,40 +109,71 @@ public class RenderRequestTypes {
             // is compatible and is the resolved type.
             MIMEType withoutSuffix = supportedType.withoutSuffix();
             if (this.requestedTypes.contains(withoutSuffix))
-                return cache(supportedType, withoutSuffix);
+                return withoutSuffix;
 
             // If the type association of the suffix is supported then use the association.
             MIMEType suffixDelegate = this.suffixAssociation.resolveSuffix(supportedType.getSuffix());
             if (suffixDelegate != null && (
                     this.requestedTypes.contains(suffixDelegate)
                             || this.entireGroupRequests.contains(suffixDelegate.getGroup())))
-                return cache(supportedType, suffixDelegate);
+                return suffixDelegate;
         }
 
         // The type is not supported
         return null;
     }
 
-    public boolean removeRequestedType(MIMEType type) {
-        MIMEType resolved = this.resolveSupportedType(type);
-        boolean removed = this.requestedTypes.remove(resolved);
-        if (removed) this.invalidateCache();
-        return removed;
+    public boolean isRequestedExactly(MIMEType type) {
+        return this.requestsWildcard
+                || this.entireGroupRequests.contains(type.getGroup())
+                || this.requestedTypes.contains(type);
     }
 
     public void removeFulfilledRequests(DisplayData out) {
-        this.requestedTypes.forEach(type -> {
-            MIMEType resolved = this.resolveSupportedType(type);
-            if (out.hasDataForType(resolved))
-                this.removeRequestedType(type);
+        this.requestedTypes.removeIf(t -> {
+            if (out.hasDataForType(t)) {
+                this.requestedTypesByGroup.compute(t.getGroup(), (k, v) -> {
+                    if (v == null) return null;
+                    v.remove(t);
+                    return v.isEmpty() ? null : v;
+                });
+                return true;
+            }
+            return false;
         });
     }
 
-    public boolean anyIsRequested(Set<MIMEType> supported) {
+    /**
+     * Check if the request wants something rendered as any of the supported types.
+     *
+     * @param supported a set of supported types
+     *
+     * @return true if any of the supported types is requested
+     */
+    public boolean anyRequestedIsSupported(Set<MIMEType> supported) {
+        // The request wants everything. As long as something is supported, it is requested.
+        if (this.requestsWildcard)
+            return !supported.isEmpty();
+
         for (MIMEType t : supported) {
+            // If any request is supported then as long as the request is not empty, something
+            // is requested.
+            if (t.isWildcard() && !this.isEmpty())
+                return true;
+
+            // If an entire group is supported then as long as that group is requested or
+            // something requested has the same group, something is requested.
+            if (t.subtypeIsWildcard() && (
+                    this.entireGroupRequests.contains(t.getGroup())
+                            || this.requestedTypesByGroup.containsKey(t.getGroup())))
+                return true;
+
+            // If the supported type can be resolved then it must be requested.
             if (this.resolveSupportedType(t) != null)
                 return true;
         }
+
+        // Nothing supported is requested.
         return false;
     }
 

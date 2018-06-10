@@ -86,6 +86,8 @@ public class Renderer {
         }
 
         public void register(RenderFunction<T> function) {
+            Set<MIMEType> supported = this.supported.isEmpty() ? DisplayDataRenderable.ANY : this.supported;
+            Set<MIMEType> preferred = this.preferred.isEmpty() ? supported : this.preferred;
             Renderer.this.register(supported, preferred, types, function);
         }
     }
@@ -112,8 +114,11 @@ public class Renderer {
         }));
     }
 
-    private DisplayData initializeDisplayData(Object value) {
-        return new DisplayData(String.valueOf(value));
+    private static DisplayData finalizeDisplayData(DisplayData data, Object value) {
+        if (!data.hasDataForType(MIMEType.TEXT_PLAIN))
+            data.putText(String.valueOf(value));
+
+        return data;
     }
 
     /**
@@ -139,19 +144,18 @@ public class Renderer {
      * @return the data container holding the rendered view of the {@code value}.
      */
     public DisplayData render(Object value, Map<String, Object> params) {
-        DisplayData out = this.initializeDisplayData(value);
+        DisplayData out = new DisplayData();
 
         if (value instanceof DisplayDataRenderable) {
             DisplayDataRenderable renderable = (DisplayDataRenderable) value;
 
             RenderRequestTypes.Builder requestTypes = new RenderRequestTypes.Builder(this.suffixMappings::get);
+            requestTypes.withType(MIMEType.TEXT_PLAIN);
             renderable.getPreferredRenderTypes().forEach(requestTypes::withType);
 
-            renderable.render(
-                    new RenderContext(requestTypes.build(), this, params, out)
-            );
+            renderable.render(new RenderContext(requestTypes.build(), this, params, out));
 
-            return out;
+            return finalizeDisplayData(out, value);
         }
 
         Iterator<Class> inheritedTypes = new InheritanceIterator(value.getClass());
@@ -162,6 +166,7 @@ public class Renderer {
             if (allRenderFunctionProps != null && !allRenderFunctionProps.isEmpty()) {
                 for (RenderFunctionProps renderFunctionProps : allRenderFunctionProps) {
                     RenderRequestTypes.Builder requestTypes = new RenderRequestTypes.Builder(this.suffixMappings::get);
+                    requestTypes.withType(MIMEType.TEXT_PLAIN);
                     renderFunctionProps.getPreferredTypes().forEach(requestTypes::withType);
 
                     renderFunctionProps.getFunction().render(
@@ -170,11 +175,11 @@ public class Renderer {
                     );
                 }
 
-                return out;
+                return finalizeDisplayData(out, value);
             }
         }
 
-        return out;
+        return finalizeDisplayData(out, value);
     }
 
     /**
@@ -221,9 +226,10 @@ public class Renderer {
      * @return a {@link DisplayData} container with all the rendered data.
      */
     public DisplayData renderAs(Object value, Map<String, Object> params, String... types) {
-        DisplayData out = this.initializeDisplayData(value);
+        DisplayData out = new DisplayData();
 
         RenderRequestTypes.Builder builder = new RenderRequestTypes.Builder(this.suffixMappings::get);
+        builder.withType(MIMEType.TEXT_PLAIN);
         for (String type : types)
             builder.withType(type);
 
@@ -232,7 +238,7 @@ public class Renderer {
 
         if (value instanceof DisplayDataRenderable) {
             DisplayDataRenderable renderable = (DisplayDataRenderable) value;
-            if (requestTypes.anyIsRequested(renderable.getSupportedRenderTypes())) {
+            if (requestTypes.anyRequestedIsSupported(renderable.getSupportedRenderTypes())) {
                 renderable.render(context);
                 requestTypes.removeFulfilledRequests(out);
             }
@@ -244,7 +250,7 @@ public class Renderer {
             List<RenderFunctionProps> allRenderFunctionProps = this.renderFunctions.get(type);
             if (allRenderFunctionProps != null) {
                 for (RenderFunctionProps renderFunctionProps : allRenderFunctionProps) {
-                    if (requestTypes.anyIsRequested(renderFunctionProps.getSupportedTypes())) {
+                    if (requestTypes.anyRequestedIsSupported(renderFunctionProps.getSupportedTypes())) {
                         renderFunctionProps.getFunction().render(value, context);
                         requestTypes.removeFulfilledRequests(out);
                     }
@@ -252,7 +258,7 @@ public class Renderer {
             }
         }
 
-        return out;
+        return finalizeDisplayData(out, value);
     }
 
     /**

@@ -6,6 +6,7 @@ import io.github.spencerpark.jupyter.kernel.display.mime.MIMEType;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class DisplayData {
     public static final DisplayData EMPTY = new DisplayData(Collections.emptyMap());
@@ -34,8 +35,12 @@ public class DisplayData {
     }
 
     public DisplayData(String textData) {
-        this(new LinkedHashMap<>());
+        this();
         this.putText(textData);
+    }
+
+    public DisplayData() {
+        this(new LinkedHashMap<>());
     }
 
     private void ensureTransientDataInitialized() {

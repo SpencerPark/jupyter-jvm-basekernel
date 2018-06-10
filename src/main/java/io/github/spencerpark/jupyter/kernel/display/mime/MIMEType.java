@@ -2,6 +2,7 @@ package io.github.spencerpark.jupyter.kernel.display.mime;
 
 import io.github.spencerpark.jupyter.kernel.util.CharPredicate;
 
+import java.util.Locale;
 import java.util.Objects;
 
 public class MIMEType {
@@ -144,10 +145,10 @@ public class MIMEType {
         if (group == null)
             throw new IllegalArgumentException("Group must be given.");
 
-        this.group = group;
-        this.tree = tree;
-        this.subtype = subtype;
-        this.suffix = suffix;
+        this.group = group.toLowerCase(Locale.ENGLISH);
+        this.tree = tree != null ? tree.toLowerCase(Locale.ENGLISH) : null;
+        this.subtype = subtype != null ? subtype.toLowerCase(Locale.ENGLISH) : null;
+        this.suffix = suffix != null ? suffix.toLowerCase(Locale.ENGLISH) : null;
     }
 
     public String getGroup() {
@@ -190,6 +191,44 @@ public class MIMEType {
 
     public boolean isWildcard() {
         return WILDCARD.equals(this.group);
+    }
+
+    public boolean groupEquals(String group) {
+        return this.getGroup().equalsIgnoreCase(group);
+    }
+
+    public boolean treeEquals(String tree) {
+        return this.hasTree()
+                ? this.getTree().equalsIgnoreCase(tree)
+                : tree == null;
+    }
+
+    public boolean subtypeEquals(String subtype) {
+        return this.hasSubtype()
+                ? this.getSubtype().equalsIgnoreCase(subtype)
+                : subtype == null;
+    }
+
+    public boolean suffixEquals(String suffix) {
+        return this.hasSuffix()
+                ? this.getSuffix().equalsIgnoreCase(suffix)
+                : suffix == null;
+    }
+
+    public boolean hasSameGroupAs(MIMEType other) {
+        return this.getGroup().equals(other.getGroup());
+    }
+
+    public boolean hasSameTreeAs(MIMEType other) {
+        return Objects.equals(this.getTree(), other.getTree());
+    }
+
+    public boolean hasSameSubtypeAs(MIMEType other) {
+        return Objects.equals(this.getSubtype(), other.getSubtype());
+    }
+
+    public boolean hasSameSuffixAs(MIMEType other) {
+        return Objects.equals(this.getSuffix(), other.getSubtype());
     }
 
     @Override

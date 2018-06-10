@@ -2,10 +2,14 @@ package io.github.spencerpark.jupyter.kernel.display;
 
 import io.github.spencerpark.jupyter.kernel.display.mime.MIMEType;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
+@FunctionalInterface
 public interface DisplayDataRenderable {
+    static Set<MIMEType> ANY = Collections.singleton(MIMEType.ANY);
+
     /**
      * Specifies a set of {@link MIMEType}s that this class may be rendered as.
      * <p>
@@ -21,7 +25,9 @@ public interface DisplayDataRenderable {
      *
      * @return The set of {@link MIMEType}s that this object can be rendered as.
      */
-    public Set<MIMEType> getSupportedRenderTypes();
+    public default Set<MIMEType> getSupportedRenderTypes() {
+        return DisplayDataRenderable.ANY;
+    }
 
     /**
      * Species a subset of {@link #getSupportedRenderTypes()} in which this class
