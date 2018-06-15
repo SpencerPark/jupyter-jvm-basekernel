@@ -10,11 +10,13 @@ import java.util.stream.Stream;
 import static org.junit.Assert.assertEquals;
 
 public class MagicParserTest {
-    private MagicParser parser;
+    private MagicParser inlineParser;
+    private MagicParser solParser;
 
     @Before
     public void setUp() throws Exception {
-        this.parser = new MagicParser("//%", "//%%");
+        this.inlineParser = new MagicParser("//%", "//%%");
+        this.solParser = new MagicParser("^\\s*//%", "//%%");
     }
 
     @Test
@@ -26,8 +28,8 @@ public class MagicParserTest {
                 "//%magicName3 arg1 \"arg2 arg2\""
         ).collect(Collectors.joining("\n"));
 
-        String transformedCell = this.parser.transformLineMagics(cell, args ->
-            "**" + args.getName() + "-" + args.getArgs().stream().collect(Collectors.joining(","))
+        String transformedCell = this.inlineParser.transformLineMagics(cell, ctx ->
+                "**" + ctx.getMagicCall().getName() + "-" + ctx.getMagicCall().getArgs().stream().collect(Collectors.joining(","))
         );
 
         String expectedTransformedCell = Stream.of(
@@ -47,13 +49,13 @@ public class MagicParserTest {
                 "This is the body"
         ).collect(Collectors.joining("\n"));
 
-        CellMagicArgs args = this.parser.parseCellMagic(cell);
+        CellMagicParseContext ctx = this.inlineParser.parseCellMagic(cell);
 
-        assertEquals("cellMagicName", args.getName());
-        assertEquals(Arrays.asList("arg1", "arg2 arg2", "arg3"), args.getArgs());
-        assertEquals("This is the body", args.getBody());
-        assertEquals("//%%cellMagicName arg1 \"arg2 arg2\" arg3  ", args.getRaw());
-        assertEquals(cell, args.getRawCell());
+        assertEquals("cellMagicName", ctx.getMagicCall().getName());
+        assertEquals(Arrays.asList("arg1", "arg2 arg2", "arg3"), ctx.getMagicCall().getArgs());
+        assertEquals("This is the body", ctx.getMagicCall().getBody());
+        assertEquals("//%%cellMagicName arg1 \"arg2 arg2\" arg3  ", ctx.getRawArgsLine());
+        assertEquals(cell, ctx.getRawCell());
     }
 
     @Test
@@ -63,9 +65,9 @@ public class MagicParserTest {
                 "This is the body"
         ).collect(Collectors.joining("\n"));
 
-        String transformedCell = this.parser.transformCellMagic(cell, args ->
-            args.getName() + "(" + args.getArgs().stream().collect(Collectors.joining(",")) + ")" + "\n"
-                + args.getBody()
+        String transformedCell = this.inlineParser.transformCellMagic(cell, ctx ->
+                ctx.getMagicCall().getName() + "(" + ctx.getMagicCall().getArgs().stream().collect(Collectors.joining(",")) + ")" + "\n"
+                        + ctx.getMagicCall().getBody()
         );
 
         String expectedTransformedCell = "cellMagicName(arg1,arg2 arg2,arg3)\nThis is the body";
@@ -80,8 +82,51 @@ public class MagicParserTest {
                 "This is the body"
         ).collect(Collectors.joining("\n"));
 
-        String transformedCell = this.parser.transformCellMagic(cell, args -> "transformer applied");
+        String transformedCell = this.inlineParser.transformCellMagic(cell, ctx -> "transformer applied");
 
         assertEquals(cell, transformedCell);
+    }
+
+    @Test
+    public void startOfLineParserSkipsInlineMagics() {
+        String cell = "System.out.printf(\"Fmt //%s string\", \"test\");";
+
+        String transformedCell = this.solParser.transformLineMagics(cell, ctx -> "");
+
+        assertEquals(cell, transformedCell);
+    }
+
+    @Test
+    public void startOfLineParserAllowsWhitespace() {
+        String cell = Stream.of(
+                "//%sol",
+                "  //%sol2",
+                "\t//%sol3"
+        ).collect(Collectors.joining("\n"));
+
+        String transformedCell = this.solParser.transformLineMagics(cell, ctx -> ctx.getMagicCall().getName());
+        String expectedTransformedCell = Stream.of(
+                "sol",
+                "sol2",
+                "sol3"
+        ).collect(Collectors.joining("\n"));
+
+        assertEquals(expectedTransformedCell, transformedCell);
+    }
+
+    @Test
+    public void startOfLineParserSkipsInline() {
+        String cell = Stream.of(
+                "//%sol",
+                "Not //%sol"
+        ).collect(Collectors.joining("\n"));
+
+        String transformedCell = this.solParser.transformLineMagics(cell, ctx -> ctx.getMagicCall().getName());
+        String expectedTransformedCell = Stream.of(
+                "sol",
+                "Not //%sol"
+        ).collect(Collectors.joining("\n"));
+
+        assertEquals(expectedTransformedCell, transformedCell);
     }
 }

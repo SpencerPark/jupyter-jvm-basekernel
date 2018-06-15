@@ -7,54 +7,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MagicParser {
-    protected class LineMagicArgsImpl implements LineMagicArgs {
-        private final String raw;
-        private final String name;
-        private final List<String> args;
-
-        public LineMagicArgsImpl(String raw, String name, List<String> args) {
-            this.raw = raw;
-            this.name = name;
-            this.args = args;
-        }
-
-        @Override
-        public String getRaw() {
-            return raw;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public List<String> getArgs() {
-            return args;
-        }
-    }
-
-    protected class CellMagicArgsImpl extends LineMagicArgsImpl implements CellMagicArgs {
-        private final String rawCell;
-        private final String body;
-
-        public CellMagicArgsImpl(String raw, String name, List<String> args, String rawCell, String body) {
-            super(raw, name, args);
-            this.rawCell = rawCell;
-            this.body = body;
-        }
-
-        @Override
-        public String getBody() {
-            return body;
-        }
-
-        @Override
-        public String getRawCell() {
-            return rawCell;
-        }
-    }
-
     protected static List<String> split(String args) {
         args = args.trim();
 
@@ -113,7 +65,7 @@ public class MagicParser {
     private final Pattern cellMagicPattern;
 
     public MagicParser() {
-        this("%", "%%");
+        this("^%", "%%");
     }
 
     public MagicParser(String lineMagicStart, String cellMagicStart) {
@@ -121,7 +73,7 @@ public class MagicParser {
         this.cellMagicPattern = Pattern.compile("^(?<argsLine>" + cellMagicStart + "(?<args>\\w.*?))\\R(?<body>.+?)$");
     }
 
-    public String transformLineMagics(String cell, Function<LineMagicArgs, String> transformer) {
+    public String transformLineMagics(String cell, Function<LineMagicParseContext, String> transformer) {
         StringBuffer transformedCell = new StringBuffer();
 
         Matcher m = this.lineMagicPattern.matcher(cell);
@@ -129,16 +81,18 @@ public class MagicParser {
             String raw = m.group();
             String rawArgs = m.group("args");
             List<String> split = split(rawArgs);
-            LineMagicArgs args = new LineMagicArgsImpl(raw, split.get(0), split.subList(1, split.size()));
 
-            m.appendReplacement(transformedCell, transformer.apply(args));
+            LineMagicArgs args = LineMagicArgs.of(split.get(0), split.subList(1, split.size()));
+            LineMagicParseContext ctx = LineMagicParseContext.of(args, raw, cell, cell.substring(0, m.start()));
+
+            m.appendReplacement(transformedCell, transformer.apply(ctx));
         }
         m.appendTail(transformedCell);
 
         return transformedCell.toString();
     }
 
-    public CellMagicArgs parseCellMagic(String cell) {
+    public CellMagicParseContext parseCellMagic(String cell) {
         Matcher m = this.cellMagicPattern.matcher(cell);
 
         if (!m.matches()) return null;
@@ -148,12 +102,13 @@ public class MagicParser {
         String body = m.group("body");
         List<String> split = split(rawArgs);
 
-        return new CellMagicArgsImpl(rawArgsLine, split.get(0), split.subList(1, split.size()), cell, body);
+        CellMagicArgs args = CellMagicArgs.of(split.get(0), split.subList(1, split.size()), body);
+        return CellMagicParseContext.of(args, rawArgsLine, cell);
     }
 
-    public String transformCellMagic(String cell, Function<CellMagicArgs, String> transformer) {
-        CellMagicArgs args = this.parseCellMagic(cell);
+    public String transformCellMagic(String cell, Function<CellMagicParseContext, String> transformer) {
+        CellMagicParseContext ctx = this.parseCellMagic(cell);
 
-        return args == null ? cell : transformer.apply(args);
+        return ctx == null ? cell : transformer.apply(ctx);
     }
 }
