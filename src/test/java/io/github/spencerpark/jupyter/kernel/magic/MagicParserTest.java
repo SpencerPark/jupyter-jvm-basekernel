@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class MagicParserTest {
     private MagicParser inlineParser;
@@ -46,14 +47,16 @@ public class MagicParserTest {
     public void parseCellMagic() {
         String cell = Stream.of(
                 "//%%cellMagicName arg1 \"arg2 arg2\" arg3  ",
-                "This is the body"
+                "This is the body",
+                "with multiple lines"
         ).collect(Collectors.joining("\n"));
 
         CellMagicParseContext ctx = this.inlineParser.parseCellMagic(cell);
 
+        assertNotNull(ctx);
         assertEquals("cellMagicName", ctx.getMagicCall().getName());
         assertEquals(Arrays.asList("arg1", "arg2 arg2", "arg3"), ctx.getMagicCall().getArgs());
-        assertEquals("This is the body", ctx.getMagicCall().getBody());
+        assertEquals("This is the body\nwith multiple lines", ctx.getMagicCall().getBody());
         assertEquals("//%%cellMagicName arg1 \"arg2 arg2\" arg3  ", ctx.getRawArgsLine());
         assertEquals(cell, ctx.getRawCell());
     }
@@ -62,7 +65,8 @@ public class MagicParserTest {
     public void transformCellMagic() {
         String cell = Stream.of(
                 "//%%cellMagicName arg1 \"arg2 arg2\" arg3  ",
-                "This is the body"
+                "This is the body",
+                "with multiple lines"
         ).collect(Collectors.joining("\n"));
 
         String transformedCell = this.inlineParser.transformCellMagic(cell, ctx ->
@@ -70,7 +74,7 @@ public class MagicParserTest {
                         + ctx.getMagicCall().getBody()
         );
 
-        String expectedTransformedCell = "cellMagicName(arg1,arg2 arg2,arg3)\nThis is the body";
+        String expectedTransformedCell = "cellMagicName(arg1,arg2 arg2,arg3)\nThis is the body\nwith multiple lines";
 
         assertEquals(expectedTransformedCell, transformedCell);
     }
@@ -79,7 +83,8 @@ public class MagicParserTest {
     public void dontTransformNonMagicCell() {
         String cell = Stream.of(
                 "//%cellMagicName arg1 \"arg2 arg2\" arg3  ",
-                "This is the body"
+                "This is the body",
+                "with multiple lines"
         ).collect(Collectors.joining("\n"));
 
         String transformedCell = this.inlineParser.transformCellMagic(cell, ctx -> "transformer applied");

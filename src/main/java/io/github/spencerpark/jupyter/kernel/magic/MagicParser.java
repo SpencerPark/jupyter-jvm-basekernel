@@ -70,7 +70,7 @@ public class MagicParser {
 
     public MagicParser(String lineMagicStart, String cellMagicStart) {
         this.lineMagicPattern = Pattern.compile(lineMagicStart + "(?<args>\\w.*?)$", Pattern.MULTILINE);
-        this.cellMagicPattern = Pattern.compile("^(?<argsLine>" + cellMagicStart + "(?<args>\\w.*?))\\R(?<body>.+?)$");
+        this.cellMagicPattern = Pattern.compile("^(?<argsLine>" + cellMagicStart + "(?<args>\\w.*?))\\R(?<body>(?sU).+?)$");
     }
 
     public String transformLineMagics(String cell, Function<LineMagicParseContext, String> transformer) {
