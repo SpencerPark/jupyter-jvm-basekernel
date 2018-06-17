@@ -1,9 +1,6 @@
 package io.github.spencerpark.jupyter.kernel.magic.registry;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,6 +82,17 @@ public class Magics {
         }
     }
 
+    private static Object invoke(Method m, Object instance, Object... args) throws Exception {
+        try {
+            return m.invoke(instance, args);
+        } catch (InvocationTargetException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof Exception)
+                throw ((Exception) cause);
+            throw new RuntimeException(cause.getMessage(), cause);
+        }
+    }
+
     private static class NoArgsReflectionMagicFunction implements LineMagicFunction<Object>, CellMagicFunction<Object> {
         private final Object instance;
         private final Method method;
@@ -96,12 +104,12 @@ public class Magics {
 
         @Override
         public Object execute(List<String> args, String body) throws Exception {
-            return method.invoke(instance);
+            return invoke(method, instance);
         }
 
         @Override
         public Object execute(List<String> args) throws Exception {
-            return method.invoke(instance);
+            return invoke(method, instance);
         }
     }
 
@@ -116,12 +124,12 @@ public class Magics {
 
         @Override
         public Object execute(List<String> args, String body) throws Exception {
-            return method.invoke(instance, args, body);
+            return invoke(method, instance, args, body);
         }
 
         @Override
         public Object execute(List<String> args) throws Exception {
-            return method.invoke(instance, args, null);
+            return invoke(method, instance, args, null);
         }
     }
 
@@ -136,7 +144,7 @@ public class Magics {
 
         @Override
         public Object execute(List<String> args) throws Exception {
-            return method.invoke(instance, args);
+            return invoke(method, instance, args);
         }
     }
 
@@ -151,7 +159,7 @@ public class Magics {
 
         @Override
         public Object execute(List<String> args, String body) throws Exception {
-            return method.invoke(instance, args, body);
+            return invoke(method, instance, args, body);
         }
     }
 
