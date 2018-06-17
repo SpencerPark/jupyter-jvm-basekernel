@@ -85,7 +85,10 @@ public class MagicParser {
             LineMagicArgs args = LineMagicArgs.of(split.get(0), split.subList(1, split.size()));
             LineMagicParseContext ctx = LineMagicParseContext.of(args, raw, cell, cell.substring(0, m.start()));
 
-            m.appendReplacement(transformedCell, transformer.apply(ctx));
+            String transformed = transformer.apply(ctx);
+            if (transformed == null) transformed = raw;
+
+            m.appendReplacement(transformedCell, Matcher.quoteReplacement(transformed));
         }
         m.appendTail(transformedCell);
 
