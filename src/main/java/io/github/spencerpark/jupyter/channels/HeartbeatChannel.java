@@ -26,12 +26,15 @@ public class HeartbeatChannel extends JupyterSocket {
         if (this.isBound())
             throw new IllegalStateException("Heartbeat channel already bound");
 
-        super.bind(JupyterSocket.formatAddress(connProps.getTransport(), connProps.getIp(), connProps.getHbPort()));
+        String channelThreadName = "Heartbeat-" + HEARTBEAT_ID.getAndIncrement();
+        String addr = JupyterSocket.formatAddress(connProps.getTransport(), connProps.getIp(), connProps.getHbPort());
+
+        logger.log(Level.INFO, String.format("Binding %s to %s.", channelThreadName, addr));
+        super.bind(addr);
 
         ZMQ.Poller poller = super.ctx.poller(1);
         poller.register(this, ZMQ.Poller.POLLIN);
 
-        String channelThreadName = "Heartbeat-" + HEARTBEAT_ID.getAndIncrement();
         this.pulse = new Loop(channelThreadName, 500, () -> {
             int events = poller.poll(0);
             if (events > 0) {

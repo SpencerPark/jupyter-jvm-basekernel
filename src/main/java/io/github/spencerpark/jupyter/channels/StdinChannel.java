@@ -8,6 +8,7 @@ import io.github.spencerpark.jupyter.messages.request.InputRequest;
 import io.github.spencerpark.jupyter.messages.HMACGenerator;
 import org.zeromq.ZMQ;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class StdinChannel extends JupyterSocket {
@@ -17,7 +18,10 @@ public class StdinChannel extends JupyterSocket {
 
     @Override
     public void bind(KernelConnectionProperties connProps) {
-        super.bind(formatAddress(connProps.getTransport(), connProps.getIp(), connProps.getStdinPort()));
+        String addr = JupyterSocket.formatAddress(connProps.getTransport(), connProps.getIp(), connProps.getStdinPort());
+
+        logger.log(Level.INFO, String.format("Binding stdin to %s.", addr));
+        super.bind(addr);
     }
 
     /**

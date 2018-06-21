@@ -2,8 +2,11 @@ package io.github.spencerpark.jupyter.channels;
 
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.logging.Logger;
 
 public class Loop extends Thread {
+    private final Logger logger;
+
     private boolean running = false;
     private final long sleep;
     private Runnable callback;
@@ -13,6 +16,8 @@ public class Loop extends Thread {
         super(target, name);
         this.sleep = sleep;
         this.runNextQueue = new LinkedList<>();
+
+        this.logger = Logger.getLogger("Loop-" + name);
     }
 
     public void onClose(Runnable callback) {
@@ -46,23 +51,31 @@ public class Loop extends Thread {
                 try {
                     Thread.sleep(sleep);
                 } catch (InterruptedException e) {
+                    this.logger.info("Loop interrupted. Stopping...");
                     running = false;
                 }
             }
         }
 
+        this.logger.info("Running loop shutdown callback.");
+
         if (this.callback != null)
             this.callback.run();
         this.callback = null;
+
+        this.logger.info("Loop stopped.");
     }
 
     @Override
     public synchronized void start() {
+        this.logger.info("Loop starting...");
         super.start();
-        running = true;
+        this.running = true;
+        this.logger.info("Loop started.");
     }
 
     public void shutdown() {
         this.running = false;
+        this.logger.info("Loop shutdown.");
     }
 }

@@ -31,17 +31,21 @@ public class ShellChannel extends JupyterSocket {
         if (this.isBound())
             throw new IllegalStateException("Shell channel already bound");
 
-        super.bind(formatAddress(connProps.getTransport(), connProps.getIp(),
-                isControl ? connProps.getControlPort() : connProps.getShellPort()));
+        String channelThreadName = "Shell-" + SHELL_ID.getAndIncrement();
+        String addr = JupyterSocket.formatAddress(connProps.getTransport(), connProps.getIp(),
+                isControl ? connProps.getControlPort() : connProps.getShellPort());
+
+        logger.log(Level.INFO, String.format("Binding %s to %s.", channelThreadName, addr));
+        super.bind(addr);
 
         ZMQ.Poller poller = super.ctx.poller(1);
         poller.register(this, ZMQ.Poller.POLLIN);
 
-        String channelThreadName = "Shell-" + SHELL_ID.getAndIncrement();
         this.ioloop = new Loop(channelThreadName, 50, () -> {
             int events = poller.poll(0);
             if (events > 0) {
                 Message message = super.readMessage();
+                super.logger.info(message.toString());
 
                 ShellHandler handler = connection.getHandler(message.getHeader().getType());
                 if (handler != null) {
@@ -54,8 +58,10 @@ public class ShellChannel extends JupyterSocket {
                     } finally {
                         env.resolveDeferrals();
                     }
-                    if (env.isMarkedForShutdown())
+                    if (env.isMarkedForShutdown()) {
+                        super.logger.info(channelThreadName + " shutting down connection as environment was marked for shutdown.");
                         this.connection.close();
+                    }
                 } else {
                     super.logger.log(Level.SEVERE, "Unhandled message: " + message.getHeader().getType().getName());
                 }
