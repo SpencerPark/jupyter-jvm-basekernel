@@ -1,13 +1,13 @@
 package io.github.spencerpark.jupyter.channels;
 
-import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
 
 public class Loop extends Thread {
     private final Logger logger;
 
-    private boolean running = false;
+    private volatile boolean running = false;
     private final long sleep;
     private Runnable callback;
     private final Queue<Runnable> runNextQueue;
@@ -15,7 +15,7 @@ public class Loop extends Thread {
     public Loop(String name, long sleep, Runnable target) {
         super(target, name);
         this.sleep = sleep;
-        this.runNextQueue = new LinkedList<>();
+        this.runNextQueue = new LinkedBlockingQueue<>();
 
         this.logger = Logger.getLogger("Loop-" + name);
     }
@@ -39,20 +39,20 @@ public class Loop extends Thread {
     @Override
     public void run() {
         Runnable next;
-        while (running) {
+        while (this.running) {
             // Run the loop body
             super.run();
 
             // Run all queued tasks
-            while ((next = runNextQueue.poll()) != null)
+            while ((next = this.runNextQueue.poll()) != null)
                 next.run();
 
-            if (sleep > 0) {
+            if (this.sleep > 0) {
                 try {
-                    Thread.sleep(sleep);
+                    Thread.sleep(this.sleep);
                 } catch (InterruptedException e) {
                     this.logger.info("Loop interrupted. Stopping...");
-                    running = false;
+                    this.running = false;
                 }
             }
         }
@@ -69,8 +69,10 @@ public class Loop extends Thread {
     @Override
     public synchronized void start() {
         this.logger.info("Loop starting...");
-        super.start();
+
         this.running = true;
+        super.start();
+
         this.logger.info("Loop started.");
     }
 

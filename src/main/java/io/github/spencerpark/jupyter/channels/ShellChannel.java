@@ -45,7 +45,6 @@ public class ShellChannel extends JupyterSocket {
             int events = poller.poll(0);
             if (events > 0) {
                 Message message = super.readMessage();
-                super.logger.info(message.toString());
 
                 ShellHandler handler = connection.getHandler(message.getHeader().getType());
                 if (handler != null) {
