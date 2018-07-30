@@ -23,10 +23,10 @@ public class CommManager implements Iterable<Comm> {
     protected IOPubChannel iopub;
     protected MessageContext context;
 
-    public CommManager(IOPubChannel iopub) {
+    public CommManager() {
         this.targets = new HashMap<>();
         this.comms = new HashMap<>();
-        this.iopub = iopub;
+        this.iopub = null;
     }
 
     public void setIOPubChannel(IOPubChannel iopub) {

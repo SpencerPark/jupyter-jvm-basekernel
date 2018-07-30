@@ -56,7 +56,7 @@ public abstract class BaseKernel {
     }).get();
 
     private final JupyterIO io;
-    private boolean shouldReplaceStdStreams = true;
+    private boolean shouldReplaceStdStreams;
 
     protected CommManager commManager;
 
@@ -66,6 +66,9 @@ public abstract class BaseKernel {
 
     public BaseKernel() {
         this.io = new JupyterIO();
+        this.shouldReplaceStdStreams = true;
+
+        this.commManager = new CommManager();
 
         this.renderer = new Renderer();
         Image.registerAll(this.renderer);
@@ -90,6 +93,10 @@ public abstract class BaseKernel {
 
     public JupyterIO getIO() {
         return this.io;
+    }
+
+    public CommManager getCommManager() {
+        return this.commManager;
     }
 
     public boolean shouldReplaceStdStreams() {
@@ -253,10 +260,7 @@ public abstract class BaseKernel {
         connection.setHandler(MessageType.KERNEL_INFO_REQUEST, this::handleKernelInfoRequest);
         connection.setHandler(MessageType.SHUTDOWN_REQUEST, this::handleShutdownRequest);
 
-        if (this.commManager != null)
-            this.commManager.setIOPubChannel(connection.getIOPub());
-        else
-            this.commManager = new CommManager(connection.getIOPub());
+        this.commManager.setIOPubChannel(connection.getIOPub());
         connection.setHandler(MessageType.COMM_OPEN_COMMAND, commManager::handleCommOpenCommand);
         connection.setHandler(MessageType.COMM_MSG_COMMAND, commManager::handleCommMsgCommand);
         connection.setHandler(MessageType.COMM_CLOSE_COMMAND, commManager::handleCommCloseCommand);
