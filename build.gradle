@@ -1,7 +1,7 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
 group = 'io.github.spencerpark'
-version = '2.2.2-SNAPSHOT'
+version = '2.2.2'
 
 apply plugin: 'java'
 apply plugin: 'maven'
@@ -65,7 +65,7 @@ uploadArchives {
 
             // ossrhUsername and ossrhPassword are defined in the global gradle.properties on the
             // machine uploading the artifacts (including the keys). If not present only `publish`
-            // should fail, not `publishToMavenLocal`. Essential defer the failure as long as possible.
+            // should fail, not `publishToMavenLocal`. Essentially defer the failure as long as possible.
             def ossrhUsername = project.findProperty('ossrhUsername')
             def ossrhPassword = project.findProperty('ossrhPassword')
 
