@@ -12,6 +12,7 @@ import io.github.spencerpark.jupyter.messages.publish.PublishStatus;
 import org.zeromq.ZMQ;
 
 import java.lang.reflect.Type;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -20,7 +21,10 @@ public abstract class JupyterSocket extends ZMQ.Socket {
         return transport + "://" + ip + ":" + Integer.toString(port);
     }
 
-    private static final byte[] IDENTITY_BLOB_DELIMITER = "<IDS|MSG>".getBytes();
+    private static final Charset ASCII = Charset.forName("ascii");
+    private static final Charset UTF_8 = Charset.forName("utf8");
+
+    private static final byte[] IDENTITY_BLOB_DELIMITER = "<IDS|MSG>".getBytes(ASCII); // Comes from a python bytestring
     private static final Gson gson = new GsonBuilder()
             .registerTypeAdapter(KernelTimestamp.class, KernelTimestampAdapter.INSTANCE)
             .registerTypeAdapter(Header.class, HeaderAdapter.INSTANCE)
@@ -29,7 +33,7 @@ public abstract class JupyterSocket extends ZMQ.Socket {
             //.setPrettyPrinting()
             .create();
     private static final JsonParser json = new JsonParser();
-    private static final byte[] EMPTY_JSON_OBJECT = "{}".getBytes();
+    private static final byte[] EMPTY_JSON_OBJECT = "{}".getBytes(UTF_8);
     private static final Type JSON_OBJ_AS_MAP = new TypeToken<Map<String, Object>>() {
     }.getType();
 
@@ -107,14 +111,14 @@ public abstract class JupyterSocket extends ZMQ.Socket {
         if (this.closed)
             return;
 
-        byte[] headerRaw = gson.toJson(message.getHeader()).getBytes();
+        byte[] headerRaw = gson.toJson(message.getHeader()).getBytes(UTF_8);
         byte[] parentHeaderRaw = message.hasParentHeader()
-                ? gson.toJson(message.getParentHeader()).getBytes()
+                ? gson.toJson(message.getParentHeader()).getBytes(UTF_8)
                 : EMPTY_JSON_OBJECT;
         byte[] metadata = message.hasMetadata()
-                ? gson.toJson(message.getMetadata()).getBytes()
+                ? gson.toJson(message.getMetadata()).getBytes(UTF_8)
                 : EMPTY_JSON_OBJECT;
-        byte[] content = gson.toJson(message.getContent()).getBytes();
+        byte[] content = gson.toJson(message.getContent()).getBytes(UTF_8);
 
         String hmac = hmacGenerator.calculateSignature(headerRaw, parentHeaderRaw, metadata, content);
 
@@ -122,7 +126,7 @@ public abstract class JupyterSocket extends ZMQ.Socket {
 
         message.getIdentities().forEach(super::sendMore);
         super.sendMore(IDENTITY_BLOB_DELIMITER);
-        super.sendMore(hmac.getBytes());
+        super.sendMore(hmac.getBytes(ASCII));
         super.sendMore(headerRaw);
         super.sendMore(parentHeaderRaw);
         super.sendMore(metadata);

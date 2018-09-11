@@ -1,9 +1,12 @@
 package io.github.spencerpark.jupyter.channels;
 
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.Objects;
 
 public class JupyterInputStream extends InputStream {
+    private static final Charset UTF_8 = Charset.forName("utf8");
+
     private ShellReplyEnvironment env;
     private boolean enabled;
     private byte[] data = null;
@@ -38,7 +41,7 @@ public class JupyterInputStream extends InputStream {
 
     private byte[] readFromFrontend() {
         if (this.enabled)
-            return this.env.readFromStdIn().getBytes();
+            return this.env.readFromStdIn().getBytes(UTF_8);
         return new byte[0];
     }
 
