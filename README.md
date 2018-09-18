@@ -4,7 +4,7 @@ This project is a Java implementation of the [Jupyter kernel messaging spec](htt
 
 ### Adding as a dependency
 
-Currently snapshots are being published to [https://oss.sonatype.org/#nexus-search;quick~jupyter-jvm-basekernel](https://oss.sonatype.org/#nexus-search;quick~jupyter-jvm-basekernel). This README should be updated when a release is finally published but until then snapshots will have to do.
+Currently snapshots are being published to [https://oss.sonatype.org/#nexus-search;quick~jupyter-jvm-basekernel](https://oss.sonatype.org/#nexus-search;quick~jupyter-jvm-basekernel). Release version are published to maven central.
 
 ##### Gradle users
 
@@ -12,11 +12,15 @@ Edit your `build.gradle` to include the following:
 
 ```gradle
 repositories {
+    // If using a SNAPSHOT version, otherwise maven central is fine
     maven { url = 'https://oss.sonatype.org/content/repositories/snapshots/' }
+
+    // If using a release version (no SNAPSHOT suffix)
+    mavenCentral()
 }
 
 dependencies {
-    compile group: 'io.github.spencerpark', name: 'jupyter-jvm-basekernel', version: '2.0.0-SNAPSHOT'
+    compile group: 'io.github.spencerpark', name: 'jupyter-jvm-basekernel', version: '2.2.2'
 }
 ```
 
@@ -27,6 +31,7 @@ Edit your `pom.xml` to include the following:
 ```xml
 <repositories>
   ...
+  <!-- If using a SNAPSHOT version, otherwise maven central is fine -->
   <repository>
     <id>oss-sonatype-snapshots</id>
     <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
@@ -38,7 +43,7 @@ Edit your `pom.xml` to include the following:
   <dependency>
     <groupId>io.github.spencerpark</groupId>
     <artifactId>jupyter-jvm-basekernel</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
+    <version>2.2.2</version>
   </dependency>
 </dependencies>
 ```
