@@ -3,10 +3,10 @@ package io.github.spencerpark.jupyter;
 import io.github.spencerpark.jupyter.kernel.BaseKernel;
 import io.github.spencerpark.jupyter.kernel.LanguageInfo;
 import io.github.spencerpark.jupyter.kernel.ReplacementOptions;
+import io.github.spencerpark.jupyter.kernel.display.DisplayData;
 import io.github.spencerpark.jupyter.kernel.util.CharPredicate;
 import io.github.spencerpark.jupyter.kernel.util.SimpleAutoCompleter;
 import io.github.spencerpark.jupyter.kernel.util.StringSearch;
-import io.github.spencerpark.jupyter.messages.DisplayData;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 
 import javax.script.ScriptContext;

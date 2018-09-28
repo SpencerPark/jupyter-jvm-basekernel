@@ -1,5 +1,0 @@
-{
-  "argv": [ "java", "-jar", "${KERNEL_JAR_PATH}", "{connection_file}"],
-  "display_name": "${KERNEL_DISPLAY_NAME}",
-  "language": "${KERNEL_NAME}"
-}
