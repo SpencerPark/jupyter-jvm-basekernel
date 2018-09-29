@@ -38,6 +38,26 @@ public class HistoryReply implements ContentType<HistoryReply> {
             this.input = input;
             this.output = output;
         }
+
+        public int getSession() {
+            return session;
+        }
+
+        public int getCellNumber() {
+            return cellNumber;
+        }
+
+        public String getInput() {
+            return input;
+        }
+
+        public String getOutput() {
+            return output;
+        }
+
+        public boolean hasOutput() {
+            return output != null;
+        }
     }
 
     protected final List<Entry> history;

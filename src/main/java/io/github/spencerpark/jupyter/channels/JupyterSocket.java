@@ -9,6 +9,8 @@ import io.github.spencerpark.jupyter.kernel.KernelConnectionProperties;
 import io.github.spencerpark.jupyter.messages.*;
 import io.github.spencerpark.jupyter.messages.adapters.*;
 import io.github.spencerpark.jupyter.messages.publish.PublishStatus;
+import io.github.spencerpark.jupyter.messages.reply.HistoryReply;
+import io.github.spencerpark.jupyter.messages.request.HistoryRequest;
 import org.zeromq.ZMQ;
 
 import java.lang.reflect.Type;
@@ -30,6 +32,8 @@ public abstract class JupyterSocket extends ZMQ.Socket {
             .registerTypeAdapter(Header.class, HeaderAdapter.INSTANCE)
             .registerTypeAdapter(MessageType.class, MessageTypeAdapter.INSTANCE)
             .registerTypeAdapter(PublishStatus.class, PublishStatusAdapter.INSTANCE)
+            .registerTypeAdapter(HistoryRequest.class, HistoryRequestAdapter.INSTANCE)
+            .registerTypeAdapter(HistoryReply.Entry.class, HistoryReplyEntryAdapter.INSTANCE)
             //.setPrettyPrinting()
             .create();
     private static final JsonParser json = new JsonParser();

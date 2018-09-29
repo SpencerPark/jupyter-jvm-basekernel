@@ -12,40 +12,38 @@ public class HistoryRequest {
         @SerializedName("search") SEARCH,
     }
 
-    private static class Base {
-        /**
-         * If true, include the output associated with the inputs.
-         */
-        protected final boolean output;
+    /**
+     * If true, include the output associated with the inputs.
+     */
+    protected final boolean output;
 
-        /**
-         * If true, return the raw input history, else the transformed input.
-         */
-        protected final boolean raw;
+    /**
+     * If true, return the raw input history, else the transformed input.
+     */
+    protected final boolean raw;
 
-        @SerializedName("hist_access_type")
-        protected final AccessType accessType;
+    @SerializedName("hist_access_type")
+    protected final AccessType accessType;
 
-        public Base(boolean output, boolean raw, AccessType accessType) {
-            this.output = output;
-            this.raw = raw;
-            this.accessType = accessType;
-        }
-
-        public boolean isOutput() {
-            return output;
-        }
-
-        public boolean isRaw() {
-            return raw;
-        }
-
-        public AccessType getAccessType() {
-            return accessType;
-        }
+    private HistoryRequest(boolean output, boolean raw, AccessType accessType) {
+        this.output = output;
+        this.raw = raw;
+        this.accessType = accessType;
     }
 
-    public static class Range extends Base {
+    public boolean isOutput() {
+        return output;
+    }
+
+    public boolean isRaw() {
+        return raw;
+    }
+
+    public AccessType getAccessType() {
+        return accessType;
+    }
+
+    public static class Range extends HistoryRequest {
         /**
          * A session index that counts up each time the kernel
          * starts. If negative the number is counting back from
@@ -83,7 +81,7 @@ public class HistoryRequest {
         }
     }
 
-    public static class Tail extends Base {
+    public static class Tail extends HistoryRequest {
         /**
          * Get the last n executions
          */
@@ -99,7 +97,7 @@ public class HistoryRequest {
         }
     }
 
-    public static class Search extends Base {
+    public static class Search extends HistoryRequest {
         /**
          * Get the last n executions
          */
