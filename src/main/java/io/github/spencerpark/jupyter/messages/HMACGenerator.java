@@ -1,11 +1,16 @@
 package io.github.spencerpark.jupyter.messages;
 
+import io.github.spencerpark.jupyter.channels.JupyterSocket;
+
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
 public class HMACGenerator {
+    private static final int MASK_INT_TO_BYTE = 0xFF;
+    private static final int MASK_BYTE_LOWER = 0x0F;
+
     public static final HMACGenerator NO_AUTH_INSTANCE = new HMACGenerator() {
         @Override
         public String calculateSignature(byte[]... messageParts) {
@@ -17,7 +22,7 @@ public class HMACGenerator {
 
     public HMACGenerator(String algorithm, String key) throws NoSuchAlgorithmException, InvalidKeyException {
         this.mac = Mac.getInstance(algorithm.replace("-", ""));
-        this.mac.init(new SecretKeySpec(key.getBytes(), algorithm));
+        this.mac.init(new SecretKeySpec(key.getBytes(JupyterSocket.ASCII), algorithm));
     }
 
     private HMACGenerator() {
@@ -34,9 +39,9 @@ public class HMACGenerator {
 
         char[] hex = new char[sig.length * 2];
         for (int j = 0; j < sig.length; j++) {
-            int b = sig[j] & 0xFF;
+            int b = sig[j] & MASK_INT_TO_BYTE;
             hex[j * 2] = HEX_CHAR[b >>> 4];
-            hex[j * 2 + 1] = HEX_CHAR[b & 0x0F];
+            hex[j * 2 + 1] = HEX_CHAR[b & MASK_BYTE_LOWER];
         }
 
         return new String(hex);

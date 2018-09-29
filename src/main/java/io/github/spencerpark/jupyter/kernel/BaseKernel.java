@@ -3,6 +3,7 @@ package io.github.spencerpark.jupyter.kernel;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.github.spencerpark.jupyter.channels.JupyterConnection;
+import io.github.spencerpark.jupyter.channels.JupyterSocket;
 import io.github.spencerpark.jupyter.channels.ShellReplyEnvironment;
 import io.github.spencerpark.jupyter.kernel.comm.CommManager;
 import io.github.spencerpark.jupyter.kernel.display.DisplayData;
@@ -22,6 +23,7 @@ import io.github.spencerpark.jupyter.messages.reply.*;
 import io.github.spencerpark.jupyter.messages.request.*;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
@@ -64,8 +66,8 @@ public abstract class BaseKernel {
 
     protected StringStyler errorStyler;
 
-    public BaseKernel() {
-        this.io = new JupyterIO();
+    public BaseKernel(Charset charset) {
+        this.io = new JupyterIO(charset);
         this.shouldReplaceStdStreams = true;
 
         this.commManager = new CommManager();
@@ -81,6 +83,10 @@ public abstract class BaseKernel {
                 .addHighlightStyle(TextColor.BOLD_BLACK_FG)
                 .addHighlightStyle(TextColor.RED_BG)
                 .build();
+    }
+
+    public BaseKernel() {
+        this(JupyterSocket.UTF_8);
     }
 
     public Renderer getRenderer() {

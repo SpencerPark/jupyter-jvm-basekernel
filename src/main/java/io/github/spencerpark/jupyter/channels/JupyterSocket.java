@@ -21,8 +21,8 @@ public abstract class JupyterSocket extends ZMQ.Socket {
         return transport + "://" + ip + ":" + Integer.toString(port);
     }
 
-    private static final Charset ASCII = Charset.forName("ascii");
-    private static final Charset UTF_8 = Charset.forName("utf8");
+    public static final Charset ASCII = Charset.forName("ascii");
+    public static final Charset UTF_8 = Charset.forName("utf8");
 
     private static final byte[] IDENTITY_BLOB_DELIMITER = "<IDS|MSG>".getBytes(ASCII); // Comes from a python bytestring
     private static final Gson gson = new GsonBuilder()
@@ -82,15 +82,15 @@ public abstract class JupyterSocket extends ZMQ.Socket {
         if (calculatedSig != null && !calculatedSig.equals(receivedSig))
             throw new SecurityException("Message received had invalid signature");
 
-        Header<?> header = gson.fromJson(new String(headerRaw), Header.class);
+        Header<?> header = gson.fromJson(new String(headerRaw, UTF_8), Header.class);
 
         Header<?> parentHeader = null;
-        JsonElement parentHeaderJson = json.parse(new String(parentHeaderRaw));
+        JsonElement parentHeaderJson = json.parse(new String(parentHeaderRaw, UTF_8));
         if (parentHeaderJson.isJsonObject() && parentHeaderJson.getAsJsonObject().size() > 0)
             parentHeader = gson.fromJson(parentHeaderJson, Header.class);
 
-        Map<String, Object> metadata = gson.fromJson(new String(metadataRaw), JSON_OBJ_AS_MAP);
-        Object content = gson.fromJson(new String(contentRaw), header.getType().getContentType());
+        Map<String, Object> metadata = gson.fromJson(new String(metadataRaw, UTF_8), JSON_OBJ_AS_MAP);
+        Object content = gson.fromJson(new String(contentRaw, UTF_8), header.getType().getContentType());
 
         Message<?> message = new Message(identities, header, parentHeader, metadata, content, blobs);
 

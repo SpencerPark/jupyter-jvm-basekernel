@@ -5,21 +5,26 @@ import java.nio.charset.Charset;
 import java.util.Objects;
 
 public class JupyterInputStream extends InputStream {
-    private static final Charset UTF_8 = Charset.forName("utf8");
+    private final Charset encoding;
 
     private ShellReplyEnvironment env;
     private boolean enabled;
     private byte[] data = null;
     private int bufferPos = 0;
 
-    public JupyterInputStream() {
-        this.env = null;
-        this.enabled = false;
+    public JupyterInputStream(Charset encoding, ShellReplyEnvironment env, boolean enabled) {
+        this.encoding = encoding;
+
+        this.env = env;
+        this.enabled = enabled;
+    }
+
+    public JupyterInputStream(Charset encoding) {
+        this(encoding, null, false);
     }
 
     public JupyterInputStream(ShellReplyEnvironment env, boolean enabled) {
-        this.env = env;
-        this.enabled = enabled;
+        this(JupyterSocket.UTF_8, env, enabled);
     }
 
     public void setEnv(ShellReplyEnvironment env) {
@@ -39,9 +44,17 @@ public class JupyterInputStream extends InputStream {
         return this.env != null;
     }
 
+    public Charset getEncoding() {
+        return encoding;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
     private byte[] readFromFrontend() {
         if (this.enabled)
-            return this.env.readFromStdIn().getBytes(UTF_8);
+            return this.env.readFromStdIn().getBytes(this.encoding);
         return new byte[0];
     }
 

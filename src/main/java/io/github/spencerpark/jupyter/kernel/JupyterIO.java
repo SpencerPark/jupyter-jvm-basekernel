@@ -2,10 +2,13 @@ package io.github.spencerpark.jupyter.kernel;
 
 import io.github.spencerpark.jupyter.channels.JupyterInputStream;
 import io.github.spencerpark.jupyter.channels.JupyterOutputStream;
+import io.github.spencerpark.jupyter.channels.JupyterSocket;
 import io.github.spencerpark.jupyter.channels.ShellReplyEnvironment;
 
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 
 public class JupyterIO {
     private final JupyterOutputStream jupyterOut;
@@ -18,16 +21,24 @@ public class JupyterIO {
     public final PrintStream err;
     public final InputStream in;
 
-    public JupyterIO() {
-        this.jupyterOut = new JupyterOutputStream(true);
-        this.jupyterErr = new JupyterOutputStream(false);
-        this.jupyterIn = new JupyterInputStream();
+    public JupyterIO(Charset encoding) {
+        this.jupyterOut = new JupyterOutputStream(ShellReplyEnvironment::writeToStdOut);
+        this.jupyterErr = new JupyterOutputStream(ShellReplyEnvironment::writeToStdErr);
+        this.jupyterIn = new JupyterInputStream(encoding);
 
         this.display = new DisplayStream();
 
-        this.out = new PrintStream(this.jupyterOut, true);
-        this.err = new PrintStream(this.jupyterErr, true);
-        this.in = this.jupyterIn;
+        try {
+            this.out = new PrintStream(this.jupyterOut, true, encoding.name());
+            this.err = new PrintStream(this.jupyterErr, true, encoding.name());
+            this.in = this.jupyterIn;
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("Couldn't lookup the charset by name even though it is already a charset...", e);
+        }
+    }
+
+    public JupyterIO() {
+        this(JupyterSocket.UTF_8);
     }
 
     public boolean isAttached() {
