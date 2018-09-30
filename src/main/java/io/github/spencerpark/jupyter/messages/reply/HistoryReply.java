@@ -1,5 +1,6 @@
 package io.github.spencerpark.jupyter.messages.reply;
 
+import io.github.spencerpark.jupyter.kernel.history.HistoryEntry;
 import io.github.spencerpark.jupyter.messages.ContentType;
 import io.github.spencerpark.jupyter.messages.MessageType;
 
@@ -13,60 +14,13 @@ public class HistoryReply implements ContentType<HistoryReply> {
         return MESSAGE_TYPE;
     }
 
-    public static class Entry {
-        protected final int session;
+    protected final List<HistoryEntry> history;
 
-        protected final int cellNumber;
-
-        protected final String input;
-
-        /**
-         * null if output was specified as false in the request
-         */
-        protected final String output;
-
-        public Entry(int session, int cellNumber, String input) {
-            this.session = session;
-            this.cellNumber = cellNumber;
-            this.input = input;
-            this.output = null;
-        }
-
-        public Entry(int session, int cellNumber, String input, String output) {
-            this.session = session;
-            this.cellNumber = cellNumber;
-            this.input = input;
-            this.output = output;
-        }
-
-        public int getSession() {
-            return session;
-        }
-
-        public int getCellNumber() {
-            return cellNumber;
-        }
-
-        public String getInput() {
-            return input;
-        }
-
-        public String getOutput() {
-            return output;
-        }
-
-        public boolean hasOutput() {
-            return output != null;
-        }
-    }
-
-    protected final List<Entry> history;
-
-    public HistoryReply(List<Entry> history) {
+    public HistoryReply(List<HistoryEntry> history) {
         this.history = history;
     }
 
-    public List<Entry> getHistory() {
+    public List<HistoryEntry> getHistory() {
         return history;
     }
 }

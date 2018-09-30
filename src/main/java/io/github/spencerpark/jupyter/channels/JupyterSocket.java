@@ -6,10 +6,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import io.github.spencerpark.jupyter.kernel.KernelConnectionProperties;
+import io.github.spencerpark.jupyter.kernel.history.HistoryEntry;
 import io.github.spencerpark.jupyter.messages.*;
 import io.github.spencerpark.jupyter.messages.adapters.*;
 import io.github.spencerpark.jupyter.messages.publish.PublishStatus;
-import io.github.spencerpark.jupyter.messages.reply.HistoryReply;
 import io.github.spencerpark.jupyter.messages.request.HistoryRequest;
 import org.zeromq.ZMQ;
 
@@ -33,7 +33,7 @@ public abstract class JupyterSocket extends ZMQ.Socket {
             .registerTypeAdapter(MessageType.class, MessageTypeAdapter.INSTANCE)
             .registerTypeAdapter(PublishStatus.class, PublishStatusAdapter.INSTANCE)
             .registerTypeAdapter(HistoryRequest.class, HistoryRequestAdapter.INSTANCE)
-            .registerTypeAdapter(HistoryReply.Entry.class, HistoryReplyEntryAdapter.INSTANCE)
+            .registerTypeAdapter(HistoryEntry.class, HistoryEntryAdapter.INSTANCE)
             //.setPrettyPrinting()
             .create();
     private static final JsonParser json = new JsonParser();

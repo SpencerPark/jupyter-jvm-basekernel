@@ -31,11 +31,11 @@ public class HistoryRequest {
         this.accessType = accessType;
     }
 
-    public boolean isOutput() {
+    public boolean includeOutput() {
         return output;
     }
 
-    public boolean isRaw() {
+    public boolean useRaw() {
         return raw;
     }
 
@@ -129,7 +129,7 @@ public class HistoryRequest {
             return pattern;
         }
 
-        public boolean isUnique() {
+        public boolean filterUnique() {
             return unique;
         }
     }

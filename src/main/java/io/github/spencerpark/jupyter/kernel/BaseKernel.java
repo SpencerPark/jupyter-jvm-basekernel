@@ -11,6 +11,8 @@ import io.github.spencerpark.jupyter.kernel.display.Renderer;
 import io.github.spencerpark.jupyter.kernel.display.common.Image;
 import io.github.spencerpark.jupyter.kernel.display.common.Text;
 import io.github.spencerpark.jupyter.kernel.display.common.Url;
+import io.github.spencerpark.jupyter.kernel.history.HistoryEntry;
+import io.github.spencerpark.jupyter.kernel.history.HistoryManager;
 import io.github.spencerpark.jupyter.kernel.util.StringStyler;
 import io.github.spencerpark.jupyter.kernel.util.TextColor;
 import io.github.spencerpark.jupyter.messages.Header;
@@ -119,6 +121,16 @@ public abstract class BaseKernel {
     }
 
     public List<LanguageInfo.Help> getHelpLinks() {
+        return null;
+    }
+
+    /**
+     * Get the active history manager for the kernel. If the history is ignored this method
+     * should return {@code null}.
+     *
+     * @return the active {@link HistoryManager} or {@code null}.
+     */
+    public HistoryManager getHistoryManager() {
         return null;
     }
 
@@ -317,12 +329,6 @@ public abstract class BaseKernel {
                 env.publish(result);
             }
 
-            /*Map<String, Object> metadata = new LinkedHashMap<>();
-            metadata.put("dependencies_met", true);
-            metadata.put("engine", context.getSessionID());
-            metadata.put("status", "ok");
-            metadata.put("started", start);*/
-
             env.defer().reply(new ExecuteReply(count, Collections.emptyMap()));
         } catch (Exception e) {
             ErrorReply error = ErrorReply.of(e);
@@ -358,9 +364,36 @@ public abstract class BaseKernel {
     }
 
     private void handleHistoryRequest(ShellReplyEnvironment env, Message<HistoryRequest> historyRequestMessage) {
-        //Only the qt console uses this one and it only uses the tail search to get where the
-        //user left off. Implementing this is not worth the storage overhead as it rarely gets used
-        //and in the event that the front end may use it everything still functions fine without it.
+        // If the manager is unset, short circuit and skip this message
+        HistoryManager manager = this.getHistoryManager();
+        if (manager == null) return;
+
+        HistoryRequest request = historyRequestMessage.getContent();
+        env.setBusyDeferIdle();
+
+        Set<HistoryManager.ResultFlag> flags = EnumSet.noneOf(HistoryManager.ResultFlag.class);
+        if (request.includeOutput()) flags.add(HistoryManager.ResultFlag.INCLUDE_OUTPUT);
+        if (!request.useRaw()) flags.add(HistoryManager.ResultFlag.TRANSFORMED_INPUT);
+
+        List<HistoryEntry> entries = null;
+        switch (request.getAccessType()) {
+            case TAIL:
+                HistoryRequest.Tail tailRequest = ((HistoryRequest.Tail) request);
+                entries = manager.lookupTail(tailRequest.getMaxReturnLength(), flags);
+                break;
+            case RANGE:
+                HistoryRequest.Range rangeRequest = ((HistoryRequest.Range) request);
+                entries = manager.lookupRange(rangeRequest.getSessionIndex(), rangeRequest.getStart(), rangeRequest.getStop(), flags);
+                break;
+            case SEARCH:
+                HistoryRequest.Search searchRequest = ((HistoryRequest.Search) request);
+                if (searchRequest.filterUnique()) flags.add(HistoryManager.ResultFlag.UNIQUE);
+                entries = manager.search(searchRequest.getPattern(), searchRequest.getMaxReturnLength(), flags);
+                break;
+        }
+
+        if (entries != null)
+            env.reply(new HistoryReply(entries));
     }
 
     private void handleIsCodeCompeteRequest(ShellReplyEnvironment env, Message<IsCompleteRequest> isCompleteRequestMessage) {
