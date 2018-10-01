@@ -90,19 +90,17 @@ public interface HistoryManager {
      * Lookup the last {@code length} input cells that match the {@code pattern}.
      * <p>
      * The {@code pattern} is an sqlite glob. More specifically:
-     * <pre>
-     *   <ul>
-     *     <li>asterisk ({@code *}) matches 0 or more of any characters</li>
-     *     <li>question mark ({@code ?}) matches exactly 1 of any character</li>
-     *     <li>
-     *         list wildcard ({@code []}) matches any character from the list
-     *         <ul>
-     *           <li>character ranges are supported with {@code [a-z]} syntax to match {@code a} to {@code z} inclusive</li>
-     *           <li>starting a list wildcard with {@code ^} negates the wildcard</li>
-     *         </ul>
-     *     </li>
-     *   </ul>
-     * </pre>
+     * <ul>
+     *   <li>asterisk ({@code *}) matches 0 or more of any characters</li>
+     *   <li>question mark ({@code ?}) matches exactly 1 of any character</li>
+     *   <li>
+     *       list wildcard ({@code []}) matches any character from the list
+     *       <ul>
+     *         <li>character ranges are supported with {@code [a-z]} syntax to match {@code a} to {@code z} inclusive</li>
+     *         <li>starting a list wildcard with {@code ^} negates the wildcard</li>
+     *       </ul>
+     *   </li>
+     * </ul>
      *
      * @param pattern a glob pattern that input cells must match.
      * @param length  the number of results to include in the results.
@@ -117,19 +115,17 @@ public interface HistoryManager {
      * Lookup the last {@code length} input cells that match the {@code pattern}.
      * <p>
      * The {@code pattern} is an sqlite glob. More specifically:
-     * <pre>
-     *   <ul>
-     *     <li>asterisk ({@code *}) matches 0 or more of any characters</li>
-     *     <li>question mark ({@code ?}) matches exactly 1 of any character</li>
-     *     <li>
-     *         list wildcard ({@code []}) matches any character from the list
-     *         <ul>
-     *           <li>character ranges are supported with {@code [a-z]} syntax to match {@code a} to {@code z} inclusive</li>
-     *           <li>starting a list wildcard with {@code ^} negates the wildcard</li>
-     *         </ul>
-     *     </li>
-     *   </ul>
-     * </pre>
+     * <ul>
+     *   <li>asterisk ({@code *}) matches 0 or more of any characters</li>
+     *   <li>question mark ({@code ?}) matches exactly 1 of any character</li>
+     *   <li>
+     *       list wildcard ({@code []}) matches any character from the list
+     *       <ul>
+     *         <li>character ranges are supported with {@code [a-z]} syntax to match {@code a} to {@code z} inclusive</li>
+     *         <li>starting a list wildcard with {@code ^} negates the wildcard</li>
+     *       </ul>
+     *   </li>
+     * </ul>
      *
      * @param pattern a glob pattern that input cells must match.
      * @param length  the number of results to include in the results.

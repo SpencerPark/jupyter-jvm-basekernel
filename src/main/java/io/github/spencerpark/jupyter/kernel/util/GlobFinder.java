@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
  * {@code "*"} to match 0 or more characters <strong>between {@code "/"}</strong> and {@code "?"} to
  * match a single character. A glob ending in {@code "/"} will match all files in a directories matching
  * the glob.
- * <p></p>
+ * <p>
  * <strong>Important note for Windows file systems:</strong> Globs should use {@code "/"} to separate the
  * glob despite it not being the platform separator.
  */
