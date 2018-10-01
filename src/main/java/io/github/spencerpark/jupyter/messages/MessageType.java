@@ -30,6 +30,7 @@ public class MessageType<T> {
     public static final MessageType<CommInfoRequest> COMM_INFO_REQUEST = new MessageType<>("comm_info_request", CommInfoRequest.class);
     public static final MessageType<KernelInfoRequest> KERNEL_INFO_REQUEST = new MessageType<>("kernel_info_request", KernelInfoRequest.class);
     public static final MessageType<ShutdownRequest> SHUTDOWN_REQUEST = new MessageType<>("shutdown_request", ShutdownRequest.class);
+    public static final MessageType<InterruptRequest> INTERRUPT_REQUEST = new MessageType<>("interrupt_request", InterruptRequest.class);
 
     //Reply
     public static final MessageType<ExecuteReply> EXECUTE_REPLY = new MessageType<>("execute_reply", ExecuteReply.class);
@@ -40,6 +41,7 @@ public class MessageType<T> {
     public static final MessageType<CommInfoReply> COMM_INFO_REPLY = new MessageType<>("comm_info_reply", CommInfoReply.class);
     public static final MessageType<KernelInfoReply> KERNEL_INFO_REPLY = new MessageType<>("kernel_info_reply", KernelInfoReply.class);
     public static final MessageType<ShutdownReply> SHUTDOWN_REPLY = new MessageType<>("shutdown_reply", ShutdownReply.class);
+    public static final MessageType<InterruptReply> INTERRUPT_REPLY = new MessageType<>("interrupt_reply", InterruptReply.class);
 
     //Publish
     public static final MessageType<PublishStream> PUBLISH_STREAM = new MessageType<>("stream", PublishStream.class);

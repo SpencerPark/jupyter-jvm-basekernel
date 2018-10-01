@@ -234,6 +234,14 @@ public abstract class BaseKernel {
     }
 
     /**
+     * Invoked when the kernel.json specifies an {@code interrupt_mode} of {@code message}
+     * and the frontend requests an interrupt of the currently running cell.
+     */
+    public void interrupt() {
+        //no-op
+    }
+
+    /**
      * Formats an error into a human friendly format. The default implementation prints
      * the stack trace as written by {@link Throwable#printStackTrace()} with a dividing
      * separator as a prefix.
@@ -277,6 +285,7 @@ public abstract class BaseKernel {
         connection.setHandler(MessageType.IS_COMPLETE_REQUEST, this::handleIsCodeCompeteRequest);
         connection.setHandler(MessageType.KERNEL_INFO_REQUEST, this::handleKernelInfoRequest);
         connection.setHandler(MessageType.SHUTDOWN_REQUEST, this::handleShutdownRequest);
+        connection.setHandler(MessageType.INTERRUPT_REQUEST, this::handleInterruptRequest);
 
         this.commManager.setIOPubChannel(connection.getIOPub());
         connection.setHandler(MessageType.COMM_OPEN_COMMAND, commManager::handleCommOpenCommand);
@@ -444,5 +453,12 @@ public abstract class BaseKernel {
         env.resolveDeferrals(); //Resolve early because of shutdown
 
         env.markForShutdown();
+    }
+
+    private void handleInterruptRequest(ShellReplyEnvironment env, Message<InterruptRequest> interruptRequestMessage) {
+        env.setBusyDeferIdle();
+        env.defer().reply(new InterruptReply());
+
+        this.interrupt();
     }
 }
