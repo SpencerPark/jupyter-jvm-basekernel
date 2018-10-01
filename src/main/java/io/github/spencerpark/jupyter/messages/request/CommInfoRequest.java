@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName;
 import io.github.spencerpark.jupyter.messages.MessageType;
 
 public class CommInfoRequest {
-    public static final MessageType MESSAGE_TYPE = MessageType.COMM_INFO_REQUEST;
+    public static final MessageType<CommInfoRequest> MESSAGE_TYPE = MessageType.COMM_INFO_REQUEST;
 
     /**
      * An optional target name

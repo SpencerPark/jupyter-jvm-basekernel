@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName;
 import io.github.spencerpark.jupyter.messages.MessageType;
 
 public class InspectRequest {
-    public static final MessageType MESSAGE_TYPE = MessageType.INSPECT_REQUEST;
+    public static final MessageType<InspectRequest> MESSAGE_TYPE = MessageType.INSPECT_REQUEST;
 
     /**
      * The code that the request wants inspected

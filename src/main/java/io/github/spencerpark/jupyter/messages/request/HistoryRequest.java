@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName;
 import io.github.spencerpark.jupyter.messages.MessageType;
 
 public class HistoryRequest {
-    public static final MessageType MESSAGE_TYPE = MessageType.HISTORY_REQUEST;
+    public static final MessageType<HistoryRequest> MESSAGE_TYPE = MessageType.HISTORY_REQUEST;
 
     public enum AccessType {
         @SerializedName("range") RANGE,
