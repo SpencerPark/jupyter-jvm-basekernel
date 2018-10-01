@@ -69,7 +69,9 @@ public interface HistoryManager {
      *
      * @return a list of the last {@code length} entries in the history or {@code null} if the method is not supported.
      */
-    public List<HistoryEntry> lookupTail(int length, Set<ResultFlag> flags);
+    public default List<HistoryEntry> lookupTail(int length, Set<ResultFlag> flags) {
+        return null;
+    }
 
     /**
      * Lookup the last {@code length} input cells executed by the kernel that this manager
@@ -91,15 +93,15 @@ public interface HistoryManager {
      * <p>
      * The {@code pattern} is an sqlite glob. More specifically:
      * <ul>
-     *   <li>asterisk ({@code *}) matches 0 or more of any characters</li>
-     *   <li>question mark ({@code ?}) matches exactly 1 of any character</li>
-     *   <li>
-     *       list wildcard ({@code []}) matches any character from the list
-     *       <ul>
-     *         <li>character ranges are supported with {@code [a-z]} syntax to match {@code a} to {@code z} inclusive</li>
-     *         <li>starting a list wildcard with {@code ^} negates the wildcard</li>
-     *       </ul>
-     *   </li>
+     * <li>asterisk ({@code *}) matches 0 or more of any characters</li>
+     * <li>question mark ({@code ?}) matches exactly 1 of any character</li>
+     * <li>
+     * list wildcard ({@code []}) matches any character from the list
+     * <ul>
+     * <li>character ranges are supported with {@code [a-z]} syntax to match {@code a} to {@code z} inclusive</li>
+     * <li>starting a list wildcard with {@code ^} negates the wildcard</li>
+     * </ul>
+     * </li>
      * </ul>
      *
      * @param pattern a glob pattern that input cells must match.
@@ -109,7 +111,9 @@ public interface HistoryManager {
      * @return a list of the last {@code length} entries in the history that match the {@code pattern} or {@code null}
      *         if the method is not supported.
      */
-    public List<HistoryEntry> search(String pattern, int length, Set<ResultFlag> flags);
+    public default List<HistoryEntry> search(String pattern, int length, Set<ResultFlag> flags) {
+        return null;
+    }
 
     /**
      * Lookup the last {@code length} input cells that match the {@code pattern}.
