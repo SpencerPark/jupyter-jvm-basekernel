@@ -2,6 +2,8 @@
 
 This project is a Java implementation of the [Jupyter kernel messaging spec](http://jupyter-client.readthedocs.io/en/latest/messaging.html). Consumers of this project need to simply extend the `BaseKernel` and implement the things specific to the language that the kernel is working for. A simple example using the [Nashorn JS engine](https://docs.oracle.com/javase/8/docs/technotes/guides/scripting/nashorn/api.html) can be found in the examples folder.
 
+All communication with the Jupyter client is done via JSON messages over ZMQ sockets and therefore this project is made possible by the pure Java ZeroMQ implementation, [jeromq](https://github.com/zeromq/jeromq). Likewise for JSON serialization and deserialization the project is powered [gson](https://github.com/google/gson). These transitive dependencies should be included when distributing a kernel that depends on this base kernel but both have a nice license ([MPL-2.0](https://github.com/zeromq/jeromq/blob/master/LICENSE) and [Apache-2.0](https://github.com/google/gson/blob/master/LICENSE) respectively) so this should not be an issue.
+
 ### Adding as a dependency
 
 Currently snapshots are being published to [https://oss.sonatype.org/#nexus-search;quick~jupyter-jvm-basekernel](https://oss.sonatype.org/#nexus-search;quick~jupyter-jvm-basekernel). Release version are published to maven central.
@@ -20,7 +22,7 @@ repositories {
 }
 
 dependencies {
-    compile group: 'io.github.spencerpark', name: 'jupyter-jvm-basekernel', version: '2.2.2'
+    compile group: 'io.github.spencerpark', name: 'jupyter-jvm-basekernel', version: '2.2.3'
 }
 ```
 
@@ -43,7 +45,7 @@ Edit your `pom.xml` to include the following:
   <dependency>
     <groupId>io.github.spencerpark</groupId>
     <artifactId>jupyter-jvm-basekernel</artifactId>
-    <version>2.2.2</version>
+    <version>2.2.3</version>
   </dependency>
 </dependencies>
 ```
