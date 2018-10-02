@@ -46,7 +46,7 @@ public class MessageType<T> {
     //Publish
     public static final MessageType<PublishStream> PUBLISH_STREAM = new MessageType<>("stream", PublishStream.class);
     public static final MessageType<PublishDisplayData> PUBLISH_DISPLAY_DATA = new MessageType<>("display_data", PublishDisplayData.class);
-    //TODO update_display_data type
+    public static final MessageType<PublishUpdateDisplayData> PUBLISH_UPDATE_DISPLAY_DATA = new MessageType<>("update_display_data", PublishUpdateDisplayData.class);
     public static final MessageType<PublishExecuteInput> PUBLISH_EXECUTE_INPUT = new MessageType<>("execute_input", PublishExecuteInput.class);
     public static final MessageType<PublishExecuteResult> PUBLISH_EXECUTION_RESULT = new MessageType<>("execute_result", PublishExecuteResult.class);
     public static final MessageType<PublishError> PUBLISH_ERROR = new MessageType<>("error", PublishError.class);

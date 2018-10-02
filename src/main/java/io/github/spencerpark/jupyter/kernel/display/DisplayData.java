@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Set;
 
 public class DisplayData {
+    public static final String DISPLAY_ID_KEY = "display_id";
+
     public static final DisplayData EMPTY = new DisplayData(Collections.emptyMap());
 
     public static final DisplayData EMPTY_STRING = new DisplayData("");
@@ -108,6 +110,24 @@ public class DisplayData {
             this.transientData = data.transientData;
         else if (data.transientData != null)
             this.transientData.putAll(data.transientData);
+    }
+
+    public void setDisplayId(String id) {
+        this.putTransientData(DISPLAY_ID_KEY, id);
+    }
+
+    public boolean hasDisplayId() {
+        return this.transientData != null
+                && this.transientData.containsKey(DISPLAY_ID_KEY);
+    }
+
+    public String getDisplayId() {
+        if (this.transientData == null) return null;
+
+        Object id = this.transientData.get(DISPLAY_ID_KEY);
+        if (id == null) return null;
+
+        return String.valueOf(id);
     }
 
     public void putText(String text) {
