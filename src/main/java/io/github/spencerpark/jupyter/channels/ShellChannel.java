@@ -1,8 +1,8 @@
 package io.github.spencerpark.jupyter.channels;
 
 import io.github.spencerpark.jupyter.kernel.KernelConnectionProperties;
-import io.github.spencerpark.jupyter.messages.Message;
 import io.github.spencerpark.jupyter.messages.HMACGenerator;
+import io.github.spencerpark.jupyter.messages.Message;
 import org.zeromq.ZMQ;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -10,16 +10,24 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ShellChannel extends JupyterSocket {
+    private static final long SHELL_DEFAULT_LOOP_SLEEP_MS = 50;
     private static final AtomicInteger SHELL_ID = new AtomicInteger();
 
     private volatile Loop ioloop;
+
     private final boolean isControl;
     private final JupyterConnection connection;
+    private final long sleep;
 
-    public ShellChannel(ZMQ.Context context, HMACGenerator hmacGenerator, boolean isControl, JupyterConnection connection) {
+    public ShellChannel(ZMQ.Context context, HMACGenerator hmacGenerator, boolean isControl, JupyterConnection connection, long sleep) {
         super(context, ZMQ.ROUTER, hmacGenerator, Logger.getLogger(isControl ? "ControlChannel" : "ShellChannel"));
         this.isControl = isControl;
         this.connection = connection;
+        this.sleep = sleep;
+    }
+
+    public ShellChannel(ZMQ.Context context, HMACGenerator hmacGenerator, boolean isControl, JupyterConnection connection) {
+        this(context, hmacGenerator, isControl, connection, SHELL_DEFAULT_LOOP_SLEEP_MS);
     }
 
     private boolean isBound() {
@@ -41,7 +49,7 @@ public class ShellChannel extends JupyterSocket {
         ZMQ.Poller poller = super.ctx.poller(1);
         poller.register(this, ZMQ.Poller.POLLIN);
 
-        this.ioloop = new Loop(channelThreadName, 50, () -> {
+        this.ioloop = new Loop(channelThreadName, this.sleep, () -> {
             int events = poller.poll(0);
             if (events > 0) {
                 Message message = super.readMessage();

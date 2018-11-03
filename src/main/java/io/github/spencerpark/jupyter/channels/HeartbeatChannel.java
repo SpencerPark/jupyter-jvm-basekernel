@@ -9,12 +9,20 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class HeartbeatChannel extends JupyterSocket {
+    private static final long HB_DEFAULT_SLEEP_MS = 500;
+
     private static final AtomicInteger HEARTBEAT_ID = new AtomicInteger();
 
+    private final long sleep;
     private volatile Loop pulse;
 
-    public HeartbeatChannel(ZMQ.Context context, HMACGenerator hmacGenerator) {
+    public HeartbeatChannel(ZMQ.Context context, HMACGenerator hmacGenerator, long sleep) {
         super(context, ZMQ.REP, hmacGenerator, Logger.getLogger("HeartbeatChannel"));
+        this.sleep = sleep;
+    }
+
+    public HeartbeatChannel(ZMQ.Context context, HMACGenerator hmacGenerator) {
+        this(context, hmacGenerator, HB_DEFAULT_SLEEP_MS);
     }
 
     private boolean isBound() {
@@ -35,7 +43,7 @@ public class HeartbeatChannel extends JupyterSocket {
         ZMQ.Poller poller = super.ctx.poller(1);
         poller.register(this, ZMQ.Poller.POLLIN);
 
-        this.pulse = new Loop(channelThreadName, 500, () -> {
+        this.pulse = new Loop(channelThreadName, this.sleep, () -> {
             int events = poller.poll(0);
             if (events > 0) {
                 byte[] msg = this.recv();
