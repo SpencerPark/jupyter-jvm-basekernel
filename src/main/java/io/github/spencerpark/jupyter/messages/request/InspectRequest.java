@@ -1,10 +1,16 @@
 package io.github.spencerpark.jupyter.messages.request;
 
 import com.google.gson.annotations.SerializedName;
+import io.github.spencerpark.jupyter.messages.ContentType;
 import io.github.spencerpark.jupyter.messages.MessageType;
 
-public class InspectRequest {
+public class InspectRequest implements ContentType<InspectRequest> {
     public static final MessageType<InspectRequest> MESSAGE_TYPE = MessageType.INSPECT_REQUEST;
+
+    @Override
+    public MessageType<InspectRequest> getType() {
+        return MESSAGE_TYPE;
+    }
 
     /**
      * The code that the request wants inspected

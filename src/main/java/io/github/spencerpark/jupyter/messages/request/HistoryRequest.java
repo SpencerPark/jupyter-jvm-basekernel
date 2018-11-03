@@ -1,10 +1,16 @@
 package io.github.spencerpark.jupyter.messages.request;
 
 import com.google.gson.annotations.SerializedName;
+import io.github.spencerpark.jupyter.messages.ContentType;
 import io.github.spencerpark.jupyter.messages.MessageType;
 
-public class HistoryRequest {
+public class HistoryRequest implements ContentType<HistoryRequest> {
     public static final MessageType<HistoryRequest> MESSAGE_TYPE = MessageType.HISTORY_REQUEST;
+
+    @Override
+    public MessageType<HistoryRequest> getType() {
+        return MESSAGE_TYPE;
+    }
 
     public enum AccessType {
         @SerializedName("range") RANGE,

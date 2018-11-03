@@ -1,10 +1,16 @@
 package io.github.spencerpark.jupyter.messages.request;
 
 import com.google.gson.annotations.SerializedName;
+import io.github.spencerpark.jupyter.messages.ContentType;
 import io.github.spencerpark.jupyter.messages.MessageType;
 
-public class CompleteRequest {
+public class CompleteRequest implements ContentType<CompleteRequest> {
     public static final MessageType<CompleteRequest> MESSAGE_TYPE = MessageType.COMPLETE_REQUEST;
+
+    @Override
+    public MessageType<CompleteRequest> getType() {
+        return MESSAGE_TYPE;
+    }
 
     protected final String code;
 

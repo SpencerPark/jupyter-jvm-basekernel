@@ -1,12 +1,18 @@
 package io.github.spencerpark.jupyter.messages.request;
 
 import com.google.gson.annotations.SerializedName;
+import io.github.spencerpark.jupyter.messages.ContentType;
 import io.github.spencerpark.jupyter.messages.MessageType;
 
 import java.util.Map;
 
-public class ExecuteRequest {
+public class ExecuteRequest implements ContentType<ExecuteRequest> {
     public static final MessageType<ExecuteRequest> MESSAGE_TYPE = MessageType.EXECUTE_REQUEST;
+
+    @Override
+    public MessageType<ExecuteRequest> getType() {
+        return MESSAGE_TYPE;
+    }
 
     /**
      * The source code to execute. May be a multiline string.
