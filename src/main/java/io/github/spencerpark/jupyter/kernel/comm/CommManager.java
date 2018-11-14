@@ -2,7 +2,7 @@ package io.github.spencerpark.jupyter.kernel.comm;
 
 import com.google.gson.JsonObject;
 import io.github.spencerpark.jupyter.channels.JupyterSocket;
-import io.github.spencerpark.jupyter.channels.ShellReplyEnvironment;
+import io.github.spencerpark.jupyter.channels.ReplyEnvironment;
 import io.github.spencerpark.jupyter.messages.Message;
 import io.github.spencerpark.jupyter.messages.MessageContext;
 import io.github.spencerpark.jupyter.messages.comm.CommCloseCommand;
@@ -197,7 +197,7 @@ public class CommManager implements Iterable<Comm> {
     // Default comm message handlers. These shouldn't need to be overridden but are more like
     // lambda targets that capture this comm manager in it's scope.
 
-    public void handleCommOpenCommand(ShellReplyEnvironment env, Message<CommOpenCommand> commOpenCommandMessage) {
+    public void handleCommOpenCommand(ReplyEnvironment env, Message<CommOpenCommand> commOpenCommandMessage) {
         CommOpenCommand openCommand = commOpenCommandMessage.getContent();
 
         env.setBusyDeferIdle();
@@ -212,7 +212,7 @@ public class CommManager implements Iterable<Comm> {
         }
     }
 
-    public void handleCommMsgCommand(ShellReplyEnvironment env, Message<CommMsgCommand> commMsgCommandMessage) {
+    public void handleCommMsgCommand(ReplyEnvironment env, Message<CommMsgCommand> commMsgCommandMessage) {
         CommMsgCommand msgCommand = commMsgCommandMessage.getContent();
 
         env.setBusyDeferIdle();
@@ -223,7 +223,7 @@ public class CommManager implements Iterable<Comm> {
         }
     }
 
-    public void handleCommCloseCommand(ShellReplyEnvironment env, Message<CommCloseCommand> commCloseCommandMessage) {
+    public void handleCommCloseCommand(ReplyEnvironment env, Message<CommCloseCommand> commCloseCommandMessage) {
         CommCloseCommand closeCommand = commCloseCommandMessage.getContent();
 
         env.setBusyDeferIdle();
@@ -234,7 +234,7 @@ public class CommManager implements Iterable<Comm> {
         }
     }
 
-    public void handleCommInfoRequest(ShellReplyEnvironment env, Message<CommInfoRequest> commInfoRequestMessage) {
+    public void handleCommInfoRequest(ReplyEnvironment env, Message<CommInfoRequest> commInfoRequestMessage) {
         CommInfoRequest request = commInfoRequestMessage.getContent();
 
         env.setBusyDeferIdle();
