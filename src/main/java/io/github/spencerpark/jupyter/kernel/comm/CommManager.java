@@ -1,7 +1,7 @@
 package io.github.spencerpark.jupyter.kernel.comm;
 
 import com.google.gson.JsonObject;
-import io.github.spencerpark.jupyter.channels.IOPubChannel;
+import io.github.spencerpark.jupyter.channels.JupyterSocket;
 import io.github.spencerpark.jupyter.channels.ShellReplyEnvironment;
 import io.github.spencerpark.jupyter.messages.Message;
 import io.github.spencerpark.jupyter.messages.MessageContext;
@@ -20,7 +20,7 @@ import java.util.*;
 public class CommManager implements Iterable<Comm> {
     protected Map<String, CommTarget> targets;
     protected Map<String, Comm> comms;
-    protected IOPubChannel iopub;
+    protected JupyterSocket iopub;
     protected MessageContext context;
 
     public CommManager() {
@@ -29,7 +29,7 @@ public class CommManager implements Iterable<Comm> {
         this.iopub = null;
     }
 
-    public void setIOPubChannel(IOPubChannel iopub) {
+    public void setIOPubChannel(JupyterSocket iopub) {
         this.iopub = iopub;
     }
 
