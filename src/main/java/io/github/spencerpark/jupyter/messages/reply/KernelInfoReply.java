@@ -4,15 +4,23 @@ import com.google.gson.annotations.SerializedName;
 import io.github.spencerpark.jupyter.kernel.LanguageInfo;
 import io.github.spencerpark.jupyter.messages.ContentType;
 import io.github.spencerpark.jupyter.messages.MessageType;
+import io.github.spencerpark.jupyter.messages.ReplyType;
+import io.github.spencerpark.jupyter.messages.request.KernelInfoRequest;
 
 import java.util.List;
 
-public class KernelInfoReply implements ContentType<KernelInfoReply> {
+public class KernelInfoReply implements ContentType<KernelInfoReply>, ReplyType<KernelInfoRequest> {
     public static final MessageType<KernelInfoReply> MESSAGE_TYPE = MessageType.KERNEL_INFO_REPLY;
+    public static final MessageType<KernelInfoRequest> REQUEST_MESSAGE_TYPE = MessageType.KERNEL_INFO_REQUEST;
 
     @Override
     public MessageType<KernelInfoReply> getType() {
         return MESSAGE_TYPE;
+    }
+
+    @Override
+    public MessageType<KernelInfoRequest> getRequestType() {
+        return REQUEST_MESSAGE_TYPE;
     }
 
     /**

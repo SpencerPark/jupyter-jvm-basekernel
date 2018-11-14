@@ -3,15 +3,23 @@ package io.github.spencerpark.jupyter.messages.request;
 import com.google.gson.annotations.SerializedName;
 import io.github.spencerpark.jupyter.messages.ContentType;
 import io.github.spencerpark.jupyter.messages.MessageType;
+import io.github.spencerpark.jupyter.messages.RequestType;
+import io.github.spencerpark.jupyter.messages.reply.ExecuteReply;
 
 import java.util.Map;
 
-public class ExecuteRequest implements ContentType<ExecuteRequest> {
+public class ExecuteRequest implements ContentType<ExecuteRequest>, RequestType<ExecuteReply> {
     public static final MessageType<ExecuteRequest> MESSAGE_TYPE = MessageType.EXECUTE_REQUEST;
+    public static final MessageType<ExecuteReply> REPLY_MESSAGE_TYPE = MessageType.EXECUTE_REPLY;
 
     @Override
     public MessageType<ExecuteRequest> getType() {
         return MESSAGE_TYPE;
+    }
+
+    @Override
+    public MessageType<ExecuteReply> getReplyType() {
+        return REPLY_MESSAGE_TYPE;
     }
 
     /**

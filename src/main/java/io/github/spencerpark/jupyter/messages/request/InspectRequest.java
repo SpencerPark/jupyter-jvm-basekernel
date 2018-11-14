@@ -3,13 +3,21 @@ package io.github.spencerpark.jupyter.messages.request;
 import com.google.gson.annotations.SerializedName;
 import io.github.spencerpark.jupyter.messages.ContentType;
 import io.github.spencerpark.jupyter.messages.MessageType;
+import io.github.spencerpark.jupyter.messages.RequestType;
+import io.github.spencerpark.jupyter.messages.reply.InspectReply;
 
-public class InspectRequest implements ContentType<InspectRequest> {
+public class InspectRequest implements ContentType<InspectRequest>, RequestType<InspectReply> {
     public static final MessageType<InspectRequest> MESSAGE_TYPE = MessageType.INSPECT_REQUEST;
+    public static final MessageType<InspectReply> REPLY_MESSAGE_TYPE = MessageType.INSPECT_REPLY;
 
     @Override
     public MessageType<InspectRequest> getType() {
         return MESSAGE_TYPE;
+    }
+
+    @Override
+    public MessageType<InspectReply> getReplyType() {
+        return REPLY_MESSAGE_TYPE;
     }
 
     /**

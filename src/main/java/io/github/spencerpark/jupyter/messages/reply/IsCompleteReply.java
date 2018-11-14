@@ -3,13 +3,21 @@ package io.github.spencerpark.jupyter.messages.reply;
 import com.google.gson.annotations.SerializedName;
 import io.github.spencerpark.jupyter.messages.ContentType;
 import io.github.spencerpark.jupyter.messages.MessageType;
+import io.github.spencerpark.jupyter.messages.ReplyType;
+import io.github.spencerpark.jupyter.messages.request.IsCompleteRequest;
 
-public class IsCompleteReply implements ContentType<IsCompleteReply> {
+public class IsCompleteReply implements ContentType<IsCompleteReply>, ReplyType<IsCompleteRequest> {
     public static final MessageType<IsCompleteReply> MESSAGE_TYPE = MessageType.IS_COMPLETE_REPLY;
+    public static final MessageType<IsCompleteRequest> REQUEST_MESSAGE_TYPE = MessageType.IS_COMPLETE_REQUEST;
 
     @Override
     public MessageType<IsCompleteReply> getType() {
         return MESSAGE_TYPE;
+    }
+
+    @Override
+    public MessageType<IsCompleteRequest> getRequestType() {
+        return REQUEST_MESSAGE_TYPE;
     }
 
     public static final IsCompleteReply VALID_CODE = new IsCompleteReply(Status.VALID_CODE);

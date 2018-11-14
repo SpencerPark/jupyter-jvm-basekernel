@@ -3,17 +3,25 @@ package io.github.spencerpark.jupyter.messages.reply;
 import com.google.gson.annotations.SerializedName;
 import io.github.spencerpark.jupyter.messages.ExpressionValue;
 import io.github.spencerpark.jupyter.messages.MessageType;
+import io.github.spencerpark.jupyter.messages.ReplyType;
 import io.github.spencerpark.jupyter.messages.publish.PublishDisplayData;
 import io.github.spencerpark.jupyter.messages.ContentType;
+import io.github.spencerpark.jupyter.messages.request.ExecuteRequest;
 
 import java.util.Map;
 
-public class ExecuteReply implements ContentType<ExecuteReply> {
+public class ExecuteReply implements ContentType<ExecuteReply>, ReplyType<ExecuteRequest> {
     public static final MessageType<ExecuteReply> MESSAGE_TYPE = MessageType.EXECUTE_REPLY;
+    public static final MessageType<ExecuteRequest> REQUEST_MESSAGE_TYPE = MessageType.EXECUTE_REQUEST;
 
     @Override
     public MessageType<ExecuteReply> getType() {
         return MESSAGE_TYPE;
+    }
+
+    @Override
+    public MessageType<ExecuteRequest> getRequestType() {
+        return REQUEST_MESSAGE_TYPE;
     }
 
     public enum Status {

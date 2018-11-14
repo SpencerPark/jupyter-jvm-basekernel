@@ -3,13 +3,21 @@ package io.github.spencerpark.jupyter.messages.request;
 import com.google.gson.annotations.SerializedName;
 import io.github.spencerpark.jupyter.messages.ContentType;
 import io.github.spencerpark.jupyter.messages.MessageType;
+import io.github.spencerpark.jupyter.messages.RequestType;
+import io.github.spencerpark.jupyter.messages.reply.HistoryReply;
 
-public class HistoryRequest implements ContentType<HistoryRequest> {
+public class HistoryRequest implements ContentType<HistoryRequest>, RequestType<HistoryReply> {
     public static final MessageType<HistoryRequest> MESSAGE_TYPE = MessageType.HISTORY_REQUEST;
+    public static final MessageType<HistoryReply> REPLY_MESSAGE_TYPE = MessageType.HISTORY_REPLY;
 
     @Override
     public MessageType<HistoryRequest> getType() {
         return MESSAGE_TYPE;
+    }
+
+    @Override
+    public MessageType<HistoryReply> getReplyType() {
+        return REPLY_MESSAGE_TYPE;
     }
 
     public enum AccessType {

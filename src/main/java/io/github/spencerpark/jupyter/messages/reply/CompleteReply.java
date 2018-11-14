@@ -3,16 +3,24 @@ package io.github.spencerpark.jupyter.messages.reply;
 import com.google.gson.annotations.SerializedName;
 import io.github.spencerpark.jupyter.messages.ContentType;
 import io.github.spencerpark.jupyter.messages.MessageType;
+import io.github.spencerpark.jupyter.messages.ReplyType;
+import io.github.spencerpark.jupyter.messages.request.CompleteRequest;
 
 import java.util.List;
 import java.util.Map;
 
-public class CompleteReply implements ContentType<CompleteReply> {
+public class CompleteReply implements ContentType<CompleteReply>, ReplyType<CompleteRequest> {
     public static final MessageType<CompleteReply> MESSAGE_TYPE = MessageType.COMPLETE_REPLY;
+    public static final MessageType<CompleteRequest> REQUEST_MESSAGE_TYPE = MessageType.COMPLETE_REQUEST;
 
     @Override
     public MessageType<CompleteReply> getType() {
         return MESSAGE_TYPE;
+    }
+
+    @Override
+    public MessageType<CompleteRequest> getRequestType() {
+        return REQUEST_MESSAGE_TYPE;
     }
 
     protected final String status = "ok";
