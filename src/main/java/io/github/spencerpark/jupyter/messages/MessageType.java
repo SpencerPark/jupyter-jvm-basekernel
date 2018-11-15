@@ -78,9 +78,12 @@ public class MessageType<T> {
         this.name = name;
         this.contentType = contentType;
         this.id = NEXT_ID.getAndIncrement();
-        if (!isErrorType) TYPE_BY_NAME.put(name, this);
-        if (!isErrorType) this.errorType = new MessageType<>(name, ErrorReply.class, true);
-        else this.errorType = null;
+        if (!isErrorType) {
+            TYPE_BY_NAME.put(name, this);
+            this.errorType = new MessageType<>(name, ErrorReply.class, true);
+        } else {
+            this.errorType = null;
+        }
     }
 
     public String getName() {
@@ -93,6 +96,14 @@ public class MessageType<T> {
 
     public MessageType<ErrorReply> error() {
         return this.errorType;
+    }
+
+    public boolean isError() {
+        return this.errorType == null;
+    }
+
+    public boolean isErrorFor(MessageType<?> other) {
+        return this.isError() && this == other.error();
     }
 
     @Override

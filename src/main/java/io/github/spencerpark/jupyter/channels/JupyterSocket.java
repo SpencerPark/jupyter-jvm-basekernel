@@ -10,6 +10,7 @@ import io.github.spencerpark.jupyter.kernel.history.HistoryEntry;
 import io.github.spencerpark.jupyter.messages.*;
 import io.github.spencerpark.jupyter.messages.adapters.*;
 import io.github.spencerpark.jupyter.messages.publish.PublishStatus;
+import io.github.spencerpark.jupyter.messages.reply.ErrorReply;
 import io.github.spencerpark.jupyter.messages.request.HistoryRequest;
 import org.zeromq.ZMQ;
 
@@ -34,6 +35,7 @@ public abstract class JupyterSocket extends ZMQ.Socket {
             .registerTypeAdapter(PublishStatus.class, PublishStatusAdapter.INSTANCE)
             .registerTypeAdapter(HistoryRequest.class, HistoryRequestAdapter.INSTANCE)
             .registerTypeAdapter(HistoryEntry.class, HistoryEntryAdapter.INSTANCE)
+            .registerTypeAdapter(ReplyType.class, ReplyTypeAdapter.INSTANCE)
             //.setPrettyPrinting()
             .create();
     private static final JsonParser json = new JsonParser();
@@ -95,6 +97,8 @@ public abstract class JupyterSocket extends ZMQ.Socket {
 
         Map<String, Object> metadata = gson.fromJson(new String(metadataRaw, UTF_8), JSON_OBJ_AS_MAP);
         Object content = gson.fromJson(new String(contentRaw, UTF_8), header.getType().getContentType());
+        if (content instanceof ErrorReply)
+            header = new Header<>(header.getId(), header.getUsername(), header.getSessionId(), header.getTimestamp(), header.getType().error(), header.getVersion());
 
         Message<?> message = new Message(identities, header, parentHeader, metadata, content, blobs);
 
