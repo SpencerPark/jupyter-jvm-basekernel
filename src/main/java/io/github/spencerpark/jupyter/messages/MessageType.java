@@ -63,7 +63,7 @@ public class MessageType<T> {
     public static final MessageType<CommMsgCommand> COMM_MSG_COMMAND = new MessageType<>("comm_msg", CommMsgCommand.class);
     public static final MessageType<CommCloseCommand> COMM_CLOSE_COMMAND = new MessageType<>("comm_close", CommCloseCommand.class);
 
-    public static final MessageType<?> UNKNOWN = new MessageType<>("none", Object.class);
+    public static final MessageType<Object> UNKNOWN = new MessageType<>("none", Object.class);
 
     private final String name;
     private final Class<T> contentType;

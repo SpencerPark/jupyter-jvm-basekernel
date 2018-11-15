@@ -28,14 +28,16 @@ public abstract class JupyterSocket extends ZMQ.Socket {
     public static final Charset UTF_8 = Charset.forName("utf8");
 
     private static final byte[] IDENTITY_BLOB_DELIMITER = "<IDS|MSG>".getBytes(ASCII); // Comes from a python bytestring
+    private static final Gson replyGson = new GsonBuilder()
+            .registerTypeAdapter(HistoryEntry.class, HistoryEntryAdapter.INSTANCE)
+            .create();
     private static final Gson gson = new GsonBuilder()
             .registerTypeAdapter(KernelTimestamp.class, KernelTimestampAdapter.INSTANCE)
             .registerTypeAdapter(Header.class, HeaderAdapter.INSTANCE)
             .registerTypeAdapter(MessageType.class, MessageTypeAdapter.INSTANCE)
             .registerTypeAdapter(PublishStatus.class, PublishStatusAdapter.INSTANCE)
             .registerTypeAdapter(HistoryRequest.class, HistoryRequestAdapter.INSTANCE)
-            .registerTypeAdapter(HistoryEntry.class, HistoryEntryAdapter.INSTANCE)
-            .registerTypeAdapter(ReplyType.class, ReplyTypeAdapter.INSTANCE)
+            .registerTypeHierarchyAdapter(ReplyType.class, new ReplyTypeAdapter(replyGson))
             //.setPrettyPrinting()
             .create();
     private static final JsonParser json = new JsonParser();
