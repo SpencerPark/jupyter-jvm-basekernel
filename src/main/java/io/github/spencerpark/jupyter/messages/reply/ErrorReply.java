@@ -1,7 +1,6 @@
 package io.github.spencerpark.jupyter.messages.reply;
 
 import com.google.gson.annotations.SerializedName;
-import io.github.spencerpark.jupyter.messages.ExpressionValue;
 import io.github.spencerpark.jupyter.messages.MessageType;
 import io.github.spencerpark.jupyter.messages.ReplyType;
 
@@ -9,7 +8,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ErrorReply implements ExpressionValue, ReplyType<Object> {
+public class ErrorReply implements ReplyType<Object> {
+    @Override
+    public MessageType<Object> getRequestType() {
+        return MessageType.UNKNOWN;
+    }
+
     public static ErrorReply of(Exception exception) {
         String name = exception.getClass().getSimpleName();
         String msg = exception.getLocalizedMessage();
@@ -56,10 +60,5 @@ public class ErrorReply implements ExpressionValue, ReplyType<Object> {
 
     public List<String> getStacktrace() {
         return stacktrace;
-    }
-
-    @Override
-    public MessageType<Object> getRequestType() {
-        return MessageType.UNKNOWN;
     }
 }

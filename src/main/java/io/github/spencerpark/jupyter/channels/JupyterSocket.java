@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
+import io.github.spencerpark.jupyter.kernel.ExpressionValue;
 import io.github.spencerpark.jupyter.kernel.KernelConnectionProperties;
 import io.github.spencerpark.jupyter.kernel.history.HistoryEntry;
 import io.github.spencerpark.jupyter.messages.*;
@@ -30,6 +31,7 @@ public abstract class JupyterSocket extends ZMQ.Socket {
     private static final byte[] IDENTITY_BLOB_DELIMITER = "<IDS|MSG>".getBytes(ASCII); // Comes from a python bytestring
     private static final Gson replyGson = new GsonBuilder()
             .registerTypeAdapter(HistoryEntry.class, HistoryEntryAdapter.INSTANCE)
+            .registerTypeAdapter(ExpressionValue.class, ExpressionValueAdapter.INSTANCE)
             .create();
     private static final Gson gson = new GsonBuilder()
             .registerTypeAdapter(KernelTimestamp.class, KernelTimestampAdapter.INSTANCE)

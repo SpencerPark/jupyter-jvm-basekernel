@@ -1,7 +1,7 @@
 package io.github.spencerpark.jupyter.messages.reply;
 
 import com.google.gson.annotations.SerializedName;
-import io.github.spencerpark.jupyter.messages.ExpressionValue;
+import io.github.spencerpark.jupyter.kernel.ExpressionValue;
 import io.github.spencerpark.jupyter.messages.MessageType;
 import io.github.spencerpark.jupyter.messages.ReplyType;
 import io.github.spencerpark.jupyter.messages.publish.PublishDisplayData;
