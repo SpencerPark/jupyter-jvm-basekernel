@@ -9,6 +9,15 @@ public abstract class ExpressionValue {
 
     private ExpressionValue() { } // Seal the class
 
+    /**
+     * Check if this {@link ExpressionValue} is a {@link ExpressionValue.Success Success}
+     * or not (an {@link ExpressionValue.Error Error}. If this method returns {@code true}
+     * then this object can be safely cast to a {@link ExpressionValue.Success} or if {@code false}
+     * then {@link ExpressionValue.Error}.
+     *
+     * @return true if this values is an instance of {@link ExpressionValue.Success} and
+     *         false if {@link ExpressionValue.Error}.
+     */
     public abstract boolean isSuccess();
 
     public static class Error extends ExpressionValue {
