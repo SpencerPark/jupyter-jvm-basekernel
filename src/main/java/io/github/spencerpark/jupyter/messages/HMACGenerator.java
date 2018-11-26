@@ -14,7 +14,7 @@ public class HMACGenerator {
     public static final HMACGenerator NO_AUTH_INSTANCE = new HMACGenerator() {
         @Override
         public String calculateSignature(byte[]... messageParts) {
-            return null;
+            return "";
         }
     };
 

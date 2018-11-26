@@ -90,6 +90,10 @@ public class KernelConnectionProperties {
             return new HMACGenerator(signatureScheme, key);
     }
 
+    public String toJsonString() {
+        return new Gson().toJson(this);
+    }
+
     @Override
     public String toString() {
         return "KernelConnectionProperties{" +
