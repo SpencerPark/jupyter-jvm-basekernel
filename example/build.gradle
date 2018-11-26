@@ -1,6 +1,6 @@
 plugins {
     id "java"
-    id "io.github.spencerpark.jupyter-kernel-installer" version "2.0.0"
+    id "io.github.spencerpark.jupyter-kernel-installer" version "2.1.0"
 }
 
 group 'io.github.spencerpark'
@@ -31,7 +31,7 @@ dependencies {
 jar {
     //Include all shaded dependencies in the jar
     from configurations.shade
-            .collect {it.isDirectory() ? it : zipTree(it)}
+            .collect { it.isDirectory() ? it : zipTree(it) }
 
     manifest {
         attributes('Main-class': 'io.github.spencerpark.jupyter.INashornJS')
@@ -43,4 +43,16 @@ jupyter {
     kernelDisplayName = 'NashornJS'
     kernelLanguage = 'js'
     kernelInterruptMode = 'message'
+    kernelParameters {
+        list('engine-arg', 'JS_ENGINE_ARGS') {
+            separator = ' '
+            description = 'A comma separated list of arguments to give to the scripting engine.'
+        }
+    }
+}
+
+zipKernel {
+    installers {
+        with 'python'
+    }
 }
