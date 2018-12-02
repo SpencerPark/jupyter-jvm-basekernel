@@ -17,51 +17,70 @@ import java.util.regex.Pattern;
  * glob despite it not being the platform separator.
  */
 public class GlobFinder {
-    private static class GlobSegment implements DirectoryStream.Filter<Path> {
-        public static final GlobSegment ANY_FILE = new GlobSegment(Pattern.compile("^.*$"), true);
+    private static class GlobSegment {
+        public enum FilterRestriction {
+            ONLY_FILES(true, false),
+            ONLY_DIRECTORIES(false, true),
+            ANYTHING(true, true);
+
+            private final boolean acceptsFiles;
+            private final boolean acceptsDirectories;
+
+            FilterRestriction(boolean acceptsFiles, boolean acceptsDirectories) {
+                this.acceptsFiles = acceptsFiles;
+                this.acceptsDirectories = acceptsDirectories;
+            }
+
+            public boolean acceptsFiles() {
+                return acceptsFiles;
+            }
+
+            public boolean acceptsDirectories() {
+                return acceptsDirectories;
+            }
+        }
+
+        public static final GlobSegment ANY = new GlobSegment(Pattern.compile("^.*$"));
 
         private final String literal;
         private final Pattern regex;
 
-        private final boolean isLast;
-
-        public GlobSegment(String literal, boolean isLast) {
+        public GlobSegment(String literal) {
             this.literal = literal;
             this.regex = null;
-            this.isLast = isLast;
         }
 
-        public GlobSegment(Pattern regex, boolean isLast) {
+        public GlobSegment(Pattern regex) {
             this.literal = null;
             this.regex = regex;
-            this.isLast = isLast;
         }
 
         public boolean isLiteral() {
             return this.literal != null;
         }
 
-        @Override
-        public boolean accept(Path s) throws IOException {
-            BasicFileAttributes attributes = Files.readAttributes(s, BasicFileAttributes.class);
+        public DirectoryStream.Filter<Path> filter(FilterRestriction restriction) {
+            return s -> {
+                BasicFileAttributes attributes = Files.readAttributes(s, BasicFileAttributes.class);
 
-            if ((attributes.isRegularFile() && !this.isLast) || (attributes.isDirectory() && this.isLast))
-                return false;
+                if ((attributes.isRegularFile() && !restriction.acceptsFiles()) || (attributes.isDirectory() && !restriction.acceptsDirectories()))
+                    return false;
 
-            Path pathName = s.getFileName();
+                Path pathName = s.getFileName();
 
-            if (pathName == null)
-                return false;
+                if (pathName == null)
+                    return false;
 
-            String name = pathName.toString();
-            return this.literal != null
-                    ? this.literal.equals(name)
-                    : this.regex.matcher(name).matches();
+                String name = pathName.toString();
+                return this.literal != null
+                        ? this.literal.equals(name)
+                        : this.regex.matcher(name).matches();
+            };
         }
 
         @Override
         public String toString() {
-            return (isLast ? "file: " : "dir: ") + (isLiteral() ? this.literal : this.regex.pattern());
+            return this.isLiteral() ? this.literal : this.regex.pattern();
         }
     }
 
@@ -77,12 +96,14 @@ public class GlobFinder {
 
     private final Path base;
     private final List<GlobSegment> segments;
+    private final boolean isExplicitDirectory;
 
     public GlobFinder(FileSystem fs, String glob) {
         // Split with "/" but match with the actual separator
         String[] segments = SPLITTER.split(glob);
-        // If the glob ends with "/" then we add an extra wildcard pattern
-        List<GlobSegment> matchers = new ArrayList<>(segments.length + 1);
+        this.isExplicitDirectory = glob.endsWith("/");
+
+        List<GlobSegment> matchers = new ArrayList<>(segments.length);
         int lastBaseSegmentIdx = 0;
 
         for (int i = 0; i < segments.length; i++) {
@@ -121,15 +142,12 @@ public class GlobFinder {
             assert m.hitEnd() : "Glob construction missed some characters.";
 
             if (wildcards == 0 && singleWildcards == 0) {
-                matchers.add(new GlobSegment(lit.toString(), i == segments.length - 1));
+                matchers.add(new GlobSegment(lit.toString()));
                 if (lastBaseSegmentIdx == i) lastBaseSegmentIdx++;
             } else {
-                matchers.add(new GlobSegment(Pattern.compile("^" + pattern.toString() + "$"), i == segments.length - 1));
+                matchers.add(new GlobSegment(Pattern.compile("^" + pattern.toString() + "$")));
             }
         }
-
-        if (glob.endsWith("/"))
-            matchers.add(GlobSegment.ANY_FILE);
 
         // Cannot use the very nice `new File(glob).isAbsolute()` solution as this is restricted to the default file
         // system and doesn't use the `fs`. Additionally `Paths.get(glob).isAbsolute()` will fail with an illegal path
@@ -145,24 +163,45 @@ public class GlobFinder {
         this(FileSystems.getDefault(), glob);
     }
 
-    private void collect(Path dir, GlobSegment segment, List<GlobSegment> segments, Collection<Path> into) throws IOException {
-        try (DirectoryStream<Path> files = Files.newDirectoryStream(dir, segment)) {
-            boolean isMoreSegments = !segments.isEmpty();
+    public Iterable<Path> computeMatchingPaths() throws IOException {
+        if (this.segments.isEmpty()) {
+            if (Files.exists(this.base))
+                return Collections.singletonList(this.base);
+            else
+                return Collections.emptyList();
+        }
+
+        List<Path> paths = new ArrayList<>();
+        GlobSegment head = this.segments.get(0);
+        List<GlobSegment> tail = this.segments.subList(1, this.segments.size());
+
+        collectExplicit(GlobSegment.FilterRestriction.ANYTHING, this.base, head, tail, paths);
+
+        return paths;
+    }
+
+    private void collectExplicit(GlobSegment.FilterRestriction finalFilterRestriction, Path dir, GlobSegment segment, List<GlobSegment> segments, Collection<Path> into) throws IOException {
+        boolean isMoreSegments = !segments.isEmpty();
+        // Should match files if there are more segments in which case this must be a directory so
+        // we can continue. Otherwise we let the search determine if a file is acceptable.
+        GlobSegment.FilterRestriction filterRestriction = isMoreSegments ? GlobSegment.FilterRestriction.ONLY_DIRECTORIES : finalFilterRestriction;
+
+        try (DirectoryStream<Path> files = Files.newDirectoryStream(dir, segment.filter(filterRestriction))) {
             GlobSegment head = isMoreSegments ? segments.get(0) : null;
             List<GlobSegment> tail = isMoreSegments ? segments.subList(1, segments.size()) : Collections.emptyList();
 
             for (Path p : files) {
-                if (isMoreSegments && Files.isDirectory(p))
-                    collect(p, head, tail, into);
+                if (isMoreSegments)
+                    collectExplicit(finalFilterRestriction, p, head, tail, into);
                 else
                     into.add(p);
             }
         }
     }
 
-    public Iterable<Path> computeMatchingPaths() throws IOException {
+    public Iterable<Path> computeMatchingFiles() throws IOException {
         if (this.segments.isEmpty()) {
-            if (Files.isDirectory(this.base))
+            if (Files.isDirectory(this.base) && this.isExplicitDirectory)
                 return Files.newDirectoryStream(this.base, Files::isRegularFile);
             if (Files.isRegularFile(this.base))
                 return Collections.singleton(this.base);
@@ -171,9 +210,19 @@ public class GlobFinder {
 
         List<Path> paths = new ArrayList<>();
         GlobSegment head = this.segments.get(0);
-        List<GlobSegment> tail = this.segments.subList(1, this.segments.size());
+        List<GlobSegment> tail;
 
-        collect(this.base, head, tail, paths);
+        // If explicitly ends with a "/" then the pattern means match all files in this directory
+        // otherwise we assume the last pattern is a file matcher.
+        if (this.isExplicitDirectory) {
+            tail = new ArrayList<>(this.segments.size() + 1);
+            Collections.copy(tail, this.segments.subList(1, this.segments.size()));
+            tail.add(GlobSegment.ANY);
+        } else {
+            tail = this.segments.subList(1, this.segments.size());
+        }
+
+        collectExplicit(GlobSegment.FilterRestriction.ONLY_FILES, this.base, head, tail, paths);
 
         return paths;
     }
