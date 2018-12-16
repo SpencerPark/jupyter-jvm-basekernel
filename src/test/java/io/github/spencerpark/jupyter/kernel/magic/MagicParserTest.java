@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -11,6 +12,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class MagicParserTest {
+    public static List<String> split(String args) {
+        return MagicParser.split(args);
+    }
+
     private MagicParser inlineParser;
     private MagicParser solParser;
 
