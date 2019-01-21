@@ -1,29 +1,17 @@
 package io.github.spencerpark.jupyter.ipywidgets.protocol;
 
-import io.github.spencerpark.jupyter.ipywidgets.common.ComponentCoordinates;
-import io.github.spencerpark.jupyter.ipywidgets.gson.JsonInline;
+import com.google.gson.JsonElement;
 
-public class WidgetState {
-    @JsonInline("_model_{0}")
-    private ComponentCoordinates model;
+import java.util.EnumSet;
 
-    @JsonInline("_view_{0}")
-    private ComponentCoordinates view;
-
-    private WidgetState() {
-        // For GSON
+public interface WidgetState {
+    public default StatePatch constructPatch() {
+        return this.constructPatch(EnumSet.of(StatePatch.Opts.CLEAR_DIRTY));
     }
 
-    public WidgetState(ComponentCoordinates model, ComponentCoordinates view) {
-        this.model = model;
-        this.view = view;
-    }
+    public StatePatch constructPatch(EnumSet<StatePatch.Opts> opts);
 
-    public ComponentCoordinates getModelCoordinates() {
-        return model;
-    }
+    public void applyPatch(StatePatch patch);
 
-    public ComponentCoordinates getViewCoordinates() {
-        return view;
-    }
+    public void handleCustomContent(JsonElement content);
 }

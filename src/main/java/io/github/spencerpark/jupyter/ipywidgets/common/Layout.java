@@ -1,10 +1,20 @@
 package io.github.spencerpark.jupyter.ipywidgets.common;
 
 import com.google.gson.annotations.SerializedName;
+import io.github.spencerpark.jupyter.ipywidgets.props.WidgetCoordinates;
 import io.github.spencerpark.jupyter.ipywidgets.props.WidgetProperty;
 import io.github.spencerpark.jupyter.ipywidgets.props.WidgetPropertyContainer;
+import io.github.spencerpark.jupyter.ipywidgets.protocol.ProtocolConstants;
 
 public class Layout extends WidgetPropertyContainer {
+    public static final WidgetCoordinates COORDS = register(
+            Layout::new,
+            WidgetCoordinates.BASE.with(b -> {
+                b.model.name("LayoutModel");
+                b.view.name("LayoutView").module("@jupyter-widgets/base").version(ProtocolConstants.JUPYTER_WIDGETS_BASE_VERSION);
+            })
+    );
+
     public enum AlignContent {
         @SerializedName("flex-start") FLEX_START,
         @SerializedName("flex-end") FLEX_END,
