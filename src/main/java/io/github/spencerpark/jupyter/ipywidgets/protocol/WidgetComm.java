@@ -77,7 +77,7 @@ public class WidgetComm extends Comm implements RemoteWidgetState {
     protected void receiveRequestState() {
         // Front-end is requesting the full state. Create a patch will all elements
         // and send an update message with that patch.
-        StatePatch patch = this.state.constructPatch(EnumSet.of(StatePatch.Opts.INCLUDE_ALL, StatePatch.Opts.CLEAR_DIRTY));
+        StatePatch patch = this.state.createPatch(EnumSet.of(StatePatch.Opts.INCLUDE_ALL, StatePatch.Opts.CLEAR_DIRTY));
         this.updateState(patch);
     }
 

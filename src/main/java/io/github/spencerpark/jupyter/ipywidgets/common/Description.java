@@ -1,6 +1,5 @@
 package io.github.spencerpark.jupyter.ipywidgets.common;
 
-import io.github.spencerpark.jupyter.ipywidgets.Widget;
 import io.github.spencerpark.jupyter.ipywidgets.props.WidgetCoordinates;
 import io.github.spencerpark.jupyter.ipywidgets.props.WidgetProperty;
 import io.github.spencerpark.jupyter.ipywidgets.props.WidgetPropertyContainer;

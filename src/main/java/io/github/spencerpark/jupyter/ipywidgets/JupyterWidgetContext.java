@@ -1,5 +1,7 @@
 package io.github.spencerpark.jupyter.ipywidgets;
 
+import com.google.gson.Gson;
+import io.github.spencerpark.jupyter.ipywidgets.gson.WidgetsGson;
 import io.github.spencerpark.jupyter.ipywidgets.props.WidgetPropertyContainer;
 import io.github.spencerpark.jupyter.ipywidgets.protocol.RemoteWidgetState;
 import io.github.spencerpark.jupyter.ipywidgets.protocol.StatePatch;
@@ -16,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class JupyterWidgetContext implements WidgetContext {
     private final CommManager commManager;
 
+    private final Gson gson = WidgetsGson.createInstance(this);
     private final Map<UUID, WeakReference<WidgetPropertyContainer>> instances = new ConcurrentHashMap<>();
 
 
@@ -28,7 +31,7 @@ public class JupyterWidgetContext implements WidgetContext {
         return commManager.openComm("jupyter.widget", (manager, id, target, openMsg) -> {
             openMsg.getMetadata().put("version", "2.0.0");
 
-            WidgetComm.initializeOpenMessage(openMsg, container.constructPatch(EnumSet.of(StatePatch.Opts.INCLUDE_ALL)));
+            WidgetComm.initializeOpenMessage(openMsg, container.createPatch(EnumSet.of(StatePatch.Opts.INCLUDE_ALL)));
 
             return new WidgetComm(manager, id, target, container);
         });
@@ -53,5 +56,10 @@ public class JupyterWidgetContext implements WidgetContext {
             return null;
 
         return ref.get();
+    }
+
+    @Override
+    public Gson getSerializer() {
+        return this.gson;
     }
 }

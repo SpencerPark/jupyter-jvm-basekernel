@@ -179,7 +179,7 @@ public class WidgetPropertyContainer implements WidgetState, Closeable {
 
     @Override
     public StatePatch createPatch(EnumSet<StatePatch.Opts> opts) {
-        Gson gson = WidgetsGson.getThreadLocalInstance();
+        Gson gson = this.context.getSerializer();
 
         StatePatch patch = new StatePatch();
         this.populatePatch("", gson, patch, opts);
@@ -209,7 +209,7 @@ public class WidgetPropertyContainer implements WidgetState, Closeable {
     }
 
     public void applyPatch(StatePatch patch) {
-        Gson gson = WidgetsGson.getThreadLocalInstance();
+        Gson gson = this.context.getSerializer();
 
         this.extractPatch("", gson, patch);
     }

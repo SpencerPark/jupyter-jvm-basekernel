@@ -2,6 +2,7 @@ package io.github.spencerpark.jupyter.ipywidgets.gson;
 
 import com.google.gson.*;
 import io.github.spencerpark.jupyter.ipywidgets.props.WidgetPropertyContainer;
+import io.github.spencerpark.jupyter.ipywidgets.protocol.WidgetContext;
 
 import java.lang.reflect.Type;
 import java.util.UUID;
@@ -9,9 +10,11 @@ import java.util.UUID;
 public class WidgetPropertyContainerTypeAdapter implements JsonSerializer<WidgetPropertyContainer>, JsonDeserializer<WidgetPropertyContainer> {
     private static final String IPY_MODEL_ID_PREFIX = "IPY_MODEL_";
 
-    public static final WidgetPropertyContainerTypeAdapter INSTANCE = new WidgetPropertyContainerTypeAdapter();
+    private final WidgetContext context;
 
-    private WidgetPropertyContainerTypeAdapter() { }
+    public WidgetPropertyContainerTypeAdapter(WidgetContext context) {
+        this.context = context;
+    }
 
     @Override
     public JsonElement serialize(WidgetPropertyContainer src, Type typeOfSrc, JsonSerializationContext context) {
@@ -21,6 +24,6 @@ public class WidgetPropertyContainerTypeAdapter implements JsonSerializer<Widget
     @Override
     public WidgetPropertyContainer deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         UUID id = UUID.fromString(json.getAsString().substring(IPY_MODEL_ID_PREFIX.length()));
-        return WidgetPropertyContainer.lookupInstance(id);
+        return this.context.lookupInstance(id);
     }
 }

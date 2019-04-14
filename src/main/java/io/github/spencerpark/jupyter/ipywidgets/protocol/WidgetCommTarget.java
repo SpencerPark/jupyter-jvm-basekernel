@@ -2,7 +2,6 @@ package io.github.spencerpark.jupyter.ipywidgets.protocol;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import io.github.spencerpark.jupyter.ipywidgets.gson.WidgetsGson;
 import io.github.spencerpark.jupyter.ipywidgets.props.WidgetCoordinates;
 import io.github.spencerpark.jupyter.ipywidgets.props.WidgetPropertyContainer;
 import io.github.spencerpark.jupyter.kernel.comm.Comm;
@@ -12,8 +11,14 @@ import io.github.spencerpark.jupyter.messages.Message;
 import io.github.spencerpark.jupyter.messages.comm.CommOpenCommand;
 
 public class WidgetCommTarget implements CommTarget {
-    public static void register(CommManager manager) {
-        manager.registerTarget("jupyter.widget", new WidgetCommTarget());
+    public static void register(CommManager manager, WidgetContext context) {
+        manager.registerTarget("jupyter.widget", new WidgetCommTarget(context));
+    }
+
+    private final WidgetContext context;
+
+    public WidgetCommTarget(WidgetContext context) {
+        this.context = context;
     }
 
     @Override
@@ -26,8 +31,8 @@ public class WidgetCommTarget implements CommTarget {
         JsonObject state = payload.get("state").getAsJsonObject();
         JsonElement bufferPaths = payload.get("buffer_paths");
 
-        WidgetCoordinates coords = WidgetsGson.getThreadLocalInstance().fromJson(state, WidgetCoordinates.class);
-        WidgetPropertyContainer container = WidgetPropertyContainer.instantiate(coords);
+        WidgetCoordinates coords = this.context.getSerializer().fromJson(state, WidgetCoordinates.class);
+        WidgetPropertyContainer container = WidgetPropertyContainer.instantiate(coords, this.context);
 
         WidgetComm comm = new WidgetComm(commManager, id, targetName, container);
 
