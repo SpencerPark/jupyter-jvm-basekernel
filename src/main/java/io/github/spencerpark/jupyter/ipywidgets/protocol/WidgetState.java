@@ -5,11 +5,11 @@ import com.google.gson.JsonElement;
 import java.util.EnumSet;
 
 public interface WidgetState {
-    public default StatePatch constructPatch() {
-        return this.constructPatch(EnumSet.of(StatePatch.Opts.CLEAR_DIRTY));
+    public default StatePatch createPatch() {
+        return this.createPatch(EnumSet.of(StatePatch.Opts.CLEAR_DIRTY));
     }
 
-    public StatePatch constructPatch(EnumSet<StatePatch.Opts> opts);
+    public StatePatch createPatch(EnumSet<StatePatch.Opts> opts);
 
     public void applyPatch(StatePatch patch);
 

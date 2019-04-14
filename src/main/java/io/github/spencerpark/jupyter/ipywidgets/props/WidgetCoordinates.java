@@ -6,6 +6,7 @@ import io.github.spencerpark.jupyter.ipywidgets.protocol.ProtocolConstants;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+// TODO WidgetCoordinates<T> for the type that is instantiated
 public class WidgetCoordinates {
     public static class Builder {
         public final ComponentCoordinates.Builder model = ComponentCoordinates.builder();

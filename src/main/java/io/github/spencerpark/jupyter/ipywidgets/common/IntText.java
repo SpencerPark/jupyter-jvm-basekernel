@@ -3,6 +3,7 @@ package io.github.spencerpark.jupyter.ipywidgets.common;
 import io.github.spencerpark.jupyter.ipywidgets.props.WidgetCoordinates;
 import io.github.spencerpark.jupyter.ipywidgets.props.WidgetProperty;
 import io.github.spencerpark.jupyter.ipywidgets.props.WidgetPropertyContainer;
+import io.github.spencerpark.jupyter.ipywidgets.protocol.WidgetContext;
 
 public class IntText extends WidgetPropertyContainer {
     public static final WidgetCoordinates COORDS = register(
@@ -13,7 +14,11 @@ public class IntText extends WidgetPropertyContainer {
             })
     );
 
-    public final Description description = super.inline("", new Description());
+    public IntText(WidgetContext context) {
+        super(context);
+    }
+
+    public final Description description = super.inline("", Description::new);
 
     public final WidgetProperty<Integer> value = super.property("value", Integer.class, 0);
 

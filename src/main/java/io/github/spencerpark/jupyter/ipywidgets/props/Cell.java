@@ -3,6 +3,11 @@ package io.github.spencerpark.jupyter.ipywidgets.props;
 import java.lang.reflect.Type;
 import java.util.function.Function;
 
+/**
+ * A memory container for a widget property value.
+ *
+ * @param <V> the type of the value.
+ */
 public final class Cell<V> {
     private final Type type;
     private V value;

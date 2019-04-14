@@ -5,6 +5,7 @@ import io.github.spencerpark.jupyter.ipywidgets.props.WidgetCoordinates;
 import io.github.spencerpark.jupyter.ipywidgets.props.WidgetProperty;
 import io.github.spencerpark.jupyter.ipywidgets.props.WidgetPropertyContainer;
 import io.github.spencerpark.jupyter.ipywidgets.protocol.ProtocolConstants;
+import io.github.spencerpark.jupyter.ipywidgets.protocol.WidgetContext;
 
 public class Layout extends WidgetPropertyContainer {
     public static final WidgetCoordinates COORDS = register(
@@ -80,6 +81,10 @@ public class Layout extends WidgetPropertyContainer {
         @SerializedName("unset") UNSET
     }
 
+    public Layout(WidgetContext context) {
+        super(context);
+    }
+
     public final WidgetProperty<AlignContent> alignContent = super.property("align_content", AlignContent.class);
     public final WidgetProperty<AlignItems> alignItems = super.property("align_items", AlignItems.class);
     public final WidgetProperty<AlignSelf> alignSelf = super.property("align_self", AlignSelf.class);
@@ -108,5 +113,5 @@ public class Layout extends WidgetPropertyContainer {
     public final WidgetProperty<Visibility> visibility = super.property("visibility", Visibility.class);
     public final WidgetProperty<String> width = super.property("width", String.class);
 
-    public final Grid grid = super.inline("grid_", new Grid());
+    public final Grid grid = super.inline("grid_", Grid::new);
 }

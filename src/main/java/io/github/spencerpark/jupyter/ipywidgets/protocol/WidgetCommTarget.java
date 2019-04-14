@@ -29,12 +29,9 @@ public class WidgetCommTarget implements CommTarget {
         WidgetCoordinates coords = WidgetsGson.getThreadLocalInstance().fromJson(state, WidgetCoordinates.class);
         WidgetPropertyContainer container = WidgetPropertyContainer.instantiate(coords);
 
-        WidgetComm comm = new WidgetComm(commManager, id, targetName);
+        WidgetComm comm = new WidgetComm(commManager, id, targetName, container);
 
         comm.receiveUpdate(state, bufferPaths == null ? null : bufferPaths.getAsJsonArray(), msg.getBlobs());
-
-        container.connect(comm);
-        container.
 
         return comm;
     }

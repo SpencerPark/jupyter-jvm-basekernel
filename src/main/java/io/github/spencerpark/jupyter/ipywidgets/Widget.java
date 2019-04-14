@@ -1,5 +1,6 @@
 package io.github.spencerpark.jupyter.ipywidgets;
 
+import io.github.spencerpark.jupyter.ipywidgets.props.WidgetProperty;
 import io.github.spencerpark.jupyter.ipywidgets.props.WidgetPropertyContainer;
 import io.github.spencerpark.jupyter.ipywidgets.protocol.StatePatch;
 import io.github.spencerpark.jupyter.ipywidgets.protocol.WidgetComm;
@@ -9,16 +10,21 @@ import io.github.spencerpark.jupyter.kernel.display.DisplayDataRenderable;
 import io.github.spencerpark.jupyter.kernel.display.RenderContext;
 import io.github.spencerpark.jupyter.kernel.display.mime.MIMEType;
 
+import java.util.Map;
 import java.util.Set;
 
 public class Widget<S extends WidgetPropertyContainer> implements DisplayDataRenderable {
     private final WidgetComm comm;
 
     private final S state;
+    private final Map<WidgetProperty, Widget> subwidgets;
 
     protected Widget(WidgetManager manager, S state) {
         this.state = state;
         this.state.notifyChildren(manager);
+    }
+
+    protected Widget(WidgetProperty<S> state) {
 
     }
 
@@ -44,11 +50,8 @@ public class Widget<S extends WidgetPropertyContainer> implements DisplayDataRen
     public void render(RenderContext context) {
 //TODO
         WidgetPropertyContainer container = new WidgetPropertyContainer();
-        container.connect(manager);
-        container.property("");
-
-        container.getProperty("dsadsa").set(blah);
-        container
+        container.open(manager);
+        container.sync();
     }
 
     private void syncState() {

@@ -3,6 +3,7 @@ package io.github.spencerpark.jupyter.ipywidgets.common;
 import com.google.gson.annotations.SerializedName;
 import io.github.spencerpark.jupyter.ipywidgets.props.WidgetProperty;
 import io.github.spencerpark.jupyter.ipywidgets.props.WidgetPropertyContainer;
+import io.github.spencerpark.jupyter.ipywidgets.protocol.WidgetContext;
 
 public class GridAuto extends WidgetPropertyContainer {
     public enum GridAutoFlow {
@@ -13,6 +14,10 @@ public class GridAuto extends WidgetPropertyContainer {
         @SerializedName("inherit") INHERIT,
         @SerializedName("initial") INITIAL,
         @SerializedName("unset") UNSET
+    }
+
+    public GridAuto(WidgetContext context) {
+        super(context);
     }
 
     public final WidgetProperty<String> columns = super.property("columns", String.class);

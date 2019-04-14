@@ -3,55 +3,50 @@ package io.github.spencerpark.jupyter.ipywidgets.props;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import io.github.spencerpark.jupyter.ipywidgets.gson.WidgetsGson;
-import io.github.spencerpark.jupyter.ipywidgets.protocol.RemoteWidgetState;
-import io.github.spencerpark.jupyter.ipywidgets.protocol.StatePatch;
-import io.github.spencerpark.jupyter.ipywidgets.protocol.WidgetComm;
-import io.github.spencerpark.jupyter.ipywidgets.protocol.WidgetState;
-import io.github.spencerpark.jupyter.kernel.comm.CommManager;
+import io.github.spencerpark.jupyter.ipywidgets.protocol.*;
 
 import java.io.Closeable;
-import java.lang.ref.WeakReference;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 // TODO should be an interface as we intend to create a declarative version.
 public class WidgetPropertyContainer implements WidgetState, Closeable {
-    private static final Map<WidgetCoordinates, Supplier<? extends WidgetPropertyContainer>> REGISTRY = new ConcurrentHashMap<>();
-    private static final Map<UUID, WeakReference<WidgetPropertyContainer>> INSTANCES = new ConcurrentHashMap<>();
+    private static final Map<WidgetCoordinates, WidgetPropertyContainerConstructor<?>> REGISTRY = new ConcurrentHashMap<>();
 
-    protected static WidgetCoordinates register(Supplier<? extends WidgetPropertyContainer> instantiator, WidgetCoordinates coords) {
-        REGISTRY.put(coords, instantiator);
+    protected static WidgetCoordinates register(WidgetPropertyContainerConstructor<?> constructor, WidgetCoordinates coords) {
+        REGISTRY.put(coords, constructor);
         return coords;
     }
 
-    public static <T extends WidgetPropertyContainer> T instantiate(WidgetCoordinates coords) {
-        Supplier<? extends WidgetPropertyContainer> instantiator = REGISTRY.get(coords);
+    public static <T extends WidgetPropertyContainer> T instantiate(WidgetCoordinates coords, WidgetContext context) {
+        WidgetPropertyContainerConstructor<?> constructor = REGISTRY.get(coords);
         // TODO support multiple versions
-        return instantiator == null ? null : (T) instantiator.get();
+        return constructor == null ? null : (T) constructor.construct(context);
     }
 
-    public static WidgetPropertyContainer lookupInstance(UUID id) {
-        WeakReference<WidgetPropertyContainer> ref = INSTANCES.get(id);
-        if (ref == null)
-            return null;
-
-        return ref.get();
-    }
-
-    private final UUID id = UUID.randomUUID();
+    private final UUID id;
 
     protected WidgetPropertyContainer enclosingContainer;
     private final Map<String, WidgetProperty> props = new LinkedHashMap<>();
     private final Map<String, WidgetPropertyContainer> inlineContainers = new LinkedHashMap<>();
-    private final Set<String> subWidgetProps = new LinkedHashSet<>();
+
+    // Isolated props are accessible through this container as a regular `property()` but
+    // they are not synchronized.
+    private final Set<String> isolatedProps = new LinkedHashSet<>();
 
     private RemoteWidgetState remote = null;
 
-    public WidgetPropertyContainer() {
-        INSTANCES.put(this.id, new WeakReference<>(this));
+    // Collected in here until resumed.
+    private Map<String, PropertyChange> pausedChanges = new LinkedHashMap<>();
+
+    private final WidgetContext context;
+
+    public WidgetPropertyContainer(WidgetContext context) {
+        this.context = context;
+        // TODO only connected instances should get an id.
+        this.id = context.registerInstance(this);
     }
 
     public UUID getId() {
@@ -64,7 +59,7 @@ public class WidgetPropertyContainer implements WidgetState, Closeable {
     @Override
     protected void finalize() throws Throwable {
         super.finalize();
-        INSTANCES.remove(this.id);
+        this.context.unregisterInstance(this);
     }
 
     public boolean isOpen() {
@@ -76,24 +71,24 @@ public class WidgetPropertyContainer implements WidgetState, Closeable {
     }
 
     public boolean isConnected() {
-        return this.isOpen() && !this.remote.isAccessible();
+        return this.isOpen() && this.remote.isAccessible();
     }
 
-    public RemoteWidgetState open(CommManager commManager) {
+    public RemoteWidgetState connect() {
+        if (this.isInline())
+            return this.getEnclosingContainer().connect();
+
         if (this.isConnected())
             return this.remote;
 
-        WidgetComm comm = commManager.openComm("jupyter.widget", (manager, id, target, openMsg) -> {
-            openMsg.getMetadata().put("version", "2.0.0");
+        this.remote = context.connect(this);
 
-            WidgetComm.initializeOpenMessage(openMsg, this.constructPatch(EnumSet.of(StatePatch.Opts.INCLUDE_ALL)));
+        // Connect any unconnected isolated sub containers.
+        this.isolatedProps.stream()
+                .map(this.props::get)
+                .forEach(sub -> ((WidgetPropertyContainer) sub.get()).connect());
 
-            return new WidgetComm(manager, id, target, this);
-        });
-
-        this.remote = comm;
-
-        return comm;
+        return this.remote;
     }
 
     @Override
@@ -106,7 +101,7 @@ public class WidgetPropertyContainer implements WidgetState, Closeable {
 
     public void sync() {
         if (this.isOpen()) {
-            StatePatch patch = this.constructPatch();
+            StatePatch patch = this.createPatch();
             this.remote.updateState(patch);
         }
     }
@@ -114,6 +109,14 @@ public class WidgetPropertyContainer implements WidgetState, Closeable {
     public void replaceRemote(RemoteWidgetState remote) {
         this.close(); // TODO is this method necessary?
         this.remote = remote;
+    }
+
+    protected boolean isInline() {
+        return this.enclosingContainer != null;
+    }
+
+    protected WidgetPropertyContainer getEnclosingContainer() {
+        return this.enclosingContainer;
     }
 
     // TODO check for duplicated names?
@@ -135,9 +138,10 @@ public class WidgetPropertyContainer implements WidgetState, Closeable {
         return this.registerProperty(name, new SimpleProperty<>(defaultValue.getClass(), defaultValue));
     }
 
-    protected <T extends WidgetPropertyContainer> T inline(String prefix, T childContainer) {
+    protected <T extends WidgetPropertyContainer> T inline(String prefix, WidgetPropertyContainerConstructor<? extends T> childContainerConstructor) {
+        T childContainer = childContainerConstructor.construct(this.context);
         if (childContainer.enclosingContainer != null)
-            throw new IllegalStateException("Container is already inlined in another container.");
+            throw new IllegalStateException("Container constructor should provide a fresh instance.");
 
         childContainer.enclosingContainer = this;
         this.inlineContainers.put(prefix, childContainer);
@@ -145,12 +149,35 @@ public class WidgetPropertyContainer implements WidgetState, Closeable {
         return childContainer;
     }
 
-    protected <T extends WidgetPropertyContainer> T inline(String prefix, T childContainer, Consumer<T> configure) {
+    protected <T extends WidgetPropertyContainer> T inline(String prefix, WidgetPropertyContainerConstructor<? extends T> childContainerConstructor, Consumer<T> configure) {
+        T childContainer = this.inline(prefix, childContainerConstructor);
         configure.accept(childContainer);
-        return this.inline(prefix, childContainer);
+        return childContainer;
     }
 
+    protected <T extends WidgetPropertyContainer> WidgetProperty<T> isolated(String name, WidgetPropertyContainerConstructor<? extends T> constructor) {
+        T child = constructor.construct(this.context);
+        return this.isolated(name, child);
+    }
 
+    protected <T extends WidgetPropertyContainer> WidgetProperty<T> isolated(String name, WidgetPropertyContainerConstructor<? extends T> constructor, Consumer<T> configure) {
+        T child = constructor.construct(this.context);
+        WidgetProperty<T> prop = this.isolated(name, child);
+        configure.accept(child);
+        return prop;
+    }
+
+    private <T extends WidgetPropertyContainer> WidgetProperty<T> isolated(String name, T child) {
+        WidgetProperty<T> prop = this.property(name, child);
+        this.isolatedProps.add(name);
+        return prop;
+    }
+
+    private <V> void onUpdate(String prop, PropertyChange<V> change) {
+        // TODO fold the changes so that a change back to original is skipped
+    }
+
+    @Override
     public StatePatch createPatch(EnumSet<StatePatch.Opts> opts) {
         Gson gson = WidgetsGson.getThreadLocalInstance();
 
@@ -169,9 +196,9 @@ public class WidgetPropertyContainer implements WidgetState, Closeable {
         this.props.forEach((name, prop) -> {
             if (all || prop.isDirty()) {
                 if (prop instanceof RawDataWidgetProperty)
-                    patch.putBinary(prefix + name, ((RawDataWidgetProperty) prop).toBytes());
+                    patch.putBinary(prefix + name, ((RawDataWidgetProperty) prop).toBytes(prop.get()));
                 else if (prop instanceof MultiRawDataWidgetProperty)
-                    patch.putBinary(prefix + name, ((MultiRawDataWidgetProperty) prop).toBytes());
+                    patch.putBinary(prefix + name, ((MultiRawDataWidgetProperty) prop).toBytes(prop.get()));
                 else
                     patch.putJson(prefix + name, gson.toJsonTree(prop.get(), prop.getType()));
 
@@ -202,8 +229,7 @@ public class WidgetPropertyContainer implements WidgetState, Closeable {
             if (prop == null)
                 return;
 
-            prop.set(gson.fromJson(json, prop.getType()));
-            prop.setDirty(false);
+            prop.setCleanly(gson.fromJson(json, prop.getType()));
         });
 
         patch.forEachBuffer((key, buffers) -> {
@@ -215,29 +241,32 @@ public class WidgetPropertyContainer implements WidgetState, Closeable {
             if (prop == null)
                 return;
 
+            Object value;
             if (prop instanceof RawDataWidgetProperty) {
-                ((RawDataWidgetProperty) prop).fromBytes(buffers.get(0));
-                prop.setDirty(false);
+                value = ((RawDataWidgetProperty) prop).fromBytes(buffers.get(0));
             } else if (prop instanceof MultiRawDataWidgetProperty) {
-                ((MultiRawDataWidgetProperty) prop).fromBytes(buffers);
-                prop.setDirty(false);
+                value = ((MultiRawDataWidgetProperty) prop).fromBytes(buffers);
+            } else {
+                return;
             }
+
+            prop.setCleanly(value);
         });
     }
 
     @Override
     public void handleCustomContent(JsonElement payload) {
         // TODO implement event listener style attachments for custom content?
-        return
     }
 
     public void update(Runnable updater) {
-        try {
-            this.pauseSync();
-            updater.run();
-        } finally {
-            this.resumeSync();
-            this.sync();
-        }
+        // TODO needs to be implemented once synchronization is implemented
+//        try {
+//            this.pauseSync();
+//            updater.run();
+//        } finally {
+//            this.resumeSync();
+//            this.sync();
+//        }
     }
 }
