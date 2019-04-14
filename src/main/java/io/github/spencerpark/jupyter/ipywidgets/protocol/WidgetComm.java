@@ -40,6 +40,8 @@ public class WidgetComm extends Comm implements RemoteWidgetState {
 
     @Override
     public void updateState(StatePatch patch) {
+        if (patch.isEmpty()) return;
+
         JsonObject state = patch.getState();
         JsonArray bufferPaths = patch.getBufferPaths();
         List<byte[]> buffers = patch.getBuffers();

@@ -136,6 +136,10 @@ public class StatePatch {
         return buffer == null ? null : buffer.getBuffers();
     }
 
+    public boolean isEmpty() {
+        return this.state.size() == 0 && this.buffers.isEmpty();
+    }
+
     public void forEachJson(BiConsumer<String, JsonElement> consumer) {
         this.state.entrySet().forEach(e -> consumer.accept(e.getKey(), e.getValue()));
     }
@@ -204,5 +208,14 @@ public class StatePatch {
         this.buffers.forEach(buffer -> buffers.addAll(buffer.getBuffers()));
 
         return buffers;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("StatePatch {\n");
+        sb.append("\tstate = ").append(state).append('\n');
+        sb.append("\tbuffers = ").append(buffers).append('\n');
+        sb.append("}\n");
+        return sb.toString();
     }
 }

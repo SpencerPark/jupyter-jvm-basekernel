@@ -2,7 +2,6 @@ package io.github.spencerpark.jupyter.ipywidgets.props;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import io.github.spencerpark.jupyter.ipywidgets.gson.WidgetsGson;
 import io.github.spencerpark.jupyter.ipywidgets.protocol.*;
 
 import java.io.Closeable;
@@ -74,6 +73,16 @@ public class WidgetPropertyContainer implements WidgetState, Closeable {
         return this.isOpen() && this.remote.isAccessible();
     }
 
+    private void registerSyncOnUpdate() {
+        // TODO this needs to be a lot smarter but for sake of faster prototyping this is it
+        WidgetPropertyContainer connectedContainer = this.getRootContainer();
+        this.props.keySet().stream()
+                .filter(name -> !this.isolatedProps.contains(name))
+                .map(this.props::get)
+                .forEach(p -> p.onChange(c -> connectedContainer.sync()));
+        this.inlineContainers.values().forEach(WidgetPropertyContainer::registerSyncOnUpdate);
+    }
+
     public RemoteWidgetState connect() {
         if (this.isInline())
             return this.getEnclosingContainer().connect();
@@ -82,6 +91,7 @@ public class WidgetPropertyContainer implements WidgetState, Closeable {
             return this.remote;
 
         this.remote = context.connect(this);
+        this.registerSyncOnUpdate();
 
         // Connect any unconnected isolated sub containers.
         this.isolatedProps.stream()
@@ -106,17 +116,19 @@ public class WidgetPropertyContainer implements WidgetState, Closeable {
         }
     }
 
-    public void replaceRemote(RemoteWidgetState remote) {
-        this.close(); // TODO is this method necessary?
-        this.remote = remote;
-    }
-
     protected boolean isInline() {
         return this.enclosingContainer != null;
     }
 
     protected WidgetPropertyContainer getEnclosingContainer() {
         return this.enclosingContainer;
+    }
+
+    protected WidgetPropertyContainer getRootContainer() {
+        WidgetPropertyContainer container = this;
+        while (container.getEnclosingContainer() != null)
+            container = container.getEnclosingContainer();
+        return container;
     }
 
     // TODO check for duplicated names?

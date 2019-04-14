@@ -22,4 +22,14 @@ public final class PropertyChange<V> {
     public boolean wasDirty() {
         return wasDirty;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("PropertyChange {\n");
+        sb.append("\toldValue = ").append(oldValue).append('\n');
+        sb.append("\tnewValue = ").append(newValue).append('\n');
+        sb.append("\twasDirty = ").append(wasDirty).append('\n');
+        sb.append("}\n");
+        return sb.toString();
+    }
 }

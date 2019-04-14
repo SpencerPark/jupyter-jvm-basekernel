@@ -31,13 +31,16 @@ public abstract class BaseProperty<V> implements WidgetProperty<V> {
     public WidgetProperty<V> set(V value) {
         this.validate(value);
 
-        if (this.listener != null) {
-            PropertyChange<V> change = new PropertyChange<>(this.value, value, this.dirty);
-            this.listener.accept(change);
-        }
+        V oldValue = this.value;
+        boolean wasDirty = this.dirty;
 
         this.value = value;
         this.dirty = true;
+
+        if (this.listener != null) {
+            PropertyChange<V> change = new PropertyChange<>(oldValue, value, wasDirty);
+            this.listener.accept(change);
+        }
 
         return this;
     }
@@ -70,12 +73,14 @@ public abstract class BaseProperty<V> implements WidgetProperty<V> {
 
     @Override
     public void onChange(Consumer<PropertyChange<V>> listener) {
-        if (this.listener == null)
+        if (this.listener == null) {
             this.listener = listener;
-        else
+        } else {
+            Consumer<PropertyChange<V>> oldListener = this.listener;
             this.listener = change -> {
-                this.listener.accept(change);
+                oldListener.accept(change);
                 listener.accept(change);
             };
+        }
     }
 }
