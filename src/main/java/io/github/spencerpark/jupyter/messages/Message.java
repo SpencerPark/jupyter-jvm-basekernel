@@ -1,9 +1,6 @@
 package io.github.spencerpark.jupyter.messages;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Message<T> implements MessageContext {
     private List<byte[]> identities;
@@ -83,6 +80,13 @@ public class Message<T> implements MessageContext {
 
     public Map<String, Object> getMetadata() {
         return metadata;
+    }
+
+    public Map<String, Object> getNonNullMetadata() {
+        if (this.hasMetadata())
+            return this.getMetadata();
+        this.metadata = new LinkedHashMap<>();
+        return this.metadata;
     }
 
     public T getContent() {
