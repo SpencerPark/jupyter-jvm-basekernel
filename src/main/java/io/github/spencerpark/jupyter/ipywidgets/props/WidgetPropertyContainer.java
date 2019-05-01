@@ -2,9 +2,14 @@ package io.github.spencerpark.jupyter.ipywidgets.props;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import io.github.spencerpark.jupyter.ipywidgets.gson.WidgetsGson;
 import io.github.spencerpark.jupyter.ipywidgets.protocol.*;
 
 import java.io.Closeable;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,10 +17,46 @@ import java.util.function.Consumer;
 
 // TODO should be an interface as we intend to create a declarative version.
 public class WidgetPropertyContainer implements WidgetState, Closeable {
-    private static final Map<WidgetCoordinates, WidgetPropertyContainerConstructor<?>> REGISTRY = new ConcurrentHashMap<>();
+    private static final MethodType WPC_CONSTRUCTOR_SIGNATURE = MethodType.methodType(void.class, WidgetContext.class);
 
-    protected static WidgetCoordinates register(WidgetPropertyContainerConstructor<?> constructor, WidgetCoordinates coords) {
+    private static final class ReflectWidgetPropertyContainerConstructor<T extends WidgetPropertyContainer> implements WidgetPropertyContainerConstructor<T> {
+        private final MethodHandle handle;
+
+        public ReflectWidgetPropertyContainerConstructor(MethodHandle handle) {
+            this.handle = handle;
+        }
+
+        @Override
+        public T construct(WidgetContext context) {
+            try {
+                return (T) handle.invokeExact(context);
+            } catch (Throwable t) {
+                throw new RuntimeException("Error invoking constructor", t);
+            }
+        }
+    }
+
+    private static final Map<WidgetCoordinates, WidgetPropertyContainerConstructor<?>> REGISTRY = new ConcurrentHashMap<>();
+    private static final Map<Class, WidgetCoordinates> INV_REGISTRY = new ConcurrentHashMap<>();
+
+    protected static <T extends WidgetPropertyContainer> WidgetCoordinates register(Class<? extends T> type, WidgetPropertyContainerConstructor<T> constructor, WidgetCoordinates coords) {
         REGISTRY.put(coords, constructor);
+        INV_REGISTRY.put(type, coords);
+        return coords;
+    }
+
+    protected static <T extends WidgetPropertyContainer> WidgetCoordinates register(Class<? extends T> type, WidgetCoordinates coords) {
+        MethodHandle constructor;
+        try {
+            constructor = MethodHandles.publicLookup().findConstructor(type, WPC_CONSTRUCTOR_SIGNATURE);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException("Widget classes registered without a builder function must have a public constructor that accepts a WidgetContext.", e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+
+        REGISTRY.put(coords, new ReflectWidgetPropertyContainerConstructor<>(constructor));
+        INV_REGISTRY.put(type, coords);
         return coords;
     }
 
@@ -194,6 +235,8 @@ public class WidgetPropertyContainer implements WidgetState, Closeable {
         Gson gson = this.context.getSerializer();
 
         StatePatch patch = new StatePatch();
+        if (opts.contains(StatePatch.Opts.INCLUDE_ALL))
+            patch.putAllJson((JsonObject) gson.toJsonTree(INV_REGISTRY.get(this.getClass())));
         this.populatePatch("", gson, patch, opts);
 
         return patch;

@@ -7,7 +7,7 @@ import io.github.spencerpark.jupyter.ipywidgets.protocol.WidgetContext;
 
 public class DescriptionStyle extends WidgetPropertyContainer {
     public static final WidgetCoordinates COORDS = register(
-            DescriptionStyle::new,
+            DescriptionStyle.class,
             StyleBase.COORDS.with((model, view) -> model.module("DescriptionStyleModel"))
     );
 

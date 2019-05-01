@@ -9,7 +9,7 @@ import io.github.spencerpark.jupyter.ipywidgets.protocol.WidgetContext;
 
 public class Layout extends WidgetPropertyContainer {
     public static final WidgetCoordinates COORDS = register(
-            Layout::new,
+            Layout.class,
             WidgetCoordinates.BASE.with(b -> {
                 b.model.name("LayoutModel");
                 b.view.name("LayoutView").module("@jupyter-widgets/base").version(ProtocolConstants.JUPYTER_WIDGETS_BASE_VERSION);

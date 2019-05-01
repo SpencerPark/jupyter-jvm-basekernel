@@ -3,10 +3,7 @@ package io.github.spencerpark.jupyter.ipywidgets;
 import com.google.gson.Gson;
 import io.github.spencerpark.jupyter.ipywidgets.gson.WidgetsGson;
 import io.github.spencerpark.jupyter.ipywidgets.props.WidgetPropertyContainer;
-import io.github.spencerpark.jupyter.ipywidgets.protocol.RemoteWidgetState;
-import io.github.spencerpark.jupyter.ipywidgets.protocol.StatePatch;
-import io.github.spencerpark.jupyter.ipywidgets.protocol.WidgetComm;
-import io.github.spencerpark.jupyter.ipywidgets.protocol.WidgetContext;
+import io.github.spencerpark.jupyter.ipywidgets.protocol.*;
 import io.github.spencerpark.jupyter.kernel.comm.CommManager;
 
 import java.lang.ref.WeakReference;
@@ -16,11 +13,16 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class JupyterWidgetContext implements WidgetContext {
+    public static JupyterWidgetContext install(CommManager commManager) {
+        JupyterWidgetContext context = new JupyterWidgetContext(commManager);
+        WidgetCommTarget.register(commManager, context);
+        return context;
+    }
+
     private final CommManager commManager;
 
     private final Gson gson = WidgetsGson.createInstance(this);
     private final Map<UUID, WeakReference<WidgetPropertyContainer>> instances = new ConcurrentHashMap<>();
-
 
     public JupyterWidgetContext(CommManager commManager) {
         this.commManager = commManager;
@@ -28,8 +30,8 @@ public class JupyterWidgetContext implements WidgetContext {
 
     @Override
     public RemoteWidgetState connect(WidgetPropertyContainer container) {
-        return commManager.openComm("jupyter.widget", (manager, id, target, openMsg) -> {
-            openMsg.getMetadata().put("version", "2.0.0");
+        return this.commManager.openComm("jupyter.widget", (manager, id, target, openMsg) -> {
+            openMsg.getNonNullMetadata().put("version", "2.0.0");
 
             WidgetComm.initializeOpenMessage(openMsg, container.createPatch(EnumSet.of(StatePatch.Opts.INCLUDE_ALL)));
 

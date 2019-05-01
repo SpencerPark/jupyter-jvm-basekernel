@@ -7,7 +7,7 @@ import io.github.spencerpark.jupyter.ipywidgets.protocol.WidgetContext;
 
 public class Description extends WidgetPropertyContainer {
     public static final WidgetCoordinates COORDS = register(
-            Description::new,
+            Description.class,
             DOMBase.COORDS.with((model, view) -> model.name("DescriptionModel"))
     );
 

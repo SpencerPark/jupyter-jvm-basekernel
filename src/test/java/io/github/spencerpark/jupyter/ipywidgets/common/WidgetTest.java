@@ -3,10 +3,13 @@ package io.github.spencerpark.jupyter.ipywidgets.common;
 import io.github.spencerpark.jupyter.ipywidgets.mock.MockRemoteWidgetState;
 import io.github.spencerpark.jupyter.ipywidgets.mock.MockWidgetContext;
 import io.github.spencerpark.jupyter.ipywidgets.protocol.RemoteWidgetState;
+import io.github.spencerpark.jupyter.ipywidgets.protocol.StatePatch;
 import io.github.spencerpark.jupyter.ipywidgets.protocol.WidgetContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.EnumSet;
 
 import static org.junit.Assert.*;
 
@@ -21,6 +24,19 @@ public class WidgetTest {
     @After
     public void tearDown() throws Exception {
         this.context = null;
+    }
+
+    @Test
+    public void widgetsHaveModelAndViewProps() {
+        IntText t = this.context.inflate(IntText::new);
+        StatePatch p = t.createPatch(EnumSet.of(StatePatch.Opts.INCLUDE_ALL));
+
+        assertNotNull(p.getJson("_model_module"));
+        assertNotNull(p.getJson("_model_module_version"));
+        assertNotNull(p.getJson("_model_name"));
+        assertNotNull(p.getJson("_view_module"));
+        assertNotNull(p.getJson("_view_module_version"));
+        assertNotNull(p.getJson("_view_name"));
     }
 
     @Test

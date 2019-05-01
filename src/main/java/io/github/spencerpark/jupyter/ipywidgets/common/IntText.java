@@ -3,15 +3,16 @@ package io.github.spencerpark.jupyter.ipywidgets.common;
 import io.github.spencerpark.jupyter.ipywidgets.props.WidgetCoordinates;
 import io.github.spencerpark.jupyter.ipywidgets.props.WidgetProperty;
 import io.github.spencerpark.jupyter.ipywidgets.props.WidgetPropertyContainer;
+import io.github.spencerpark.jupyter.ipywidgets.protocol.ProtocolConstants;
 import io.github.spencerpark.jupyter.ipywidgets.protocol.WidgetContext;
 
 public class IntText extends WidgetPropertyContainer {
     public static final WidgetCoordinates COORDS = register(
-            IntText::new,
+            IntText.class,
             Description.COORDS.with(b -> {
                 b.model.name("IntTextModel");
                 b.view.name("IntTextView");
-            })
+            }).with(ProtocolConstants.CORE_WIDGET)
     );
 
     public IntText(WidgetContext context) {

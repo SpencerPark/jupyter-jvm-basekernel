@@ -10,7 +10,7 @@ import java.util.List;
 
 public class DOMBase extends WidgetPropertyContainer {
     public static final WidgetCoordinates COORDS = register(
-            DOMBase::new,
+            DOMBase.class,
             WidgetCoordinates.BASE.with(b -> b.model.name("DOMWidgetModel"))
     );
 

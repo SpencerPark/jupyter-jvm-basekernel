@@ -127,6 +127,10 @@ public class StatePatch {
         this.state.add(key, value);
     }
 
+    public void putAllJson(JsonObject object) {
+        object.entrySet().forEach(e -> this.putJson(e.getKey(), e.getValue()));
+    }
+
     public JsonElement getJson(String key) {
         return this.state.get(key);
     }
