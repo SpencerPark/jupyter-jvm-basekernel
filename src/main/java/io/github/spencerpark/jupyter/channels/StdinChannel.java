@@ -1,11 +1,12 @@
 package io.github.spencerpark.jupyter.channels;
 
 import io.github.spencerpark.jupyter.kernel.KernelConnectionProperties;
+import io.github.spencerpark.jupyter.messages.HMACGenerator;
 import io.github.spencerpark.jupyter.messages.Message;
 import io.github.spencerpark.jupyter.messages.MessageContext;
 import io.github.spencerpark.jupyter.messages.reply.InputReply;
 import io.github.spencerpark.jupyter.messages.request.InputRequest;
-import io.github.spencerpark.jupyter.messages.HMACGenerator;
+import org.zeromq.SocketType;
 import org.zeromq.ZMQ;
 
 import java.util.logging.Level;
@@ -13,7 +14,7 @@ import java.util.logging.Logger;
 
 public class StdinChannel extends JupyterSocket {
     public StdinChannel(ZMQ.Context context, HMACGenerator hmacGenerator) {
-        super(context, ZMQ.ROUTER, hmacGenerator, Logger.getLogger("StdinChannel"));
+        super(context, SocketType.ROUTER, hmacGenerator, Logger.getLogger("StdinChannel"));
     }
 
     @Override

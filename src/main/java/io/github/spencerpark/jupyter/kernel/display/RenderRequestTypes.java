@@ -43,10 +43,10 @@ public class RenderRequestTypes {
                     this.suffixAssociation,
                     this.requestsWildcard,
                     this.requestsWildcard || this.entireGroupRequests.isEmpty()
-                            ? Collections.EMPTY_SET
+                            ? Collections.emptySet()
                             : this.entireGroupRequests,
                     this.requestsWildcard || this.requestedTypes.isEmpty()
-                            ? Collections.EMPTY_SET
+                            ? Collections.emptySet()
                             : this.requestedTypes
             );
         }

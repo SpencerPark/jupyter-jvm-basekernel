@@ -143,6 +143,7 @@ public class Renderer {
      *
      * @return the data container holding the rendered view of the {@code value}.
      */
+    @SuppressWarnings("unchecked")
     public DisplayData render(Object value, Map<String, Object> params) {
         DisplayData out = new DisplayData();
 
@@ -225,6 +226,7 @@ public class Renderer {
      *
      * @return a {@link DisplayData} container with all the rendered data.
      */
+    @SuppressWarnings("unchecked")
     public DisplayData renderAs(Object value, Map<String, Object> params, String... types) {
         DisplayData out = new DisplayData();
 

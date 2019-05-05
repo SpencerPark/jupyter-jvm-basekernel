@@ -17,6 +17,7 @@ public class Magics {
     // Magic application
 
     public <T> T applyLineMagic(String name, List<String> args) throws Exception {
+        @SuppressWarnings("unchecked")
         LineMagicFunction<T> magic = (LineMagicFunction<T>) this.lineMagics.get(name);
 
         if (magic == null)
@@ -26,6 +27,7 @@ public class Magics {
     }
 
     public <T> T applyCellMagic(String name, List<String> args, String body) throws Exception {
+        @SuppressWarnings("unchecked")
         CellMagicFunction<T> magic = (CellMagicFunction<T>) this.cellMagics.get(name);
 
         if (magic == null)

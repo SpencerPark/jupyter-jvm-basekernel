@@ -2,6 +2,7 @@ package io.github.spencerpark.jupyter.channels;
 
 import io.github.spencerpark.jupyter.kernel.KernelConnectionProperties;
 import io.github.spencerpark.jupyter.messages.HMACGenerator;
+import org.zeromq.SocketType;
 import org.zeromq.ZMQ;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -17,7 +18,7 @@ public class HeartbeatChannel extends JupyterSocket {
     private volatile Loop pulse;
 
     public HeartbeatChannel(ZMQ.Context context, HMACGenerator hmacGenerator, long sleep) {
-        super(context, ZMQ.REP, hmacGenerator, Logger.getLogger("HeartbeatChannel"));
+        super(context, SocketType.REP, hmacGenerator, Logger.getLogger("HeartbeatChannel"));
         this.sleep = sleep;
     }
 

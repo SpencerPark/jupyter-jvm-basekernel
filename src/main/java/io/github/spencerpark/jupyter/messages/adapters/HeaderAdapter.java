@@ -15,7 +15,7 @@ public class HeaderAdapter implements JsonSerializer<Header>, JsonDeserializer<H
     @Override
     public Header deserialize(JsonElement element, Type type, JsonDeserializationContext ctx) throws JsonParseException {
         JsonObject object = element.getAsJsonObject();
-        return new Header(
+        return new Header<>(
                 object.get("msg_id").getAsString(),
                 object.get("username").getAsString(),
                 object.get("session").getAsString(),

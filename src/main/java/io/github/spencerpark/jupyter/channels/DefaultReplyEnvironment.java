@@ -88,6 +88,7 @@ public class DefaultReplyEnvironment implements ReplyEnvironment {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void replyError(MessageType<?> type, ErrorReply error) {
         reply(new Message(context, type, error));
     }

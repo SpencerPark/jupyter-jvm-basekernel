@@ -3,6 +3,7 @@ package io.github.spencerpark.jupyter.channels;
 import io.github.spencerpark.jupyter.kernel.KernelConnectionProperties;
 import io.github.spencerpark.jupyter.messages.HMACGenerator;
 import io.github.spencerpark.jupyter.messages.Message;
+import org.zeromq.SocketType;
 import org.zeromq.ZMQ;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -20,7 +21,7 @@ public class ShellChannel extends JupyterSocket {
     private final long sleep;
 
     public ShellChannel(ZMQ.Context context, HMACGenerator hmacGenerator, boolean isControl, JupyterConnection connection, long sleep) {
-        super(context, ZMQ.ROUTER, hmacGenerator, Logger.getLogger(isControl ? "ControlChannel" : "ShellChannel"));
+        super(context, SocketType.ROUTER, hmacGenerator, Logger.getLogger(isControl ? "ControlChannel" : "ShellChannel"));
         this.isControl = isControl;
         this.connection = connection;
         this.sleep = sleep;
@@ -35,6 +36,7 @@ public class ShellChannel extends JupyterSocket {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void bind(KernelConnectionProperties connProps) {
         if (this.isBound())
             throw new IllegalStateException("Shell channel already bound");

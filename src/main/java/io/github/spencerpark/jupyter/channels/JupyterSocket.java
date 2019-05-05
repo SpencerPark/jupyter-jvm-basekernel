@@ -13,6 +13,7 @@ import io.github.spencerpark.jupyter.messages.adapters.*;
 import io.github.spencerpark.jupyter.messages.publish.PublishStatus;
 import io.github.spencerpark.jupyter.messages.reply.ErrorReply;
 import io.github.spencerpark.jupyter.messages.request.HistoryRequest;
+import org.zeromq.SocketType;
 import org.zeromq.ZMQ;
 
 import java.lang.reflect.Type;
@@ -54,7 +55,7 @@ public abstract class JupyterSocket extends ZMQ.Socket {
     protected final Logger logger;
     protected boolean closed;
 
-    protected JupyterSocket(ZMQ.Context context, int type, HMACGenerator hmacGenerator, Logger logger) {
+    protected JupyterSocket(ZMQ.Context context, SocketType type, HMACGenerator hmacGenerator, Logger logger) {
         super(context, type);
         this.ctx = context;
         this.hmacGenerator = hmacGenerator;
@@ -104,13 +105,15 @@ public abstract class JupyterSocket extends ZMQ.Socket {
         if (content instanceof ErrorReply)
             header = new Header<>(header.getId(), header.getUsername(), header.getSessionId(), header.getTimestamp(), header.getType().error(), header.getVersion());
 
+        @SuppressWarnings("unchecked")
         Message<?> message = new Message(identities, header, parentHeader, metadata, content, blobs);
 
-        logger.finer(() -> "Received from " + super.base().getsockoptx(zmq.ZMQ.ZMQ_LAST_ENDPOINT) + ":\n" + gson.toJson(message));
+        logger.finer(() -> "Received from " + super.base().getSocketOptx(zmq.ZMQ.ZMQ_LAST_ENDPOINT) + ":\n" + gson.toJson(message));
 
         return message;
     }
 
+    @SuppressWarnings("unchecked")
     public <T> Message<T> readMessage(MessageType<T> type) {
         Message<?> message = readMessage();
         if (message.getHeader().getType() != type) {
@@ -134,7 +137,7 @@ public abstract class JupyterSocket extends ZMQ.Socket {
 
         String hmac = hmacGenerator.calculateSignature(headerRaw, parentHeaderRaw, metadata, content);
 
-        logger.finer(() -> "Sending to " + super.base().getsockoptx(zmq.ZMQ.ZMQ_LAST_ENDPOINT) + ":\n" + gson.toJson(message));
+        logger.finer(() -> "Sending to " + super.base().getSocketOptx(zmq.ZMQ.ZMQ_LAST_ENDPOINT) + ":\n" + gson.toJson(message));
 
         message.getIdentities().forEach(super::sendMore);
         super.sendMore(IDENTITY_BLOB_DELIMITER);
