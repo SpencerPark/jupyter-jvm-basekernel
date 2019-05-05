@@ -3,8 +3,10 @@ package io.github.spencerpark.jupyter.ipywidgets.props;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import io.github.spencerpark.jupyter.ipywidgets.gson.WidgetsGson;
 import io.github.spencerpark.jupyter.ipywidgets.protocol.*;
+import io.github.spencerpark.jupyter.kernel.display.DisplayDataRenderable;
+import io.github.spencerpark.jupyter.kernel.display.RenderContext;
+import io.github.spencerpark.jupyter.kernel.display.mime.MIMEType;
 
 import java.io.Closeable;
 import java.lang.invoke.MethodHandle;
@@ -16,7 +18,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 // TODO should be an interface as we intend to create a declarative version.
-public class WidgetPropertyContainer implements WidgetState, Closeable {
+public class WidgetPropertyContainer implements DisplayDataRenderable, WidgetState, Closeable {
+    public static final MIMEType MIME_TYPE = MIMEType.parse("application/vnd.jupyter.widget-view+json");
+
     private static final MethodType WPC_CONSTRUCTOR_SIGNATURE = MethodType.methodType(void.class, WidgetContext.class);
 
     private static final class ReflectWidgetPropertyContainerConstructor<T extends WidgetPropertyContainer> implements WidgetPropertyContainerConstructor<T> {
@@ -66,8 +70,6 @@ public class WidgetPropertyContainer implements WidgetState, Closeable {
         return constructor == null ? null : (T) constructor.construct(context);
     }
 
-    private final UUID id;
-
     protected WidgetPropertyContainer enclosingContainer;
     private final Map<String, WidgetProperty> props = new LinkedHashMap<>();
     private final Map<String, WidgetPropertyContainer> inlineContainers = new LinkedHashMap<>();
@@ -85,12 +87,10 @@ public class WidgetPropertyContainer implements WidgetState, Closeable {
 
     public WidgetPropertyContainer(WidgetContext context) {
         this.context = context;
-        // TODO only connected instances should get an id.
-        this.id = context.registerInstance(this);
     }
 
-    public UUID getId() {
-        return this.id;
+    public String getId() {
+        return this.remote.getId();
     }
 
     // Clean up the instance from the INSTANCES map, this map holds a weak reference to the instance and should
@@ -98,8 +98,9 @@ public class WidgetPropertyContainer implements WidgetState, Closeable {
     // map as well to avoid leaking it.
     @Override
     protected void finalize() throws Throwable {
+        if (this.isOpen())
+            this.close();
         super.finalize();
-        this.context.unregisterInstance(this);
     }
 
     public boolean isOpen() {
@@ -124,20 +125,25 @@ public class WidgetPropertyContainer implements WidgetState, Closeable {
         this.inlineContainers.values().forEach(WidgetPropertyContainer::registerSyncOnUpdate);
     }
 
+    private void connectIsolated() {
+        this.inlineContainers.values().forEach(WidgetPropertyContainer::connectIsolated);
+        this.isolatedProps.stream()
+                .map(this.props::get)
+                .forEach(sub -> ((WidgetPropertyContainer) sub.get()).connect());
+    }
+
     public RemoteWidgetState connect() {
+        // Connect any unconnected isolated sub containers **first**.
+        this.connectIsolated();
+
         if (this.isInline())
             return this.getEnclosingContainer().connect();
 
         if (this.isConnected())
             return this.remote;
 
-        this.remote = context.connect(this);
+        context.connect(this, remote -> this.remote = remote);
         this.registerSyncOnUpdate();
-
-        // Connect any unconnected isolated sub containers.
-        this.isolatedProps.stream()
-                .map(this.props::get)
-                .forEach(sub -> ((WidgetPropertyContainer) sub.get()).connect());
 
         return this.remote;
     }
@@ -323,5 +329,16 @@ public class WidgetPropertyContainer implements WidgetState, Closeable {
 //            this.resumeSync();
 //            this.sync();
 //        }
+    }
+
+    @Override
+    public void render(RenderContext context) {
+        context.renderIfRequested(WidgetPropertyContainer.MIME_TYPE, () -> {
+            Map<String, Object> data = new LinkedHashMap<>(3);
+            data.put("model_id", this.getId());
+            data.put("version_major", 2);
+            data.put("version_minor", 0);
+            return data;
+        });
     }
 }

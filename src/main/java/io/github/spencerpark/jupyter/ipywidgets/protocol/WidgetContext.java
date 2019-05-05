@@ -3,7 +3,7 @@ package io.github.spencerpark.jupyter.ipywidgets.protocol;
 import com.google.gson.Gson;
 import io.github.spencerpark.jupyter.ipywidgets.props.WidgetPropertyContainer;
 
-import java.util.UUID;
+import java.util.function.Consumer;
 
 public interface WidgetContext {
     public default <T extends WidgetPropertyContainer> T inflate(WidgetPropertyContainerConstructor<? extends T> constructor) {
@@ -12,13 +12,9 @@ public interface WidgetContext {
         return widget;
     }
 
-    public RemoteWidgetState connect(WidgetPropertyContainer container);
+    public RemoteWidgetState connect(WidgetPropertyContainer container, Consumer<RemoteWidgetState> initialize);
 
-    public UUID registerInstance(WidgetPropertyContainer instance);
-
-    public void unregisterInstance(WidgetPropertyContainer instance);
-
-    public WidgetPropertyContainer lookupInstance(UUID id);
+    public WidgetPropertyContainer lookupInstance(String id);
 
     public Gson getSerializer();
 }

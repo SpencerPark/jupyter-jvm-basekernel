@@ -5,6 +5,8 @@ import com.google.gson.JsonElement;
 import java.io.Closeable;
 
 public interface RemoteWidgetState extends Closeable {
+    public String getId();
+
     public void updateState(StatePatch patch);
 
     public void sendCustomContent(JsonElement content);

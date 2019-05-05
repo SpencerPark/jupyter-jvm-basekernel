@@ -5,7 +5,6 @@ import io.github.spencerpark.jupyter.ipywidgets.props.WidgetPropertyContainer;
 import io.github.spencerpark.jupyter.ipywidgets.protocol.WidgetContext;
 
 import java.lang.reflect.Type;
-import java.util.UUID;
 
 public class WidgetPropertyContainerTypeAdapter implements JsonSerializer<WidgetPropertyContainer>, JsonDeserializer<WidgetPropertyContainer> {
     private static final String IPY_MODEL_ID_PREFIX = "IPY_MODEL_";
@@ -18,12 +17,12 @@ public class WidgetPropertyContainerTypeAdapter implements JsonSerializer<Widget
 
     @Override
     public JsonElement serialize(WidgetPropertyContainer src, Type typeOfSrc, JsonSerializationContext context) {
-        return new JsonPrimitive(IPY_MODEL_ID_PREFIX + src.getId().toString());
+        return new JsonPrimitive(IPY_MODEL_ID_PREFIX + src.getId());
     }
 
     @Override
     public WidgetPropertyContainer deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-        UUID id = UUID.fromString(json.getAsString().substring(IPY_MODEL_ID_PREFIX.length()));
+        String id = json.getAsString().substring(IPY_MODEL_ID_PREFIX.length());
         return this.context.lookupInstance(id);
     }
 }

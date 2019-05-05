@@ -28,7 +28,7 @@ public abstract class BaseProperty<V> implements WidgetProperty<V> {
     }
 
     @Override
-    public WidgetProperty<V> set(V value) {
+    public void set(V value) {
         this.validate(value);
 
         V oldValue = this.value;
@@ -42,23 +42,14 @@ public abstract class BaseProperty<V> implements WidgetProperty<V> {
             this.listener.accept(change);
         }
 
-        return this;
     }
 
     @Override
-    public WidgetProperty<V> setCleanly(V value) {
+    public void setCleanly(V value) {
         this.validate(value);
 
         this.value = value;
 
-        return this;
-    }
-
-    @Override
-    public WidgetProperty<V> compute(Function<V, V> transformer) {
-        this.set(transformer.apply(this.get()));
-
-        return this;
     }
 
     @Override

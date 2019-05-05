@@ -7,19 +7,19 @@ import java.util.function.Function;
 public interface WidgetProperty<V> {
     public V get();
 
-    public WidgetProperty<V> set(V value);
+    public void set(V value);
 
     /**
      * Set the value of the parameter without changing the dirty status. Used mainly
      * for value synchronization. This also skips triggering the update listeners.
      *
      * @param value the new value for the property.
-     *
-     * @return the same instance for chaining.
      */
-    public WidgetProperty<V> setCleanly(V value);
+    public void setCleanly(V value);
 
-    public WidgetProperty<V> compute(Function<V, V> transformer);
+    public default void compute(Function<V, V> transformer) {
+        this.set(transformer.apply(this.get()));
+    }
 
 
     public Type getType();

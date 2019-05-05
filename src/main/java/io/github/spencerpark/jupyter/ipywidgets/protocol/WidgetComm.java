@@ -27,10 +27,16 @@ public class WidgetComm extends Comm implements RemoteWidgetState {
     }
 
     private final WidgetState state;
+    private Runnable onCloseHandler;
 
     public WidgetComm(CommManager manager, String id, String targetName, WidgetState state) {
         super(manager, id, targetName);
         this.state = state;
+    }
+
+    @Override
+    public String getId() {
+        return super.getID();
     }
 
     @Override
@@ -106,8 +112,21 @@ public class WidgetComm extends Comm implements RemoteWidgetState {
         }
     }
 
+    public void onClose(Runnable onCloseHandler) {
+        if (this.onCloseHandler == null) {
+            this.onCloseHandler = onCloseHandler;
+        } else {
+            Runnable oldHandler = this.onCloseHandler;
+            this.onCloseHandler = () -> {
+                oldHandler.run();
+                onCloseHandler.run();
+            };
+        }
+    }
+
     @Override
     protected void onClose(Message<CommCloseCommand> closeMessage, boolean sending) {
-
+        if (this.onCloseHandler != null)
+            this.onCloseHandler.run();
     }
 }
