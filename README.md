@@ -22,7 +22,7 @@ repositories {
 }
 
 dependencies {
-    compile group: 'io.github.spencerpark', name: 'jupyter-jvm-basekernel', version: '2.2.3'
+    compile group: 'io.github.spencerpark', name: 'jupyter-jvm-basekernel', version: '2.3.0'
 }
 ```
 
@@ -45,7 +45,7 @@ Edit your `pom.xml` to include the following:
   <dependency>
     <groupId>io.github.spencerpark</groupId>
     <artifactId>jupyter-jvm-basekernel</artifactId>
-    <version>2.2.3</version>
+    <version>2.3.0</version>
   </dependency>
 </dependencies>
 ```
