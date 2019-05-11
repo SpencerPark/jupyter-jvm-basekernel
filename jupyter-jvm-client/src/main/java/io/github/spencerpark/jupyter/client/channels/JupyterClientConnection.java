@@ -3,11 +3,10 @@ package io.github.spencerpark.jupyter.client.channels;
 import io.github.spencerpark.jupyter.channels.DefaultReplyEnvironment;
 import io.github.spencerpark.jupyter.channels.JupyterSocket;
 import io.github.spencerpark.jupyter.channels.ReplyEnvironment;
-import io.github.spencerpark.jupyter.kernel.KernelConnectionProperties;
+import io.github.spencerpark.jupyter.api.KernelConnectionProperties;
 import io.github.spencerpark.jupyter.messages.HMACGenerator;
 import io.github.spencerpark.jupyter.messages.Message;
 import io.github.spencerpark.jupyter.messages.MessageType;
-import io.github.spencerpark.jupyter.messages.request.KernelInfoRequest;
 import org.zeromq.ZMQ;
 
 import java.io.Closeable;

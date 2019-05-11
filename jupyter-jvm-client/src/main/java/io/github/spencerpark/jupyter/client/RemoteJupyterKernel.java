@@ -4,7 +4,7 @@ import io.github.spencerpark.jupyter.client.handlers.NoOpWildReplyHandler;
 import io.github.spencerpark.jupyter.client.handlers.ReplyHandler;
 import io.github.spencerpark.jupyter.client.handlers.TargetedReplyHandler;
 import io.github.spencerpark.jupyter.kernel.ExpressionValue;
-import io.github.spencerpark.jupyter.kernel.ReplacementOptions;
+import io.github.spencerpark.jupyter.api.ReplacementOptions;
 import io.github.spencerpark.jupyter.kernel.comm.CommManager;
 import io.github.spencerpark.jupyter.kernel.display.DisplayData;
 import io.github.spencerpark.jupyter.api.history.HistoryEntry;

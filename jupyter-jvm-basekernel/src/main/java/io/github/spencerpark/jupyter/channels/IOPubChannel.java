@@ -1,6 +1,6 @@
 package io.github.spencerpark.jupyter.channels;
 
-import io.github.spencerpark.jupyter.kernel.KernelConnectionProperties;
+import io.github.spencerpark.jupyter.api.KernelConnectionProperties;
 import io.github.spencerpark.jupyter.messages.HMACGenerator;
 import org.zeromq.SocketType;
 import org.zeromq.ZMQ;

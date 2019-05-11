@@ -1,6 +1,6 @@
 package io.github.spencerpark.jupyter.channels;
 
-import io.github.spencerpark.jupyter.kernel.KernelConnectionProperties;
+import io.github.spencerpark.jupyter.api.KernelConnectionProperties;
 import io.github.spencerpark.jupyter.messages.Message;
 import io.github.spencerpark.jupyter.messages.MessageContext;
 import io.github.spencerpark.jupyter.messages.HMACGenerator;
@@ -32,7 +32,7 @@ public class JupyterConnection {
         this.connProps = connProps;
         this.ctx = ZMQ.context(1);
 
-        HMACGenerator hmacGenerator = connProps.createHMACGenerator();
+        HMACGenerator hmacGenerator = HMACGenerator.fromConnectionProps(connProps);
 
         this.heartbeat = new HeartbeatChannel(this.ctx, hmacGenerator);
         this.shell = new ShellChannel(this.ctx, hmacGenerator, false, this);

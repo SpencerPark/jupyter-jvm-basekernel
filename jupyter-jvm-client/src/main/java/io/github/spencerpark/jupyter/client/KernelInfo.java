@@ -1,6 +1,6 @@
 package io.github.spencerpark.jupyter.client;
 
-import io.github.spencerpark.jupyter.kernel.LanguageInfo;
+import io.github.spencerpark.jupyter.api.LanguageInfo;
 
 import java.util.List;
 

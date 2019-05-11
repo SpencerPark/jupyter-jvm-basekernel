@@ -1,6 +1,6 @@
 package io.github.spencerpark.jupyter.client.system;
 
-import io.github.spencerpark.jupyter.kernel.KernelConnectionProperties;
+import io.github.spencerpark.jupyter.api.KernelConnectionProperties;
 
 import java.io.IOException;
 import java.net.ServerSocket;

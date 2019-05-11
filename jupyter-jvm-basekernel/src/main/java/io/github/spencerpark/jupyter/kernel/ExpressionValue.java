@@ -1,7 +1,7 @@
 package io.github.spencerpark.jupyter.kernel;
 
 import com.google.gson.annotations.SerializedName;
-import io.github.spencerpark.jupyter.kernel.display.DisplayData;
+import io.github.spencerpark.jupyter.api.display.DisplayData;
 
 import java.util.List;
 

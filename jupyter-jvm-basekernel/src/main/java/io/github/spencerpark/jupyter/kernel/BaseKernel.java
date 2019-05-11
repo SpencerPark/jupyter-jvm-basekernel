@@ -3,6 +3,8 @@ package io.github.spencerpark.jupyter.kernel;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.github.spencerpark.jupyter.api.JupyterKernel;
+import io.github.spencerpark.jupyter.api.LanguageInfo;
+import io.github.spencerpark.jupyter.api.ReplacementOptions;
 import io.github.spencerpark.jupyter.channels.JupyterConnection;
 import io.github.spencerpark.jupyter.channels.JupyterSocket;
 import io.github.spencerpark.jupyter.channels.ShellReplyEnvironment;
@@ -61,7 +63,7 @@ public abstract class BaseKernel implements JupyterKernel {
         return meta;
     }).get();
 
-    private final JupyterIO io;
+    private final DefaultJupyterIO io;
     private boolean shouldReplaceStdStreams;
 
     protected CommManager commManager;
@@ -71,7 +73,7 @@ public abstract class BaseKernel implements JupyterKernel {
     protected StringStyler errorStyler;
 
     public BaseKernel(Charset charset) {
-        this.io = new JupyterIO(charset);
+        this.io = new DefaultJupyterIO(charset);
         this.shouldReplaceStdStreams = true;
 
         this.commManager = new CommManager();
@@ -101,7 +103,7 @@ public abstract class BaseKernel implements JupyterKernel {
         this.io.display.display(data);
     }
 
-    public JupyterIO getIO() {
+    public DefaultJupyterIO getIO() {
         return this.io;
     }
 

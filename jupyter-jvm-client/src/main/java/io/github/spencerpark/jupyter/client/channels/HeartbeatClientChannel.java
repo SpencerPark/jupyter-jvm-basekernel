@@ -2,7 +2,7 @@ package io.github.spencerpark.jupyter.client.channels;
 
 import io.github.spencerpark.jupyter.channels.JupyterSocket;
 import io.github.spencerpark.jupyter.channels.Loop;
-import io.github.spencerpark.jupyter.kernel.KernelConnectionProperties;
+import io.github.spencerpark.jupyter.api.KernelConnectionProperties;
 import io.github.spencerpark.jupyter.messages.HMACGenerator;
 import org.zeromq.SocketType;
 import org.zeromq.ZMQ;

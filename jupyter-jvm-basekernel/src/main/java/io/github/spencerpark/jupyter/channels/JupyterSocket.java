@@ -6,7 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import io.github.spencerpark.jupyter.kernel.ExpressionValue;
-import io.github.spencerpark.jupyter.kernel.KernelConnectionProperties;
+import io.github.spencerpark.jupyter.api.KernelConnectionProperties;
 import io.github.spencerpark.jupyter.api.history.HistoryEntry;
 import io.github.spencerpark.jupyter.messages.*;
 import io.github.spencerpark.jupyter.messages.adapters.*;

@@ -1,4 +1,4 @@
-package io.github.spencerpark.jupyter.kernel;
+package io.github.spencerpark.jupyter.api;
 
 import java.util.List;
 

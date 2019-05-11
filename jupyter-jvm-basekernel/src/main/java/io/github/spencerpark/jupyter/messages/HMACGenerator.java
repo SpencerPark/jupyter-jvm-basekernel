@@ -1,5 +1,6 @@
 package io.github.spencerpark.jupyter.messages;
 
+import io.github.spencerpark.jupyter.api.KernelConnectionProperties;
 import io.github.spencerpark.jupyter.channels.JupyterSocket;
 
 import javax.crypto.Mac;
@@ -17,6 +18,13 @@ public class HMACGenerator {
             return "";
         }
     };
+
+    public static HMACGenerator fromConnectionProps(KernelConnectionProperties props) throws InvalidKeyException, NoSuchAlgorithmException {
+        if (props.getKey() == null || props.getKey().isEmpty())
+            return HMACGenerator.NO_AUTH_INSTANCE;
+        else
+            return new HMACGenerator(props.getSignatureScheme(), props.getKey());
+    }
 
     private final Mac mac;
 

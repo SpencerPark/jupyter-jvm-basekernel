@@ -1,6 +1,6 @@
 package io.github.spencerpark.jupyter.kernel.magic.common;
 
-import io.github.spencerpark.jupyter.kernel.DisplayStream;
+import io.github.spencerpark.jupyter.kernel.DefaultDisplayStream;
 import io.github.spencerpark.jupyter.api.display.DisplayData;
 import io.github.spencerpark.jupyter.api.display.Renderer;
 import io.github.spencerpark.jupyter.api.display.mime.MIMEType;
@@ -18,9 +18,9 @@ public class DisplayMagics {
             .build();
 
     private final Renderer renderer;
-    private final DisplayStream out;
+    private final DefaultDisplayStream out;
 
-    public DisplayMagics(Renderer renderer, DisplayStream out) {
+    public DisplayMagics(Renderer renderer, DefaultDisplayStream out) {
         this.renderer = renderer;
         this.out = out;
     }

@@ -1,11 +1,7 @@
-package io.github.spencerpark.jupyter.kernel;
+package io.github.spencerpark.jupyter.api;
 
 import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
-import io.github.spencerpark.jupyter.messages.HMACGenerator;
-
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 
 public class KernelConnectionProperties {
 
@@ -81,13 +77,6 @@ public class KernelConnectionProperties {
 
     public String getKey() {
         return key;
-    }
-
-    public HMACGenerator createHMACGenerator() throws InvalidKeyException, NoSuchAlgorithmException {
-        if (key == null || key.isEmpty())
-            return HMACGenerator.NO_AUTH_INSTANCE;
-        else
-            return new HMACGenerator(signatureScheme, key);
     }
 
     public String toJsonString() {

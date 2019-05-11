@@ -1,4 +1,4 @@
-package io.github.spencerpark.jupyter.kernel;
+package io.github.spencerpark.jupyter.api;
 
 import com.google.gson.annotations.SerializedName;
 
