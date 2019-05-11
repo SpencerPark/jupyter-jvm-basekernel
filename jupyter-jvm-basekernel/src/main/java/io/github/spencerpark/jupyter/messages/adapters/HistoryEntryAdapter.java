@@ -4,7 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
-import io.github.spencerpark.jupyter.kernel.history.HistoryEntry;
+import io.github.spencerpark.jupyter.api.history.HistoryEntry;
 
 import java.lang.reflect.Type;
 

@@ -1,6 +1,6 @@
 package io.github.spencerpark.jupyter.messages.reply;
 
-import io.github.spencerpark.jupyter.kernel.history.HistoryEntry;
+import io.github.spencerpark.jupyter.api.history.HistoryEntry;
 import io.github.spencerpark.jupyter.messages.ContentType;
 import io.github.spencerpark.jupyter.messages.MessageType;
 import io.github.spencerpark.jupyter.messages.ReplyType;

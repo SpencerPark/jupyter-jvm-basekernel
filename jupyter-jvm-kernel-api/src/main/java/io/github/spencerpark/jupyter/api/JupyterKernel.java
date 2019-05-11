@@ -2,6 +2,7 @@ package io.github.spencerpark.jupyter.api;
 
 import io.github.spencerpark.jupyter.api.display.DisplayData;
 import io.github.spencerpark.jupyter.api.display.Renderer;
+import io.github.spencerpark.jupyter.api.history.HistoryManager;
 
 import java.util.List;
 

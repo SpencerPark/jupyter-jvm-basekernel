@@ -1,4 +1,4 @@
-package io.github.spencerpark.jupyter.kernel.history;
+package io.github.spencerpark.jupyter.api.history;
 
 import java.util.Collections;
 import java.util.EnumSet;

@@ -1,4 +1,4 @@
-package io.github.spencerpark.jupyter.kernel.history;
+package io.github.spencerpark.jupyter.api.history;
 
 public class HistoryEntry {
     protected final int session;
