@@ -3,6 +3,7 @@ package io.github.spencerpark.jupyter.client.channels;
 import io.github.spencerpark.jupyter.channels.JupyterSocket;
 import io.github.spencerpark.jupyter.kernel.KernelConnectionProperties;
 import io.github.spencerpark.jupyter.messages.HMACGenerator;
+import org.zeromq.SocketType;
 import org.zeromq.ZMQ;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -18,7 +19,7 @@ public class IOPubClientChannel extends AbstractServerStyleChannel {
     }
 
     public IOPubClientChannel(ZMQ.Context context, HMACGenerator hmacGenerator, JupyterClientConnection connection, long sleep) {
-        super(context, ZMQ.SUB, hmacGenerator, Logger.getLogger("IOPubChannel-client"), connection, sleep);
+        super(context, SocketType.SUB, hmacGenerator, Logger.getLogger("IOPubChannel-client"), connection, sleep);
     }
 
     @Override

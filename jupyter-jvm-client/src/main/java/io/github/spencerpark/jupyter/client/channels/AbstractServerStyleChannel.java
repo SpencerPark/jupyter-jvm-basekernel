@@ -5,6 +5,7 @@ import io.github.spencerpark.jupyter.channels.Loop;
 import io.github.spencerpark.jupyter.messages.HMACGenerator;
 import io.github.spencerpark.jupyter.messages.Message;
 import io.github.spencerpark.jupyter.messages.MessageType;
+import org.zeromq.SocketType;
 import org.zeromq.ZMQ;
 
 import java.util.logging.Level;
@@ -16,7 +17,7 @@ public abstract class AbstractServerStyleChannel extends JupyterSocket {
     protected final JupyterClientConnection connection;
     protected final long sleep;
 
-    public AbstractServerStyleChannel(ZMQ.Context context, int zmqType, HMACGenerator hmacGenerator, Logger logger, JupyterClientConnection connection, long sleep) {
+    public AbstractServerStyleChannel(ZMQ.Context context, SocketType zmqType, HMACGenerator hmacGenerator, Logger logger, JupyterClientConnection connection, long sleep) {
         super(context, zmqType, hmacGenerator, logger);
         this.connection = connection;
         this.sleep = sleep;

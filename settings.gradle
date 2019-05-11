@@ -1,1 +1,5 @@
-rootProject.name = 'jupyter-jvm-basekernel'
+rootProject.name = 'jupyter-jvm'
+
+include 'jupyter-jvm-basekernel'
+include 'jupyter-jvm-kernel-api'
+include 'jupyter-jvm-client'

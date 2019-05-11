@@ -4,6 +4,7 @@ import io.github.spencerpark.jupyter.channels.JupyterSocket;
 import io.github.spencerpark.jupyter.channels.Loop;
 import io.github.spencerpark.jupyter.kernel.KernelConnectionProperties;
 import io.github.spencerpark.jupyter.messages.HMACGenerator;
+import org.zeromq.SocketType;
 import org.zeromq.ZMQ;
 
 import java.util.Arrays;
@@ -61,7 +62,7 @@ public class HeartbeatClientChannel extends JupyterSocket {
     }
 
     public HeartbeatClientChannel(ZMQ.Context context, HMACGenerator hmacGenerator, int numAllowedFailuresBeforeConsideredDead, long msUntilConsideredDead) {
-        super(context, ZMQ.REQ, hmacGenerator, Logger.getLogger("HeartbeatChannel-client"));
+        super(context, SocketType.REQ, hmacGenerator, Logger.getLogger("HeartbeatChannel-client"));
         this.numAllowedFailuresBeforeConsideredDead = numAllowedFailuresBeforeConsideredDead;
         this.timeUntilConsideredDead = msUntilConsideredDead;
     }
