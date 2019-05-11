@@ -93,8 +93,19 @@ public class Message<T> implements MessageContext {
         return content;
     }
 
+    public boolean hasBlobs() {
+        return blobs != null;
+    }
+
     public List<byte[]> getBlobs() {
         return blobs;
+    }
+
+    public List<byte[]> getNonNullBlobs() {
+        if (this.hasBlobs())
+            return this.blobs;
+        this.blobs = new LinkedList<>();
+        return this.blobs;
     }
 
     @Override

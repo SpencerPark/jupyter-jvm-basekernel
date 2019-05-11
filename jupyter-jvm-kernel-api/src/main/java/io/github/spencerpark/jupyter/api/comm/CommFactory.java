@@ -1,7 +1,4 @@
-package io.github.spencerpark.jupyter.kernel.comm;
-
-import io.github.spencerpark.jupyter.messages.Message;
-import io.github.spencerpark.jupyter.messages.comm.CommOpenCommand;
+package io.github.spencerpark.jupyter.api.comm;
 
 @FunctionalInterface
 public interface CommFactory<T extends Comm> {
@@ -16,5 +13,5 @@ public interface CommFactory<T extends Comm> {
      *                          additional data to the send
      * @return a new comm. If data must be immediately sent it should be appended to the {@code openMessageToSend}.
      */
-    public T produce(CommManager manager, String id, String target, Message<CommOpenCommand> openMessageToSend);
+    public T produce(CommManager manager, String id, String target, CommMessage.Open openMessageToSend);
 }

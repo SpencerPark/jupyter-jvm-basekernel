@@ -1,10 +1,7 @@
-package io.github.spencerpark.jupyter.kernel.comm;
+package io.github.spencerpark.jupyter.api.comm;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import io.github.spencerpark.jupyter.messages.Message;
-import io.github.spencerpark.jupyter.messages.comm.CommCloseCommand;
-import io.github.spencerpark.jupyter.messages.comm.CommMsgCommand;
 
 import java.util.List;
 import java.util.Map;
@@ -49,19 +46,17 @@ public abstract class Comm {
     /**
      * A callback for when the kernel receives a message who's destination is
      * this comm. This handler gets access to the entire message so that if desired
-     * the comms may make use of the low level blob segments or want to make use of
-     * the parent, identities, etc.
+     * the comms may make use of the low level blob segments or metadata.
      * <p>
-     * The data that most comms would be interested in is the {@link CommMsgCommand#getData()}
+     * The data that most comms would be interested in is the {@link CommMessage.Data#getData()}
      * which is the payload attached to a message when sent via the frontend's {@code comm.send({})}
-     * function. Since this can be any arbitrary JSON serializable thing is is given as a
-     * {@link com.google.gson.JsonElement}. It is recommended to deserialize it this handler to avoid
-     * passing the JsonElement to too many other classes in case the serialization library changes in
+     * function. It is recommended to deserialize it this handler to avoid
+     * passing the JsonObject to too many other classes in case the serialization library changes in
      * the future.
      *
      * @param message the message received from the frontend that is targeted at this comm
      */
-    protected abstract void onMessage(Message<CommMsgCommand> message);
+    public abstract void onMessage(CommMessage.Data message);
 
     /**
      * Invoked when this comm is closed. The similar {@link Comm#close()} method is used
@@ -71,23 +66,23 @@ public abstract class Comm {
      * <dt>If {@code sending}:</dt>
      * <dd>
      * then this method is free to modify the {@code closeMessage} to add any additional data
-     * to the {@link CommCloseCommand#getData()} or the {@link Message#getBlobs()}. The message
+     * to the {@link CommMessage.Close#getData()} or the {@link CommMessage#getBlobs()}. The message
      * will be sent <strong>after</strong> the execution of this method.
      * </dd>
      * <dt>If {@code !sending}:</dt>
      * <dd>
-     * then this method may be interested in using the destructuring data in {@link CommCloseCommand#getData()}
+     * then this method may be interested in using the destructuring data in {@link CommMessage.Close#getData()}
      * that is snt by the front-end upon triggering th close.
      * </dd>
      * </dl>
      *
      * @param closeMessage the message triggering the close if from. This may contain some destructuring
-     *                     parameters in {@link CommCloseCommand#getData()} if the frontend component
+     *                     parameters in {@link CommMessage.Close#getData()} if the frontend component
      *                     decided to send something.
      * @param sending      a boolean flag signaling if the close is the being triggered by this side
      *                     ({@code sending == true}) or from the front-end ({@code sending == false}).
      */
-    protected abstract void onClose(Message<CommCloseCommand> closeMessage, boolean sending);
+    public abstract void onClose(CommMessage.Close closeMessage, boolean sending);
 
     public final void close() {
         if (this.closed) return;

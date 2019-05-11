@@ -1,6 +1,6 @@
 package io.github.spencerpark.jupyter.messages.publish;
 
-import io.github.spencerpark.jupyter.kernel.display.DisplayData;
+import io.github.spencerpark.jupyter.api.display.DisplayData;
 import io.github.spencerpark.jupyter.messages.ContentType;
 import io.github.spencerpark.jupyter.messages.MessageType;
 

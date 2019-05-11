@@ -1,6 +1,10 @@
 package io.github.spencerpark.jupyter.kernel.comm;
 
 import com.google.gson.JsonObject;
+import io.github.spencerpark.jupyter.api.comm.Comm;
+import io.github.spencerpark.jupyter.api.comm.CommFactory;
+import io.github.spencerpark.jupyter.api.comm.CommManager;
+import io.github.spencerpark.jupyter.api.comm.CommTarget;
 import io.github.spencerpark.jupyter.channels.JupyterSocket;
 import io.github.spencerpark.jupyter.channels.ReplyEnvironment;
 import io.github.spencerpark.jupyter.messages.Message;
@@ -17,13 +21,13 @@ import java.util.*;
  * A CommManager is responsible for keeping track of a group of comms created by any
  * of their registered {@link CommTarget}s.
  */
-public class CommManager implements Iterable<Comm> {
+public class DefaultCommManager implements CommManager {
     protected Map<String, CommTarget> targets;
     protected Map<String, Comm> comms;
     protected JupyterSocket iopub;
     protected MessageContext context;
 
-    public CommManager() {
+    public DefaultCommManager() {
         this.targets = new HashMap<>();
         this.comms = new HashMap<>();
         this.iopub = null;
@@ -50,6 +54,7 @@ public class CommManager implements Iterable<Comm> {
      *
      * @return the {@link Comm} with the associated id or null if the id is unknown
      */
+    @Override
     public Comm getCommByID(String id) {
         return this.comms.get(id);
     }
@@ -60,6 +65,7 @@ public class CommManager implements Iterable<Comm> {
      *
      * @param comm the comm to register with this handler
      */
+    @Override
     public void registerComm(Comm comm) {
         this.comms.put(comm.getID(), comm);
     }
@@ -72,6 +78,7 @@ public class CommManager implements Iterable<Comm> {
      *
      * @return the comm that was unregistered or null if nothing was unregistered.
      */
+    @Override
     public Comm unregisterComm(String id) {
         return this.comms.remove(id);
     }
@@ -92,6 +99,7 @@ public class CommManager implements Iterable<Comm> {
      *         <p>
      *         The latter may happen if the manager is not connected to the frontend
      */
+    @Override
     public <T extends Comm> T openComm(String targetName, CommFactory<T> factory) {
         if (this.iopub == null)
             return null;
@@ -100,7 +108,7 @@ public class CommManager implements Iterable<Comm> {
         CommOpenCommand content = new CommOpenCommand(id, targetName, new JsonObject());
         Message<CommOpenCommand> message = new Message<>(this.context, CommOpenCommand.MESSAGE_TYPE, content);
 
-        T comm = factory.produce(this, id, targetName, message);
+        T comm = factory.produce(this, id, targetName, new CommOpenMessageAdapter(message));
 
         this.iopub.sendMessage(message);
 
@@ -146,6 +154,7 @@ public class CommManager implements Iterable<Comm> {
      *
      * @param comm the comm to close
      */
+    @Override
     public void closeComm(Comm comm) {
         CommCloseCommand content = new CommCloseCommand(comm.getID(), new JsonObject());
         Message<CommCloseCommand> message = new Message<>(this.context, CommCloseCommand.MESSAGE_TYPE, content);
@@ -154,7 +163,7 @@ public class CommManager implements Iterable<Comm> {
 
         Comm unregistered = this.unregisterComm(comm.getID());
         if (unregistered != null)
-            unregistered.onClose(message, true);
+            unregistered.onClose(new CommCloseMessageAdapter(message), true);
     }
 
     /**
@@ -167,6 +176,7 @@ public class CommManager implements Iterable<Comm> {
      * @param target     a {@link CommTarget} responsible for creating new comms at this
      *                   target name
      */
+    @Override
     public void registerTarget(String targetName, CommTarget target) {
         this.targets.put(targetName, target);
     }
@@ -179,6 +189,7 @@ public class CommManager implements Iterable<Comm> {
      *
      * @param targetName the name of the target to unregister
      */
+    @Override
     public void unregisterTarget(String targetName) {
         this.targets.remove(targetName);
     }
@@ -190,6 +201,7 @@ public class CommManager implements Iterable<Comm> {
      *
      * @return the {@link CommTarget} registered with the {@code targetName}
      */
+    @Override
     public CommTarget getTarget(String targetName) {
         return this.targets.get(targetName);
     }
@@ -207,7 +219,7 @@ public class CommManager implements Iterable<Comm> {
             CommCloseCommand closeCommand = new CommCloseCommand(openCommand.getCommID(), new JsonObject());
             env.publish(closeCommand);
         } else {
-            Comm comm = target.createComm(this, openCommand.getCommID(), openCommand.getTargetName(), commOpenCommandMessage);
+            Comm comm = target.createComm(this, openCommand.getCommID(), openCommand.getTargetName(), new CommOpenMessageAdapter(commOpenCommandMessage));
             this.registerComm(comm);
         }
     }
@@ -219,7 +231,7 @@ public class CommManager implements Iterable<Comm> {
 
         Comm comm = this.getCommByID(msgCommand.getCommID());
         if (comm != null) {
-            comm.onMessage(commMsgCommandMessage);
+            comm.onMessage(new CommDataMessageAdapter(commMsgCommandMessage));
         }
     }
 
@@ -230,7 +242,7 @@ public class CommManager implements Iterable<Comm> {
 
         Comm comm = this.unregisterComm(closeCommand.getCommID());
         if (comm != null) {
-            comm.onClose(commCloseCommandMessage, false);
+            comm.onClose(new CommCloseMessageAdapter(commCloseCommandMessage), false);
         }
     }
 

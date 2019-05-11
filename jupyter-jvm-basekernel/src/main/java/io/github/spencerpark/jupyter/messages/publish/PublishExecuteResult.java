@@ -2,7 +2,7 @@ package io.github.spencerpark.jupyter.messages.publish;
 
 import com.google.gson.annotations.SerializedName;
 import io.github.spencerpark.jupyter.messages.ContentType;
-import io.github.spencerpark.jupyter.kernel.display.DisplayData;
+import io.github.spencerpark.jupyter.api.display.DisplayData;
 import io.github.spencerpark.jupyter.messages.MessageType;
 
 public class PublishExecuteResult extends DisplayData implements ContentType<PublishExecuteResult> {

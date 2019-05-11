@@ -5,7 +5,7 @@ import io.github.spencerpark.jupyter.client.handlers.ReplyHandler;
 import io.github.spencerpark.jupyter.client.handlers.TargetedReplyHandler;
 import io.github.spencerpark.jupyter.kernel.ExpressionValue;
 import io.github.spencerpark.jupyter.api.ReplacementOptions;
-import io.github.spencerpark.jupyter.kernel.comm.CommManager;
+import io.github.spencerpark.jupyter.kernel.comm.DefaultCommManager;
 import io.github.spencerpark.jupyter.kernel.display.DisplayData;
 import io.github.spencerpark.jupyter.api.history.HistoryEntry;
 import io.github.spencerpark.jupyter.messages.publish.PublishExecuteInput;
@@ -58,12 +58,12 @@ public class RemoteJupyterKernel extends BaseJupyterClient {
 
     private final ReplyHandler<?> wildReplyHandler;
 
-    public RemoteJupyterKernel(CommManager commManager, ReplyHandler<?> wildReplyHandler) {
+    public RemoteJupyterKernel(DefaultCommManager commManager, ReplyHandler<?> wildReplyHandler) {
         super(commManager);
         this.wildReplyHandler = wildReplyHandler;
     }
 
-    public RemoteJupyterKernel(CommManager commManager) {
+    public RemoteJupyterKernel(DefaultCommManager commManager) {
         super(commManager);
          this.wildReplyHandler = NoOpWildReplyHandler.getInstance();
     }

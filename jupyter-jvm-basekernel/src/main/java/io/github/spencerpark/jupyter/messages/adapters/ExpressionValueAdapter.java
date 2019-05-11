@@ -1,7 +1,7 @@
 package io.github.spencerpark.jupyter.messages.adapters;
 
 import com.google.gson.*;
-import io.github.spencerpark.jupyter.kernel.display.DisplayData;
+import io.github.spencerpark.jupyter.api.display.DisplayData;
 import io.github.spencerpark.jupyter.kernel.ExpressionValue;
 
 import java.lang.reflect.Type;

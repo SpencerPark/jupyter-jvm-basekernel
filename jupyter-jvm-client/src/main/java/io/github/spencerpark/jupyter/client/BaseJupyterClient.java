@@ -5,7 +5,7 @@ import io.github.spencerpark.jupyter.client.channels.JupyterClientConnection;
 import io.github.spencerpark.jupyter.client.channels.ShellClientChannel;
 import io.github.spencerpark.jupyter.client.handlers.ReplyHandler;
 import io.github.spencerpark.jupyter.client.handlers.TargetedReplyHandler;
-import io.github.spencerpark.jupyter.kernel.comm.CommManager;
+import io.github.spencerpark.jupyter.kernel.comm.DefaultCommManager;
 import io.github.spencerpark.jupyter.kernel.display.DisplayData;
 import io.github.spencerpark.jupyter.messages.*;
 import io.github.spencerpark.jupyter.messages.publish.*;
@@ -45,12 +45,12 @@ public abstract class BaseJupyterClient implements Closeable {
         public void clear(boolean defer) { }
     };
 
-    private CommManager commManager;
+    private DefaultCommManager commManager;
 
     private JupyterClientConnection connection;
     private final Map<String, TargetedReplyHandler<?>> activeReplyHandlers = new ConcurrentHashMap<>();
 
-    public BaseJupyterClient(CommManager commManager) {
+    public BaseJupyterClient(DefaultCommManager commManager) {
         this.commManager = commManager;
     }
 

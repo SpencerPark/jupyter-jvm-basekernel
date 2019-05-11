@@ -8,7 +8,7 @@ import io.github.spencerpark.jupyter.api.ReplacementOptions;
 import io.github.spencerpark.jupyter.channels.JupyterConnection;
 import io.github.spencerpark.jupyter.channels.JupyterSocket;
 import io.github.spencerpark.jupyter.channels.ShellReplyEnvironment;
-import io.github.spencerpark.jupyter.kernel.comm.CommManager;
+import io.github.spencerpark.jupyter.kernel.comm.DefaultCommManager;
 import io.github.spencerpark.jupyter.api.display.DisplayData;
 import io.github.spencerpark.jupyter.api.display.Renderer;
 import io.github.spencerpark.jupyter.kernel.display.DefaultRenderer;
@@ -66,7 +66,7 @@ public abstract class BaseKernel implements JupyterKernel {
     private final DefaultJupyterIO io;
     private boolean shouldReplaceStdStreams;
 
-    protected CommManager commManager;
+    protected DefaultCommManager commManager;
 
     protected Renderer renderer;
 
@@ -76,7 +76,7 @@ public abstract class BaseKernel implements JupyterKernel {
         this.io = new DefaultJupyterIO(charset);
         this.shouldReplaceStdStreams = true;
 
-        this.commManager = new CommManager();
+        this.commManager = new DefaultCommManager();
 
         this.renderer = new DefaultRenderer();
         Image.registerAll(this.renderer);
@@ -107,7 +107,7 @@ public abstract class BaseKernel implements JupyterKernel {
         return this.io;
     }
 
-    public CommManager getCommManager() {
+    public DefaultCommManager getCommManager() {
         return this.commManager;
     }
 

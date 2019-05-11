@@ -55,7 +55,7 @@ project(':jupyter-jvm-basekernel') {
 }
 
 project(':jupyter-jvm-kernel-api') {
-    version = '3.0.0-SNAPSHOT'
+    version = '1.0.0-SNAPSHOT'
     ext.pomName = 'Jupyter JVM Kernel API'
     ext.pomDescription = 'A kernel interface to program extensions against.'
 
