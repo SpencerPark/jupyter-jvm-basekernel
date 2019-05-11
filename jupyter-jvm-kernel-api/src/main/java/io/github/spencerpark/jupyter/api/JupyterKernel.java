@@ -1,5 +1,6 @@
 package io.github.spencerpark.jupyter.api;
 
+import io.github.spencerpark.jupyter.api.comm.CommManager;
 import io.github.spencerpark.jupyter.api.display.DisplayData;
 import io.github.spencerpark.jupyter.api.display.Renderer;
 import io.github.spencerpark.jupyter.api.history.HistoryManager;
@@ -140,12 +141,4 @@ public interface JupyterKernel {
      *         new line.
      */
     public List<String> formatError(Exception e);
-
-    /*
-     * ===================================
-     * | Default handler implementations |
-     * ===================================
-     */
-
-    public void becomeHandlerForConnection(JupyterConnection connection);
 }

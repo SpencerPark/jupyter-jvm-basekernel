@@ -1,4 +1,4 @@
-package io.github.spencerpark.jupyter.kernel.magic;
+package io.github.spencerpark.jupyter.api.magic;
 
 import java.util.List;
 

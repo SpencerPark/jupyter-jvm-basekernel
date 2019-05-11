@@ -8,12 +8,12 @@ import java.util.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-public class MagicsTest {
-    private Magics magics;
+public class DefaultMagicsTest {
+    private DefaultMagics magics;
 
     @Before
     public void setUp() {
-        magics = new Magics();
+        magics = new DefaultMagics();
     }
 
     @Test

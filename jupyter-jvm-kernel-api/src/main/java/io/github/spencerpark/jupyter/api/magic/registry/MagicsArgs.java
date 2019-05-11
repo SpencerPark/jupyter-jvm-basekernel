@@ -1,4 +1,4 @@
-package io.github.spencerpark.jupyter.kernel.magic.registry;
+package io.github.spencerpark.jupyter.api.magic.registry;
 
 import java.util.*;
 import java.util.regex.Matcher;

@@ -1,4 +1,4 @@
-package io.github.spencerpark.jupyter.kernel.magic.registry;
+package io.github.spencerpark.jupyter.api.magic.registry;
 
 public class UndefinedMagicException extends RuntimeException {
     private final String name;

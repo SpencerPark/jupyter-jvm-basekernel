@@ -1,4 +1,4 @@
-package io.github.spencerpark.jupyter.kernel.magic;
+package io.github.spencerpark.jupyter.api.magic;
 
 public interface CellMagicParseContext {
     public static CellMagicParseContext of(CellMagicArgs args, String rawArgsLine, String rawCell) {

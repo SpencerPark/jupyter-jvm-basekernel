@@ -1,21 +1,24 @@
 package io.github.spencerpark.jupyter.kernel.magic.registry;
 
+import io.github.spencerpark.jupyter.api.magic.registry.*;
+
 import java.lang.reflect.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Magics {
+public class DefaultMagics implements Magics {
     private final Map<String, LineMagicFunction<?>> lineMagics;
     private final Map<String, CellMagicFunction<?>> cellMagics;
 
-    public Magics() {
+    public DefaultMagics() {
         this.lineMagics = new HashMap<>();
         this.cellMagics = new HashMap<>();
     }
 
     // Magic application
 
+    @Override
     public <T> T applyLineMagic(String name, List<String> args) throws Exception {
         @SuppressWarnings("unchecked")
         LineMagicFunction<T> magic = (LineMagicFunction<T>) this.lineMagics.get(name);
@@ -26,6 +29,7 @@ public class Magics {
         return magic.execute(args);
     }
 
+    @Override
     public <T> T applyCellMagic(String name, List<String> args, String body) throws Exception {
         @SuppressWarnings("unchecked")
         CellMagicFunction<T> magic = (CellMagicFunction<T>) this.cellMagics.get(name);
@@ -38,25 +42,24 @@ public class Magics {
 
     // Magic registration
 
+    @Override
     public void registerLineMagic(String name, LineMagicFunction<?> magic) {
         this.lineMagics.put(name, magic);
     }
 
+    @Override
     public void registerCellMagic(String name, CellMagicFunction<?> magic) {
-        this.cellMagics.put(name, magic);
-    }
-
-    public <T extends LineMagicFunction<?>&CellMagicFunction<?>> void registerLineCellMagic(String name, T magic) {
-        this.lineMagics.put(name, magic);
         this.cellMagics.put(name, magic);
     }
 
     // Reflective magic registration
 
+    @Override
     public void registerMagics(Object magics) {
         registerMagics(magics.getClass(), magics);
     }
 
+    @Override
     public void registerMagics(Class<?> magicsClass) {
         registerMagics(magicsClass, null);
     }

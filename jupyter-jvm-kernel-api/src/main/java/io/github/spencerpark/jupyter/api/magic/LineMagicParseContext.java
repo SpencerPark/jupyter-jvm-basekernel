@@ -1,4 +1,4 @@
-package io.github.spencerpark.jupyter.kernel.magic;
+package io.github.spencerpark.jupyter.api.magic;
 
 public interface LineMagicParseContext {
     public static LineMagicParseContext of(LineMagicArgs args, String raw, String rawCell, String rawContextPrefix) {
