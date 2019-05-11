@@ -34,7 +34,7 @@ public class JupyterClientConnection implements Closeable {
         this.connProps = connProps;
         this.ctx = ZMQ.context(1);
 
-        HMACGenerator hmacGenerator = connProps.createHMACGenerator();
+        HMACGenerator hmacGenerator = HMACGenerator.fromConnectionProps(connProps);
 
         this.heartbeat = new HeartbeatClientChannel(this.ctx, hmacGenerator);
         this.shell = new ShellClientChannel(this.ctx, hmacGenerator, false, this);

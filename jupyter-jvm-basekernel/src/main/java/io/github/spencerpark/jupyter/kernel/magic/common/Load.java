@@ -3,11 +3,10 @@ package io.github.spencerpark.jupyter.kernel.magic.common;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
-import io.github.spencerpark.jupyter.kernel.magic.registry.LineMagic;
-import io.github.spencerpark.jupyter.kernel.magic.registry.MagicsArgs;
+import io.github.spencerpark.jupyter.api.magic.registry.LineMagic;
+import io.github.spencerpark.jupyter.api.magic.registry.MagicsArgs;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -16,7 +15,6 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class Load {

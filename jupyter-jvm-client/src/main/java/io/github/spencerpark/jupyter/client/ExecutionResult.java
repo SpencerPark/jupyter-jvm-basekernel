@@ -1,7 +1,7 @@
 package io.github.spencerpark.jupyter.client;
 
-import io.github.spencerpark.jupyter.kernel.ExpressionValue;
-import io.github.spencerpark.jupyter.kernel.display.DisplayData;
+import io.github.spencerpark.jupyter.api.ExpressionValue;
+import io.github.spencerpark.jupyter.api.display.DisplayData;
 
 import java.util.Map;
 

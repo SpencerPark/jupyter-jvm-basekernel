@@ -1,7 +1,7 @@
 package io.github.spencerpark.jupyter.kernel.magic.common;
 
-import io.github.spencerpark.jupyter.kernel.magic.registry.CellMagic;
-import io.github.spencerpark.jupyter.kernel.magic.registry.MagicsArgs;
+import io.github.spencerpark.jupyter.api.magic.registry.CellMagic;
+import io.github.spencerpark.jupyter.api.magic.registry.MagicsArgs;
 
 import java.io.File;
 import java.io.FileOutputStream;

@@ -1,6 +1,6 @@
 package io.github.spencerpark.jupyter.client;
 
-import io.github.spencerpark.jupyter.kernel.display.DisplayData;
+import io.github.spencerpark.jupyter.api.display.DisplayData;
 
 public interface IOProvider {
     public void writeOut(String data);

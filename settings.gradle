@@ -1,5 +1,6 @@
 rootProject.name = 'jupyter-jvm'
 
+include 'jupyter-jvm-shared-protocol'
 include 'jupyter-jvm-basekernel'
-include 'jupyter-jvm-kernel-api'
+include 'jupyter-jvm-api'
 include 'jupyter-jvm-client'

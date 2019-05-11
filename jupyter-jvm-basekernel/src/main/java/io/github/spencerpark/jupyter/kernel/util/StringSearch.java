@@ -1,5 +1,7 @@
 package io.github.spencerpark.jupyter.kernel.util;
 
+import io.github.spencerpark.jupyter.api.util.CharPredicate;
+
 public class StringSearch {
     public static class Range {
         private final int low;

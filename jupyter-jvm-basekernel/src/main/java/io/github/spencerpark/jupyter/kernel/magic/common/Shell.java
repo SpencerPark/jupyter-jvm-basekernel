@@ -1,6 +1,6 @@
 package io.github.spencerpark.jupyter.kernel.magic.common;
 
-import io.github.spencerpark.jupyter.kernel.magic.registry.LineMagic;
+import io.github.spencerpark.jupyter.api.magic.registry.LineMagic;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;

@@ -4,8 +4,8 @@ import io.github.spencerpark.jupyter.kernel.DefaultDisplayStream;
 import io.github.spencerpark.jupyter.api.display.DisplayData;
 import io.github.spencerpark.jupyter.api.display.Renderer;
 import io.github.spencerpark.jupyter.api.display.mime.MIMEType;
-import io.github.spencerpark.jupyter.kernel.magic.registry.CellMagic;
-import io.github.spencerpark.jupyter.kernel.magic.registry.MagicsArgs;
+import io.github.spencerpark.jupyter.api.magic.registry.CellMagic;
+import io.github.spencerpark.jupyter.api.magic.registry.MagicsArgs;
 
 import java.util.LinkedHashMap;
 import java.util.List;

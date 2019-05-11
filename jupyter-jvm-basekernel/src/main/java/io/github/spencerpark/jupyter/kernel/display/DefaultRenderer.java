@@ -5,7 +5,7 @@ import io.github.spencerpark.jupyter.api.display.DisplayDataRenderable;
 import io.github.spencerpark.jupyter.api.display.RenderFunction;
 import io.github.spencerpark.jupyter.api.display.Renderer;
 import io.github.spencerpark.jupyter.api.display.mime.MIMEType;
-import io.github.spencerpark.jupyter.kernel.util.InheritanceIterator;
+import io.github.spencerpark.jupyter.api.display.InheritanceIterator;
 
 import java.util.*;
 
