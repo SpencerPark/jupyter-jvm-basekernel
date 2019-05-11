@@ -1,4 +1,4 @@
-package io.github.spencerpark.jupyter.kernel.display.mime;
+package io.github.spencerpark.jupyter.api.display.mime;
 
 /**
  * <a href="https://tools.ietf.org/html/rfc6839">RFC 6839</a> for the

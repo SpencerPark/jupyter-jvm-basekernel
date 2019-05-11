@@ -1,4 +1,4 @@
-package io.github.spencerpark.jupyter.kernel.display;
+package io.github.spencerpark.jupyter.api.display;
 
 @FunctionalInterface
 public interface RenderFunction<T> {

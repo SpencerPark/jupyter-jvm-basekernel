@@ -1,4 +1,4 @@
-package io.github.spencerpark.jupyter.kernel.display.mime;
+package io.github.spencerpark.jupyter.api.display.mime;
 
 public class MIMESubtype {
     public static class Tree {

@@ -36,6 +36,7 @@ project(':jupyter-jvm-basekernel') {
     dependencies {
         compile group: 'org.zeromq', name: 'jeromq', version: JEROMQ_VERSION
         compile group: 'com.google.code.gson', name: 'gson', version: GSON_VERSION
+        compile project(':jupyter-jvm-kernel-api')
 
         testCompile group: 'junit', name: 'junit', version: '4.12'
         testCompile group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'

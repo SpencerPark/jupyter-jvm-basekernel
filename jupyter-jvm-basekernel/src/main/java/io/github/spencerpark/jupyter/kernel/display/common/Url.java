@@ -1,9 +1,9 @@
 package io.github.spencerpark.jupyter.kernel.display.common;
 
-import io.github.spencerpark.jupyter.kernel.display.DisplayData;
-import io.github.spencerpark.jupyter.kernel.display.RenderContext;
-import io.github.spencerpark.jupyter.kernel.display.Renderer;
-import io.github.spencerpark.jupyter.kernel.display.mime.MIMEType;
+import io.github.spencerpark.jupyter.api.display.DisplayData;
+import io.github.spencerpark.jupyter.api.display.RenderContext;
+import io.github.spencerpark.jupyter.api.display.Renderer;
+import io.github.spencerpark.jupyter.api.display.mime.MIMEType;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;

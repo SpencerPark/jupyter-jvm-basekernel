@@ -1,6 +1,10 @@
 package io.github.spencerpark.jupyter.kernel.display;
 
-import io.github.spencerpark.jupyter.kernel.display.mime.MIMEType;
+import io.github.spencerpark.jupyter.api.display.DisplayData;
+import io.github.spencerpark.jupyter.api.display.DisplayDataRenderable;
+import io.github.spencerpark.jupyter.api.display.RenderFunction;
+import io.github.spencerpark.jupyter.api.display.Renderer;
+import io.github.spencerpark.jupyter.api.display.mime.MIMEType;
 import io.github.spencerpark.jupyter.kernel.util.InheritanceIterator;
 
 import java.util.*;
@@ -19,7 +23,7 @@ import java.util.*;
  * but in the event that renderAs (or displayAs) is invoked the specified types
  * override the defaults.
  */
-public class Renderer {
+public class DefaultRenderer implements Renderer {
     private static class RenderFunctionProps {
         private final RenderFunction function;
         private final Set<MIMEType> supportedTypes;
@@ -44,66 +48,15 @@ public class Renderer {
         }
     }
 
-    public class RenderRegistration<T> {
-        private final Set<MIMEType> supported;
-        private final Set<MIMEType> preferred;
-        private final Set<Class<? extends T>> types;
-
-        public RenderRegistration(Class<? extends T> type) {
-            this.supported = new LinkedHashSet<>();
-            this.preferred = new LinkedHashSet<>();
-            this.types = new LinkedHashSet<>();
-            this.types.add(type);
-        }
-
-        public RenderRegistration<T> supporting(MIMEType... types) {
-            Collections.addAll(this.supported, types);
-            return this;
-        }
-
-        public RenderRegistration<T> preferring(MIMEType... types) {
-            supporting(types);
-            Collections.addAll(this.preferred, types);
-            return this;
-        }
-
-        public RenderRegistration<T> supporting(String... types) {
-            for (String type : types)
-                this.supported.add(MIMEType.parse(type));
-            return this;
-        }
-
-        public RenderRegistration<T> preferring(String... types) {
-            supporting(types);
-            for (String type : types)
-                this.preferred.add(MIMEType.parse(type));
-            return this;
-        }
-
-        public RenderRegistration<T> onType(Class<? extends T> type) {
-            this.types.add(type);
-            return this;
-        }
-
-        public void register(RenderFunction<T> function) {
-            Set<MIMEType> supported = this.supported.isEmpty() ? DisplayDataRenderable.ANY : this.supported;
-            Set<MIMEType> preferred = this.preferred.isEmpty() ? supported : this.preferred;
-            Renderer.this.register(supported, preferred, types, function);
-        }
-    }
-
     private final Map<Class, List<RenderFunctionProps>> renderFunctions;
     private final Map<String, MIMEType> suffixMappings;
 
-    public Renderer() {
+    public DefaultRenderer() {
         this.renderFunctions = new HashMap<>();
         this.suffixMappings = new HashMap<>();
     }
 
-    public <T> RenderRegistration<T> createRegistration(Class<T> type) {
-        return new RenderRegistration<>(type);
-    }
-
+    @Override
     public <T> void register(Set<MIMEType> supported, Set<MIMEType> preferred, Set<Class<? extends T>> types, RenderFunction<T> function) {
         RenderFunctionProps props = new RenderFunctionProps(function, supported, preferred);
 
@@ -144,6 +97,7 @@ public class Renderer {
      * @return the data container holding the rendered view of the {@code value}.
      */
     @SuppressWarnings("unchecked")
+    @Override
     public DisplayData render(Object value, Map<String, Object> params) {
         DisplayData out = new DisplayData();
 
@@ -154,7 +108,7 @@ public class Renderer {
             requestTypes.withType(MIMEType.TEXT_PLAIN);
             renderable.getPreferredRenderTypes().forEach(requestTypes::withType);
 
-            renderable.render(new RenderContext(requestTypes.build(), this, params, out));
+            renderable.render(new DefaultRenderContext(requestTypes.build(), this, params, out));
 
             return finalizeDisplayData(out, value);
         }
@@ -172,7 +126,7 @@ public class Renderer {
 
                     renderFunctionProps.getFunction().render(
                             value,
-                            new RenderContext(requestTypes.build(), this, params, out)
+                            new DefaultRenderContext(requestTypes.build(), this, params, out)
                     );
                 }
 
@@ -181,17 +135,6 @@ public class Renderer {
         }
 
         return finalizeDisplayData(out, value);
-    }
-
-    /**
-     * A {@link #render(Object, Map)} variant that supplies an empty parameter map.
-     *
-     * @param value the object to render.
-     *
-     * @return a {@link DisplayData} container with all the rendered data.
-     */
-    public DisplayData render(Object value) {
-        return render(value, new LinkedHashMap<>());
     }
 
     /**
@@ -227,6 +170,7 @@ public class Renderer {
      * @return a {@link DisplayData} container with all the rendered data.
      */
     @SuppressWarnings("unchecked")
+    @Override
     public DisplayData renderAs(Object value, Map<String, Object> params, String... types) {
         DisplayData out = new DisplayData();
 
@@ -236,7 +180,7 @@ public class Renderer {
             builder.withType(type);
 
         RenderRequestTypes requestTypes = builder.build();
-        RenderContext context = new RenderContext(requestTypes, this, params, out);
+        DefaultRenderContext context = new DefaultRenderContext(requestTypes, this, params, out);
 
         if (value instanceof DisplayDataRenderable) {
             DisplayDataRenderable renderable = (DisplayDataRenderable) value;
@@ -261,17 +205,5 @@ public class Renderer {
         }
 
         return finalizeDisplayData(out, value);
-    }
-
-    /**
-     * A {@link #renderAs(Object, Map, String...)} variant that supplies an empty parameter map.
-     *
-     * @param value the object to render.
-     * @param types the {@link MIMEType#parse(String) MIME types} to render the object as.
-     *
-     * @return a {@link DisplayData} container with all the rendered data.
-     */
-    public DisplayData renderAs(Object value, String... types) {
-        return this.renderAs(value, new LinkedHashMap<>(), types);
     }
 }

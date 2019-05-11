@@ -1,12 +1,11 @@
-package io.github.spencerpark.jupyter.kernel.display;
+package io.github.spencerpark.jupyter.api.display;
 
 import com.google.gson.annotations.SerializedName;
-import io.github.spencerpark.jupyter.kernel.display.mime.MIMEType;
+import io.github.spencerpark.jupyter.api.display.mime.MIMEType;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class DisplayData {
     public static final String DISPLAY_ID_KEY = "display_id";

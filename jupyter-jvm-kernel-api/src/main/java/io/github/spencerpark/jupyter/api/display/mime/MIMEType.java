@@ -1,4 +1,4 @@
-package io.github.spencerpark.jupyter.kernel.display.mime;
+package io.github.spencerpark.jupyter.api.display.mime;
 
 import io.github.spencerpark.jupyter.kernel.util.CharPredicate;
 

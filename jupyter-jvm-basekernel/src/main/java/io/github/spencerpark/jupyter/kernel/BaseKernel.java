@@ -2,12 +2,14 @@ package io.github.spencerpark.jupyter.kernel;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.github.spencerpark.jupyter.api.JupyterKernel;
 import io.github.spencerpark.jupyter.channels.JupyterConnection;
 import io.github.spencerpark.jupyter.channels.JupyterSocket;
 import io.github.spencerpark.jupyter.channels.ShellReplyEnvironment;
 import io.github.spencerpark.jupyter.kernel.comm.CommManager;
-import io.github.spencerpark.jupyter.kernel.display.DisplayData;
-import io.github.spencerpark.jupyter.kernel.display.Renderer;
+import io.github.spencerpark.jupyter.api.display.DisplayData;
+import io.github.spencerpark.jupyter.api.display.Renderer;
+import io.github.spencerpark.jupyter.kernel.display.DefaultRenderer;
 import io.github.spencerpark.jupyter.kernel.display.common.Image;
 import io.github.spencerpark.jupyter.kernel.display.common.Text;
 import io.github.spencerpark.jupyter.kernel.display.common.Url;
@@ -30,7 +32,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
-public abstract class BaseKernel {
+public abstract class BaseKernel implements JupyterKernel {
     protected final AtomicInteger executionCount = new AtomicInteger(1);
     protected static final Map<String, String> KERNEL_META = ((Supplier<Map<String, String>>) () -> {
         Map<String, String> meta = null;
@@ -74,7 +76,7 @@ public abstract class BaseKernel {
 
         this.commManager = new CommManager();
 
-        this.renderer = new Renderer();
+        this.renderer = new DefaultRenderer();
         Image.registerAll(this.renderer);
         Url.registerAll(this.renderer);
         Text.registerAll(this.renderer);
