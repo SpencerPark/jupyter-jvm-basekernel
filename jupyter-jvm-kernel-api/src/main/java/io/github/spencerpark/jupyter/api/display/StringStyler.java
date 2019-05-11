@@ -1,4 +1,4 @@
-package io.github.spencerpark.jupyter.kernel.util;
+package io.github.spencerpark.jupyter.api.display;
 
 import java.util.ArrayList;
 import java.util.Arrays;

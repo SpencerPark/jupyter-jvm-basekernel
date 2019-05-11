@@ -25,7 +25,7 @@ configurations {
 }
 
 dependencies {
-    shade group: 'io.github.spencerpark', name: 'jupyter-jvm-basekernel', version: '2.2.4'
+    shade group: 'io.github.spencerpark', name: 'jupyter-jvm-basekernel', version: '2.3.0'
 }
 
 jar {

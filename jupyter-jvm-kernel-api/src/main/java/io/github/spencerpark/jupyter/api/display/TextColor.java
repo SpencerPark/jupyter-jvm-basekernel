@@ -1,4 +1,4 @@
-package io.github.spencerpark.jupyter.kernel.util;
+package io.github.spencerpark.jupyter.api.display;
 
 /**
  * A collection of ANSI escapes that are supported by the Jupyter notebook.

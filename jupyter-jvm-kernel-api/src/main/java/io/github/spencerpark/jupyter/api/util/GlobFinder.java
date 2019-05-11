@@ -1,4 +1,4 @@
-package io.github.spencerpark.jupyter.kernel.util;
+package io.github.spencerpark.jupyter.api.util;
 
 import java.io.IOException;
 import java.nio.file.*;
