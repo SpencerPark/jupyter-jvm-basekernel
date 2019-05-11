@@ -1,4 +1,4 @@
-package io.github.spencerpark.jupyter.kernel.magic;
+package io.github.spencerpark.jupyter.api.magic;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -12,10 +12,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class MagicParserTest {
-    public static List<String> split(String args) {
-        return MagicParser.split(args);
-    }
-
     private MagicParser inlineParser;
     private MagicParser solParser;
 

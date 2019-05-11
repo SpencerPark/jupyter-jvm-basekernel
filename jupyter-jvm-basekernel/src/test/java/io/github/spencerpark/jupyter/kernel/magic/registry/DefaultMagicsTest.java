@@ -1,5 +1,7 @@
 package io.github.spencerpark.jupyter.kernel.magic.registry;
 
+import io.github.spencerpark.jupyter.api.magic.registry.*;
+import io.github.spencerpark.jupyter.kernel.magic.StaticMagics;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -1,4 +1,7 @@
-package io.github.spencerpark.jupyter.kernel.magic.registry;
+package io.github.spencerpark.jupyter.api.magic;
+
+import io.github.spencerpark.jupyter.api.magic.registry.CellMagic;
+import io.github.spencerpark.jupyter.api.magic.registry.LineMagic;
 
 import java.util.List;
 

@@ -7,7 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MagicParser {
-    protected static List<String> split(String args) {
+    public static List<String> split(String args) {
         args = args.trim();
 
         List<String> split = new LinkedList<>();

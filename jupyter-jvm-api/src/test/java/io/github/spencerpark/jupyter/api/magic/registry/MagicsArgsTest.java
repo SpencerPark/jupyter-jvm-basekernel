@@ -1,6 +1,6 @@
-package io.github.spencerpark.jupyter.kernel.magic.registry;
+package io.github.spencerpark.jupyter.api.magic.registry;
 
-import io.github.spencerpark.jupyter.kernel.magic.MagicParserTest;
+import io.github.spencerpark.jupyter.api.magic.MagicParser;
 import org.hamcrest.Matcher;
 import org.junit.Rule;
 import org.junit.Test;
@@ -184,7 +184,7 @@ public class MagicsArgsTest {
 
     @Test
     public void test() {
-        List<String> rawArgs = MagicParserTest.split(this.args);
+        List<String> rawArgs = MagicParser.split(this.args);
         if (this.test == null)
             exception.expect(MagicArgsParseException.class);
 

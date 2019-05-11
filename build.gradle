@@ -106,6 +106,19 @@ project(':jupyter-jvm-client') {
     }
 }
 
+subprojects {
+    // Disable the test report for the individual test task
+    test {
+        reports.html.enabled = false
+    }
+}
+
+task testReport(type: TestReport) {
+    destinationDir = file("$buildDir/reports/allTests")
+    // Include the results from the `test` task in all subprojects
+    reportOn subprojects*.test
+}
+
 configure(subprojects.findAll { it.name in PUBLISHABLE_PROJECTS }) {
     apply plugin: 'maven'
     apply plugin: 'maven-publish'

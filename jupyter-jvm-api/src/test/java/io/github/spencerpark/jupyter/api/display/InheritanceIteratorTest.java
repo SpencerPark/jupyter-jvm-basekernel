@@ -1,4 +1,4 @@
-package io.github.spencerpark.jupyter.kernel.util;
+package io.github.spencerpark.jupyter.api.display;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

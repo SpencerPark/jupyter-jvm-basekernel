@@ -1,6 +1,6 @@
 package io.github.spencerpark.jupyter.kernel.display;
 
-import io.github.spencerpark.jupyter.kernel.display.mime.MIMEType;
+import io.github.spencerpark.jupyter.api.display.mime.MIMEType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;

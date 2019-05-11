@@ -1,4 +1,4 @@
-package io.github.spencerpark.jupyter.kernel.util;
+package io.github.spencerpark.jupyter.api.util;
 
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
