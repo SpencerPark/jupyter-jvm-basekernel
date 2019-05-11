@@ -3,24 +3,21 @@ package io.github.spencerpark.jupyter.ipywidgets.protocol;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import io.github.spencerpark.jupyter.kernel.comm.Comm;
-import io.github.spencerpark.jupyter.kernel.comm.CommManager;
-import io.github.spencerpark.jupyter.messages.Message;
-import io.github.spencerpark.jupyter.messages.comm.CommCloseCommand;
-import io.github.spencerpark.jupyter.messages.comm.CommMsgCommand;
-import io.github.spencerpark.jupyter.messages.comm.CommOpenCommand;
+import io.github.spencerpark.jupyter.api.comm.Comm;
+import io.github.spencerpark.jupyter.api.comm.CommManager;
+import io.github.spencerpark.jupyter.api.comm.CommMessage;
 
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
 public class WidgetComm extends Comm implements RemoteWidgetState {
-    public static void initializeOpenMessage(Message<CommOpenCommand> msg, StatePatch patch) {
+    public static void initializeOpenMessage(CommMessage.Open msg, StatePatch patch) {
         JsonObject state = patch.getState();
         JsonArray bufferPaths = patch.getBufferPaths();
         List<byte[]> buffers = patch.getBuffers();
 
-        JsonObject payload = msg.getContent().getData();
+        JsonObject payload = msg.getData().getAsJsonObject();
         payload.add("state", state);
         if (bufferPaths != null)
             payload.add("buffer_paths", bufferPaths);
@@ -94,9 +91,8 @@ public class WidgetComm extends Comm implements RemoteWidgetState {
     }
 
     @Override
-    protected void onMessage(Message<CommMsgCommand> message) {
-        CommMsgCommand content = message.getContent();
-        JsonObject payload = content.getData();
+    public void onMessage(CommMessage.Data message) {
+        JsonObject payload = message.getData().getAsJsonObject();
         switch (payload.getAsJsonPrimitive("method").getAsString()) {
             case "update":
                 JsonObject state = payload.get("state").getAsJsonObject();
@@ -125,7 +121,7 @@ public class WidgetComm extends Comm implements RemoteWidgetState {
     }
 
     @Override
-    protected void onClose(Message<CommCloseCommand> closeMessage, boolean sending) {
+    public void onClose(CommMessage.Close closeMessage, boolean sending) {
         if (this.onCloseHandler != null)
             this.onCloseHandler.run();
     }

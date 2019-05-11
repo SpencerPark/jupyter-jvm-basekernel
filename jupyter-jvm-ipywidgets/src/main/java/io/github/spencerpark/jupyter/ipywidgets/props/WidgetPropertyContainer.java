@@ -4,9 +4,9 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.github.spencerpark.jupyter.ipywidgets.protocol.*;
-import io.github.spencerpark.jupyter.kernel.display.DisplayDataRenderable;
-import io.github.spencerpark.jupyter.kernel.display.RenderContext;
-import io.github.spencerpark.jupyter.kernel.display.mime.MIMEType;
+import io.github.spencerpark.jupyter.api.display.DisplayDataRenderable;
+import io.github.spencerpark.jupyter.api.display.RenderContext;
+import io.github.spencerpark.jupyter.api.display.mime.MIMEType;
 
 import java.io.Closeable;
 import java.lang.invoke.MethodHandle;

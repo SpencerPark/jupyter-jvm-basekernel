@@ -2,13 +2,12 @@ package io.github.spencerpark.jupyter.ipywidgets.protocol;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import io.github.spencerpark.jupyter.api.comm.Comm;
+import io.github.spencerpark.jupyter.api.comm.CommManager;
+import io.github.spencerpark.jupyter.api.comm.CommMessage;
+import io.github.spencerpark.jupyter.api.comm.CommTarget;
 import io.github.spencerpark.jupyter.ipywidgets.props.WidgetCoordinates;
 import io.github.spencerpark.jupyter.ipywidgets.props.WidgetPropertyContainer;
-import io.github.spencerpark.jupyter.kernel.comm.Comm;
-import io.github.spencerpark.jupyter.kernel.comm.CommManager;
-import io.github.spencerpark.jupyter.kernel.comm.CommTarget;
-import io.github.spencerpark.jupyter.messages.Message;
-import io.github.spencerpark.jupyter.messages.comm.CommOpenCommand;
 
 public class WidgetCommTarget implements CommTarget {
     public static void register(CommManager manager, WidgetContext context) {
@@ -22,9 +21,8 @@ public class WidgetCommTarget implements CommTarget {
     }
 
     @Override
-    public Comm createComm(CommManager commManager, String id, String targetName, Message<CommOpenCommand> msg) {
-        CommOpenCommand openCommand = msg.getContent();
-        JsonObject payload = openCommand.getData();
+    public Comm createComm(CommManager commManager, String id, String targetName, CommMessage.Open msg) {
+        JsonObject payload = msg.getData().getAsJsonObject();
 
         String widgetProtocolVersion = (String) msg.getMetadata().get("version");
 

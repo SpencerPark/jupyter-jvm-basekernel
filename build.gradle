@@ -3,15 +3,13 @@ import org.apache.tools.ant.filters.ReplaceTokens
 final JEROMQ_VERSION = '0.5.1'
 final GSON_VERSION = '2.8.5'
 
-final PUBLISHABLE_PROJECTS = ['jupyter-jvm-basekernel', 'jupyter-jvm-api', 'jupyter-jvm-client', 'jupyter-jvm-shared-protocol']
-
 wrapper {
     gradleVersion = '5.4.1'
     distributionType = Wrapper.DistributionType.ALL
 }
 
 allprojects {
-    group = 'io.github.spencerpark'
+    group 'io.github.spencerpark'
 
     apply plugin: 'java'
 
@@ -29,7 +27,7 @@ allprojects {
 }
 
 project(':jupyter-jvm-basekernel') {
-    version = '3.0.0-SNAPSHOT'
+    version '3.0.0-SNAPSHOT'
     ext.pomName = 'Jupyter JVM Base Kernel'
     ext.pomDescription = 'An abstract kernel implementation for Jupyter kernels running on the Java virtual machine.'
 
@@ -54,7 +52,7 @@ project(':jupyter-jvm-basekernel') {
 }
 
 project(':jupyter-jvm-api') {
-    version = '1.0.0-SNAPSHOT'
+    version '1.0.0-SNAPSHOT'
     ext.pomName = 'Jupyter JVM Kernel API'
     ext.pomDescription = 'A kernel interface to program extensions against.'
 
@@ -69,7 +67,7 @@ project(':jupyter-jvm-api') {
 }
 
 project(':jupyter-jvm-shared-protocol') {
-    version = '1.0.0-SNAPSHOT'
+    version '1.0.0-SNAPSHOT'
     ext.pomName = 'Jupyter JVM Protocol'
     ext.pomDescription = 'Jupyter protocol objects and components that are shared between the kernel and client.'
 
@@ -83,7 +81,7 @@ project(':jupyter-jvm-shared-protocol') {
 }
 
 project(':jupyter-jvm-client') {
-    version = '0.0.1-SNAPSHOT'
+    version '0.0.1-SNAPSHOT'
     ext.pomName = 'Jupyter JVM Client'
     ext.pomDescription = 'A Java library for launching, connecting, and communicating with a Jupyter kernel.'
 
@@ -91,6 +89,19 @@ project(':jupyter-jvm-client') {
         compile project(':jupyter-jvm-api')
         compile project(':jupyter-jvm-shared-protocol')
         compile group: 'org.zeromq', name: 'jeromq', version: JEROMQ_VERSION
+        compile group: 'com.google.code.gson', name: 'gson', version: GSON_VERSION
+
+        testCompile group: 'junit', name: 'junit', version: '4.12'
+    }
+}
+
+project(':jupyter-jvm-ipywidgets') {
+    version '1.0.0-SNAPSHOT'
+    ext.pomName = 'JVM ipywidgets'
+    ext.pomDescription = 'A Java implementation of the ipywidgets backend.'
+
+    dependencies {
+        compile project(':jupyter-jvm-api')
         compile group: 'com.google.code.gson', name: 'gson', version: GSON_VERSION
 
         testCompile group: 'junit', name: 'junit', version: '4.12'
@@ -110,7 +121,7 @@ task testReport(type: TestReport) {
     reportOn subprojects*.test
 }
 
-configure(subprojects.findAll { it.name in PUBLISHABLE_PROJECTS }) {
+subprojects {
     apply plugin: 'maven'
     apply plugin: 'maven-publish'
     apply plugin: 'signing'

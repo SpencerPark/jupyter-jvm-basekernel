@@ -4,3 +4,5 @@ include 'jupyter-jvm-shared-protocol'
 include 'jupyter-jvm-basekernel'
 include 'jupyter-jvm-api'
 include 'jupyter-jvm-client'
+
+include 'jupyter-jvm-ipywidgets'

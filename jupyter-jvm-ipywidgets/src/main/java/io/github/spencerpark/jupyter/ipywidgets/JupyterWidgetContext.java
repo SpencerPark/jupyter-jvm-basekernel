@@ -1,10 +1,10 @@
 package io.github.spencerpark.jupyter.ipywidgets;
 
 import com.google.gson.Gson;
+import io.github.spencerpark.jupyter.api.comm.CommManager;
 import io.github.spencerpark.jupyter.ipywidgets.gson.WidgetsGson;
 import io.github.spencerpark.jupyter.ipywidgets.props.WidgetPropertyContainer;
 import io.github.spencerpark.jupyter.ipywidgets.protocol.*;
-import io.github.spencerpark.jupyter.kernel.comm.CommManager;
 
 import java.lang.ref.WeakReference;
 import java.util.EnumSet;
