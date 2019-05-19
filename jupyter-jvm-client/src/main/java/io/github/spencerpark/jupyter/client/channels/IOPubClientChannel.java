@@ -32,6 +32,7 @@ public class IOPubClientChannel extends AbstractServerStyleChannel {
 
         logger.log(Level.INFO, String.format("Binding %s to %s.", channelThreadName, addr));
         super.connect(addr);
+        super.subscribe(new byte[]{}); // A sub needs to subscribe to a topic. The jupyter client subs to b'' so we do the same.
 
         super.startServerLoop(channelThreadName);
     }

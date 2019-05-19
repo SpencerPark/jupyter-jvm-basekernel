@@ -9,6 +9,8 @@ import io.github.spencerpark.jupyter.messages.request.InputRequest;
 public interface ReplyHandler<R> {
     // IOPub handlers
 
+    public void handleStatusUpdate(Message<PublishStatus> status);
+
     public void handleStreamIO(Message<PublishStream> streamData);
 
     public void handleDisplayData(Message<PublishDisplayData> data);

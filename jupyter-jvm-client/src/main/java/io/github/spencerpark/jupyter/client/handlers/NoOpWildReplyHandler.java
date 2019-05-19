@@ -26,38 +26,43 @@ public class NoOpWildReplyHandler implements ReplyHandler<ReplyType<?>> {
     private NoOpWildReplyHandler() { }
 
     @Override
+    public void handleStatusUpdate(Message<PublishStatus> status) {
+        // Ignore
+    }
+
+    @Override
     public void handleStreamIO(Message<PublishStream> message) {
-        // Ingore
+        // Ignore
     }
 
     @Override
     public void handleDisplayData(Message<PublishDisplayData> message) {
-        // Ingore
+        // Ignore
     }
 
     @Override
     public void handleUpdateDisplayData(Message<PublishUpdateDisplayData> message) {
-        // Ingore
+        // Ignore
     }
 
     @Override
     public void handleClearOutput(Message<PublishClearOutput> message) {
-        // Ingore
+        // Ignore
     }
 
     @Override
     public void handleExecuteResult(Message<PublishExecuteResult> message) {
-        // Ingore
+        // Ignore
     }
 
     @Override
     public void handleError(Message<PublishError> message) {
-        // Ingore
+        // Ignore
     }
 
     @Override
     public InputReply provideStdin(Message<InputRequest> message) {
-        // Ingore
+        // Ignore
         return null;
     }
 

@@ -2,7 +2,7 @@ package io.github.spencerpark.jupyter.client;
 
 import io.github.spencerpark.jupyter.client.handlers.NoOpWildReplyHandler;
 import io.github.spencerpark.jupyter.client.handlers.ReplyHandler;
-import io.github.spencerpark.jupyter.client.handlers.TargetedReplyHandler;
+import io.github.spencerpark.jupyter.client.handlers.ShellReplyHandler;
 import io.github.spencerpark.jupyter.api.ExpressionValue;
 import io.github.spencerpark.jupyter.api.ReplacementOptions;
 import io.github.spencerpark.jupyter.comm.DefaultCommManager;
@@ -65,7 +65,7 @@ public class RemoteJupyterKernel extends BaseJupyterClient {
 
     public RemoteJupyterKernel(DefaultCommManager commManager) {
         super(commManager);
-         this.wildReplyHandler = NoOpWildReplyHandler.getInstance();
+        this.wildReplyHandler = NoOpWildReplyHandler.getInstance();
     }
 
     @Override
@@ -165,7 +165,7 @@ public class RemoteJupyterKernel extends BaseJupyterClient {
                 false // stop on error
         );
 
-        TargetedReplyHandler<ExecuteReply> replyHandler = this.performShellRequest(request, io);
+        ShellReplyHandler<ExecuteReply> replyHandler = this.performShellRequest(request, io);
 
         return monitorWithUnboxedException(replyHandler.getFutureResult(), res -> {
             ExecuteReply reply = res.getOrThrowPublished();
@@ -181,7 +181,7 @@ public class RemoteJupyterKernel extends BaseJupyterClient {
     public CompletableFuture<Optional<DisplayData>> inspect(String code, int at, boolean extraDetail) {
         InspectRequest request = new InspectRequest(code, at, extraDetail ? 1 : 0);
 
-        TargetedReplyHandler<InspectReply> replyHandler = this.performShellRequest(request, NULL_IO);
+        ShellReplyHandler<InspectReply> replyHandler = this.performShellRequest(request, NULL_IO);
 
         return monitorWithUnboxedException(replyHandler.getFutureResult(), res -> {
             InspectReply reply = res.getOrThrowPublished();
@@ -195,7 +195,7 @@ public class RemoteJupyterKernel extends BaseJupyterClient {
     public CompletableFuture<ReplacementOptions> complete(String code, int at) {
         CompleteRequest request = new CompleteRequest(code, at);
 
-        TargetedReplyHandler<CompleteReply> replyHandler = this.performShellRequest(request, NULL_IO);
+        ShellReplyHandler<CompleteReply> replyHandler = this.performShellRequest(request, NULL_IO);
 
         return monitorWithUnboxedException(replyHandler.getFutureResult(), res -> {
             CompleteReply reply = res.getOrThrowPublished();
@@ -207,7 +207,7 @@ public class RemoteJupyterKernel extends BaseJupyterClient {
     public CompletableFuture<List<HistoryEntry>> searchHistoryFor(HistoryQuery query) {
         HistoryRequest request = query.getRequest();
 
-        TargetedReplyHandler<HistoryReply> replyHandler = this.performShellRequest(request, NULL_IO);
+        ShellReplyHandler<HistoryReply> replyHandler = this.performShellRequest(request, NULL_IO);
 
         return monitorWithUnboxedException(replyHandler.getFutureResult(), res -> {
             HistoryReply reply = res.getOrThrowPublished();
@@ -222,7 +222,7 @@ public class RemoteJupyterKernel extends BaseJupyterClient {
     public CompletableFuture<String> isComplete(String code) {
         IsCompleteRequest request = new IsCompleteRequest(code);
 
-        TargetedReplyHandler<IsCompleteReply> replyHandler = this.performShellRequest(request, NULL_IO);
+        ShellReplyHandler<IsCompleteReply> replyHandler = this.performShellRequest(request, NULL_IO);
 
         return monitorWithUnboxedException(replyHandler.getFutureResult(), res -> {
             IsCompleteReply reply = res.getOrThrowPublished();
@@ -245,7 +245,7 @@ public class RemoteJupyterKernel extends BaseJupyterClient {
         if (this.kernelInfo != null) {
             KernelInfoRequest request = new KernelInfoRequest();
 
-            TargetedReplyHandler<KernelInfoReply> replyHandler = this.performShellRequest(request, NULL_IO);
+            ShellReplyHandler<KernelInfoReply> replyHandler = this.performShellRequest(request, NULL_IO);
 
             this.kernelInfo = monitorWithUnboxedException(replyHandler.getFutureResult(), res -> {
                 KernelInfoReply reply = res.getOrThrowPublished();
@@ -264,7 +264,7 @@ public class RemoteJupyterKernel extends BaseJupyterClient {
     }
 
     public CompletableFuture<Void> shutdown() {
-        TargetedReplyHandler<ShutdownReply> replyHandler = this.performShellRequest(ShutdownRequest.SHUTDOWN, NULL_IO);
+        ShellReplyHandler<ShutdownReply> replyHandler = this.performShellRequest(ShutdownRequest.SHUTDOWN, NULL_IO);
 
         return monitorWithUnboxedException(replyHandler.getFutureResult(), res -> {
             res.getOrThrowPublished();
@@ -275,7 +275,7 @@ public class RemoteJupyterKernel extends BaseJupyterClient {
     public CompletableFuture<Void> interrupt() {
         InterruptRequest request = new InterruptRequest();
 
-        TargetedReplyHandler<InterruptReply> replyHandler = this.performShellRequest(request, NULL_IO);
+        ShellReplyHandler<InterruptReply> replyHandler = this.performShellRequest(request, NULL_IO);
 
         return monitorWithUnboxedException(replyHandler.getFutureResult(), res -> {
             res.getOrThrowPublished();

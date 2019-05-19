@@ -4,7 +4,7 @@ import io.github.spencerpark.jupyter.channels.ReplyEnvironment;
 import io.github.spencerpark.jupyter.client.channels.JupyterClientConnection;
 import io.github.spencerpark.jupyter.client.channels.ShellClientChannel;
 import io.github.spencerpark.jupyter.client.handlers.ReplyHandler;
-import io.github.spencerpark.jupyter.client.handlers.TargetedReplyHandler;
+import io.github.spencerpark.jupyter.client.handlers.ShellReplyHandler;
 import io.github.spencerpark.jupyter.api.display.DisplayData;
 import io.github.spencerpark.jupyter.comm.DefaultCommManager;
 import io.github.spencerpark.jupyter.messages.*;
@@ -48,7 +48,7 @@ public abstract class BaseJupyterClient implements Closeable {
     private DefaultCommManager commManager;
 
     private JupyterClientConnection connection;
-    private final Map<String, TargetedReplyHandler<?>> activeReplyHandlers = new ConcurrentHashMap<>();
+    private final Map<String, ShellReplyHandler<?>> activeReplyHandlers = new ConcurrentHashMap<>();
 
     public BaseJupyterClient(DefaultCommManager commManager) {
         this.commManager = commManager;
@@ -62,12 +62,12 @@ public abstract class BaseJupyterClient implements Closeable {
 
     protected abstract <T> ReplyHandler<T> getWildReplyHandler();
 
-    public <Req extends ContentType<Req>&RequestType<Rep>, Rep> TargetedReplyHandler<Rep> performShellRequest(Req content, IOProvider ioProvider) {
+    public <Req extends ContentType<Req>&RequestType<Rep>, Rep> ShellReplyHandler<Rep> performShellRequest(Req content, IOProvider ioProvider) {
         if (this.connection == null)
             throw new IllegalStateException("Client not connected.");
 
         // Initialize a promise that will complete when the handler receives a reply.
-        TargetedReplyHandler<Rep> handler = new TargetedReplyHandler<>(content.getReplyType(), ioProvider);
+        ShellReplyHandler<Rep> handler = new ShellReplyHandler<>(content.getReplyType(), ioProvider);
 
         // Initialize the request.
         Header<Req> header = new Header<>(content.getType());
@@ -89,7 +89,7 @@ public abstract class BaseJupyterClient implements Closeable {
 
     // Local helpers
 
-    private TargetedReplyHandler<?> getActiveHandlerForId(String id) {
+    private ShellReplyHandler<?> getActiveHandlerForId(String id) {
         return this.activeReplyHandlers.get(id);
     }
 
@@ -108,7 +108,7 @@ public abstract class BaseJupyterClient implements Closeable {
             return this.getWildReplyHandler();
 
         String id = message.getParentHeader().getId();
-        TargetedReplyHandler<?> handler = this.getActiveHandlerForId(id);
+        ShellReplyHandler<?> handler = this.getActiveHandlerForId(id);
 
         // If no handler associated with the parent id then the message is wild.
         if (handler == null)
@@ -228,6 +228,7 @@ public abstract class BaseJupyterClient implements Closeable {
     }
 
     private void handlePublishStatus(Message<PublishStatus> message) {
+        this.getReplyContextHandlerFor(message).handleStatusUpdate(message);
         this.handleKernelStatusChange(message.getContent());
     }
 

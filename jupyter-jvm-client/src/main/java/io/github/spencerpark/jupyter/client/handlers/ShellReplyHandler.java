@@ -12,15 +12,35 @@ import io.github.spencerpark.jupyter.messages.request.InputRequest;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class TargetedReplyHandler<R> implements ReplyHandler<R> {
+/**
+ * A shell request consists of a number of messages over two main channels. The request and reply
+ * are sent over the shell (or control) channel. All extra events are published on the iopub with a parent
+ * header corresponding to the initial request. These pub messages are handled here. A request is considered
+ * finished after an idle status with the initial request as the parent header is published and the reply is
+ * received.
+ *
+ * @param <R>
+ */
+public class ShellReplyHandler<R> implements ReplyHandler<R> {
     private final MessageType<R> expectedType;
     private final IOProvider io;
 
-    private final CompletableFuture<Result<R>> promise = new CompletableFuture<>();
     private final AtomicReference<PublishExecuteResult> result = new AtomicReference<>();
     private final AtomicReference<PublishError> error = new AtomicReference<>();
+    private final AtomicReference<R> reply = new AtomicReference<>();
+    private final AtomicReference<ErrorReply> errorReply = new AtomicReference<>();
 
-    public TargetedReplyHandler(MessageType<R> expectedType, IOProvider io) {
+    private final CompletableFuture<Void> replyPromise = new CompletableFuture<>();
+    private final CompletableFuture<Void> workCompletePromise = new CompletableFuture<>();
+    private final CompletableFuture<Result<R>> resultPromise = this.replyPromise.thenCombine(this.workCompletePromise,
+            (replyDone, workCompleteDone) -> {
+                R reply = this.reply.get();
+                if (reply != null)
+                    return Result.success(reply, this.result.get());
+                return Result.error(this.errorReply.get(), this.error.get());
+            });
+
+    public ShellReplyHandler(MessageType<R> expectedType, IOProvider io) {
         this.expectedType = expectedType;
         this.io = io;
     }
@@ -34,7 +54,7 @@ public class TargetedReplyHandler<R> implements ReplyHandler<R> {
     }
 
     public CompletableFuture<Result<R>> getFutureResult() {
-        return this.promise;
+        return this.resultPromise;
     }
 
     public PublishExecuteResult getResult() {
@@ -46,6 +66,16 @@ public class TargetedReplyHandler<R> implements ReplyHandler<R> {
     }
 
     // IOPub handlers
+
+    @Override
+    public void handleStatusUpdate(Message<PublishStatus> message) {
+        PublishStatus status = message.getContent();
+        switch (status.getState()) {
+            case IDLE:
+                this.workCompletePromise.complete(null);
+                break;
+        }
+    }
 
     @Override
     public void handleStreamIO(Message<PublishStream> message) {
@@ -95,11 +125,13 @@ public class TargetedReplyHandler<R> implements ReplyHandler<R> {
 
     @Override
     public void onReply(Message<? extends R> reply) {
-        this.promise.complete(Result.success(reply.getContent(), result.get()));
+        this.reply.set(reply.getContent());
+        this.replyPromise.complete(null);
     }
 
     @Override
     public void onErrorReply(Message<ErrorReply> reply) {
-        this.promise.complete(Result.error(reply.getContent(), error.get()));
+        this.errorReply.set(reply.getContent());
+        this.replyPromise.complete(null);
     }
 }
