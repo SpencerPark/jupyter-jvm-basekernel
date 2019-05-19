@@ -101,7 +101,10 @@ public abstract class JupyterSocket extends ZMQ.Socket {
             parentHeader = gson.fromJson(parentHeaderJson, Header.class);
 
         Map<String, Object> metadata = gson.fromJson(new String(metadataRaw, UTF_8), JSON_OBJ_AS_MAP);
-        Object content = gson.fromJson(new String(contentRaw, UTF_8), header.getType().getContentType());
+        // The cast to type is very important, if a class is given, gson will attempt to cast the result. In the case
+        // of an error reply we don't return an instance of the class but rather an `ErrorReply`. The code here handles
+        // that case gracefully.
+        Object content = gson.fromJson(new String(contentRaw, UTF_8), (Type) header.getType().getContentType());
         if (content instanceof ErrorReply)
             header = new Header<>(header.getId(), header.getUsername(), header.getSessionId(), header.getTimestamp(), header.getType().error(), header.getVersion());
 
