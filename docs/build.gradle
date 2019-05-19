@@ -1,0 +1,44 @@
+plugins {
+    id 'org.asciidoctor.convert'
+}
+
+repositories {
+    jcenter()
+}
+
+asciidoctorj {
+    // Need a never asciidoctor version for rouge highlighter, coderay isn't cutting it
+    version = '2.0.0'
+}
+
+asciidoctor {
+    sources {
+        include 'authoring-extensions.adoc', 'connecting-to-kernels.adoc', 'router.adoc', 'writing-kernels.adoc'
+    }
+
+    def PROJECT_BASE_URL = 'https://github.com/SpencerPark/jupyter-jvm/tree/master/'
+    def PROJECT_VARS = [':jupyter-jvm-api', ':jupyter-jvm-basekernel', ':jupyter-jvm-client', ':jupyter-jvm-ipywidgets', ':jupyter-jvm-shared-protocol']
+            .collect { project(it) }
+            .collectEntries { project ->
+                [
+                        ("project_${project.name}_root".toString()): PROJECT_BASE_URL + project.rootDir.relativePath(project.projectDir),
+                        ("project_${project.name}_src".toString()): PROJECT_BASE_URL + project.rootDir.relativePath(project.sourceSets.main.java.srcDirs[0])
+                ]
+            }
+    PROJECT_VARS['project_example_root'] = PROJECT_BASE_URL + 'example'
+    PROJECT_VARS['example_root'] = "${project.rootDir}/example"
+    PROJECT_VARS['git_url'] = 'https://github.com/SpencerPark/jupyter-jvm.git'
+
+    PROJECT_VARS['source-highlighter'] = 'rouge'
+    //'imagesdir': 'images'
+    PROJECT_VARS['toc'] = 'left'
+    PROJECT_VARS['icons'] = 'font'
+    PROJECT_VARS['setanchors'] = ''
+    PROJECT_VARS['idprefix'] = ''
+    PROJECT_VARS['idseparator'] = '-'
+    PROJECT_VARS['docinfo1'] = ''
+
+    attributes(PROJECT_VARS)
+}
+
+build.dependsOn 'asciidoctor'

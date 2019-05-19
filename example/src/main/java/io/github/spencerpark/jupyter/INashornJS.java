@@ -4,10 +4,10 @@ import io.github.spencerpark.jupyter.channels.JupyterConnection;
 import io.github.spencerpark.jupyter.channels.JupyterSocket;
 import io.github.spencerpark.jupyter.kernel.KernelConnectionProperties;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.logging.Level;
 
 public class INashornJS {
@@ -20,7 +20,7 @@ public class INashornJS {
         if (!Files.isRegularFile(connectionFile))
             throw new IllegalArgumentException("Connection file '" + connectionFile + "' isn't a file.");
 
-        String contents = new String(Files.readAllBytes(connectionFile));
+        String contents = new String(Files.readAllBytes(connectionFile), StandardCharsets.UTF_8);
 
         JupyterSocket.JUPYTER_LOGGER.setLevel(Level.WARNING);
 

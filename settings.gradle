@@ -6,3 +6,5 @@ include 'jupyter-jvm-api'
 include 'jupyter-jvm-client'
 
 include 'jupyter-jvm-ipywidgets'
+
+include 'docs'

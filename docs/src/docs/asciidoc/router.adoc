@@ -1,0 +1,17 @@
+## Jupyter on the JVM
+
+Where to first?
+
+### I want to write a Jupyter kernel.
+
+Great! Coercing your interpreter into a Jupyter kernel should be no problem. Extend the base kernel, provide a few details about your language, and implement `eval(String)`. Check out the link:writing-kernels.adoc[Writing Jupyter Kernels on the JVM] article for a full example and tutorial.
+
+### I want to connect to an existing Jupyter kernel.
+
+The `jupyter-jvm-client` is the library you are looking for. It provides the functionality to _locate_, _spawn_, and _communicate_ with Jupyter kernels. Check out the link:connecting-to-kernels.adoc[Connecting to a Jupyter kernel from the JVM] article for a full example and tutorial.
+
+### I want to make my library work nicely inside a JVM kernel.
+
+Hooking into the display or magics functionality should be done here at the most generic level. All kernels that extend the base should work well with these extensions.
+
+Learn about choosing and customizing a data format for your (or someone else's!) classes, creating magics, or getting a little more interactive with a widget in link:authoring-extensions[Authoring Jupyter Kernel Extensions].

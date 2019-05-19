@@ -1,7 +1,19 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
+plugins {
+    id 'org.asciidoctor.convert' version '1.5.9.2' apply false
+}
+
 final JEROMQ_VERSION = '0.5.1'
 final GSON_VERSION = '2.8.5'
+
+final PUBLISHABLE_PROJECTS = [
+        'jupyter-jvm-api',
+        'jupyter-jvm-basekernel',
+        'jupyter-jvm-client',
+        'jupyter-jvm-ipywidgets',
+        'jupyter-jvm-shared-protocol'
+]
 
 wrapper {
     gradleVersion = '5.4.1'
@@ -108,20 +120,13 @@ project(':jupyter-jvm-ipywidgets') {
     }
 }
 
-subprojects {
-    // Disable the test report for the individual test task
-    test {
-        reports.html.enabled = false
-    }
-}
-
 task testReport(type: TestReport) {
     destinationDir = file("$buildDir/reports/allTests")
     // Include the results from the `test` task in all subprojects
     reportOn subprojects*.test
 }
 
-subprojects {
+configure(subprojects.findAll { it.name in PUBLISHABLE_PROJECTS }) {
     apply plugin: 'maven'
     apply plugin: 'maven-publish'
     apply plugin: 'signing'
