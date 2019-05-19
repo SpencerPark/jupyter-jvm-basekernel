@@ -166,7 +166,7 @@ public class RemoteJupyterKernel extends BaseJupyterClient {
     public CompletableFuture<Result<Optional<DisplayData>>> inspectAsync(String code, int at, boolean extraDetail) {
         InspectRequest request = new InspectRequest(code, at, extraDetail ? 1 : 0);
 
-        ShellReplyHandler<InspectReply> replyHandler = this.performShellRequest(request, NULL_IO);
+        ShellReplyHandler<InspectReply> replyHandler = this.performShellRequest(request, IOProvider.NULL);
 
         return replyHandler.getFutureResult().thenApply(res ->
                 res.map(reply -> {
@@ -184,7 +184,7 @@ public class RemoteJupyterKernel extends BaseJupyterClient {
     public CompletableFuture<Result<ReplacementOptions>> completeAsync(String code, int at) {
         CompleteRequest request = new CompleteRequest(code, at);
 
-        ShellReplyHandler<CompleteReply> replyHandler = this.performShellRequest(request, NULL_IO);
+        ShellReplyHandler<CompleteReply> replyHandler = this.performShellRequest(request, IOProvider.NULL);
 
         return replyHandler.getFutureResult().thenApply(res ->
                 res.map(reply ->
@@ -198,7 +198,7 @@ public class RemoteJupyterKernel extends BaseJupyterClient {
     public CompletableFuture<Result<List<HistoryEntry>>> searchHistoryForAsync(HistoryQuery query) {
         HistoryRequest request = query.getRequest();
 
-        ShellReplyHandler<HistoryReply> replyHandler = this.performShellRequest(request, NULL_IO);
+        ShellReplyHandler<HistoryReply> replyHandler = this.performShellRequest(request, IOProvider.NULL);
 
         return replyHandler.getFutureResult().thenApply(res -> res.map(HistoryReply::getHistory));
     }
@@ -214,7 +214,7 @@ public class RemoteJupyterKernel extends BaseJupyterClient {
     public CompletableFuture<Result<String>> isCompleteAsync(String code) {
         IsCompleteRequest request = new IsCompleteRequest(code);
 
-        ShellReplyHandler<IsCompleteReply> replyHandler = this.performShellRequest(request, NULL_IO);
+        ShellReplyHandler<IsCompleteReply> replyHandler = this.performShellRequest(request, IOProvider.NULL);
 
         return replyHandler.getFutureResult().thenApply(res ->
                 res.map(reply -> {
@@ -239,7 +239,7 @@ public class RemoteJupyterKernel extends BaseJupyterClient {
     public CompletableFuture<Result<KernelInfo>> getKernelInfoAsync() {
         KernelInfoRequest request = new KernelInfoRequest();
 
-        ShellReplyHandler<KernelInfoReply> replyHandler = this.performShellRequest(request, NULL_IO);
+        ShellReplyHandler<KernelInfoReply> replyHandler = this.performShellRequest(request, IOProvider.NULL);
 
         return replyHandler.getFutureResult().thenApply(res ->
                 res.map(reply ->
@@ -260,7 +260,7 @@ public class RemoteJupyterKernel extends BaseJupyterClient {
     }
 
     public CompletableFuture<Result<Void>> shutdownAsync() {
-        ShellReplyHandler<ShutdownReply> replyHandler = this.performShellRequest(ShutdownRequest.SHUTDOWN, NULL_IO);
+        ShellReplyHandler<ShutdownReply> replyHandler = this.performShellRequest(ShutdownRequest.SHUTDOWN, IOProvider.NULL);
 
         return replyHandler.getFutureResult().thenApply(res -> res.map(reply -> null));
     }
@@ -272,7 +272,7 @@ public class RemoteJupyterKernel extends BaseJupyterClient {
     public CompletableFuture<Result<Void>> interruptAsync() {
         InterruptRequest request = new InterruptRequest();
 
-        ShellReplyHandler<InterruptReply> replyHandler = this.performShellRequest(request, NULL_IO);
+        ShellReplyHandler<InterruptReply> replyHandler = this.performShellRequest(request, IOProvider.NULL);
 
         return replyHandler.getFutureResult().thenApply(res -> res.map(reply -> null));
     }

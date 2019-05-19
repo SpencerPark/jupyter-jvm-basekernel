@@ -5,7 +5,6 @@ import io.github.spencerpark.jupyter.client.channels.JupyterClientConnection;
 import io.github.spencerpark.jupyter.client.channels.ShellClientChannel;
 import io.github.spencerpark.jupyter.client.handlers.ReplyHandler;
 import io.github.spencerpark.jupyter.client.handlers.ShellReplyHandler;
-import io.github.spencerpark.jupyter.api.display.DisplayData;
 import io.github.spencerpark.jupyter.comm.DefaultCommManager;
 import io.github.spencerpark.jupyter.messages.*;
 import io.github.spencerpark.jupyter.messages.publish.*;
@@ -18,33 +17,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class BaseJupyterClient implements Closeable {
-    public static final IOProvider NULL_IO = new IOProvider() {
-        @Override
-        public void writeOut(String data) { }
-
-        @Override
-        public void writeErr(String data) { }
-
-        @Override
-        public boolean supportsStdin() {
-            return false;
-        }
-
-        @Override
-        public String readIn(String prompt, boolean isPassword) {
-            return null;
-        }
-
-        @Override
-        public void writeDisplay(DisplayData data) { }
-
-        @Override
-        public void updateDisplay(String id, DisplayData data) { }
-
-        @Override
-        public void clear(boolean defer) { }
-    };
-
     private DefaultCommManager commManager;
 
     private JupyterClientConnection connection;
