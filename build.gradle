@@ -10,13 +10,14 @@ final GSON_VERSION = '2.8.5'
 final PUBLISHABLE_PROJECTS = [
         'jupyter-jvm-api',
         'jupyter-jvm-basekernel',
-        'jupyter-jvm-client',
+        'jupyter-jvm-zmq-client',
+        'jupyter-jvm-client-api',
         'jupyter-jvm-ipywidgets',
         'jupyter-jvm-shared-protocol'
 ]
 
 wrapper {
-    gradleVersion = '5.4.1'
+    gradleVersion = '6.3'
     distributionType = Wrapper.DistributionType.ALL
 }
 
@@ -92,16 +93,28 @@ project(':jupyter-jvm-shared-protocol') {
     }
 }
 
-project(':jupyter-jvm-client') {
+project(':jupyter-jvm-zmq-client') {
     version '0.0.1-SNAPSHOT'
     ext.pomName = 'Jupyter JVM Client'
     ext.pomDescription = 'A Java library for launching, connecting, and communicating with a Jupyter kernel.'
 
     dependencies {
-        compile project(':jupyter-jvm-api')
+        compile project(':jupyter-jvm-client-api')
         compile project(':jupyter-jvm-shared-protocol')
         compile group: 'org.zeromq', name: 'jeromq', version: JEROMQ_VERSION
         compile group: 'com.google.code.gson', name: 'gson', version: GSON_VERSION
+
+        testCompile group: 'junit', name: 'junit', version: '4.12'
+    }
+}
+
+project(':jupyter-jvm-client-api') {
+    version '0.0.1-SNAPSHOT'
+    ext.pomName = 'Jupyter JVM Client API'
+    ext.pomDescription = 'A Java library for launching, connecting, and communicating with a Jupyter kernel.'
+
+    dependencies {
+        compile project(':jupyter-jvm-api')
 
         testCompile group: 'junit', name: 'junit', version: '4.12'
     }

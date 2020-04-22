@@ -17,7 +17,7 @@ asciidoctor {
     }
 
     def PROJECT_BASE_URL = 'https://github.com/SpencerPark/jupyter-jvm/tree/master/'
-    def PROJECT_VARS = [':jupyter-jvm-api', ':jupyter-jvm-basekernel', ':jupyter-jvm-client', ':jupyter-jvm-ipywidgets', ':jupyter-jvm-shared-protocol']
+    def PROJECT_VARS = [':jupyter-jvm-api', ':jupyter-jvm-basekernel', ':jupyter-jvm-zmq-client', ':jupyter-jvm-ipywidgets', ':jupyter-jvm-shared-protocol']
             .collect { project(it) }
             .collectEntries { project ->
                 [

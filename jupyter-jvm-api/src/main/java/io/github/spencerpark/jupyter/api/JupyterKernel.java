@@ -8,17 +8,19 @@ import io.github.spencerpark.jupyter.api.history.HistoryManager;
 import java.util.List;
 
 public interface JupyterKernel {
-    public Renderer getRenderer();
+    public static final String IS_COMPLETE_YES = "complete";
+    public static final String IS_COMPLETE_BAD = "invalid";
+    public static final String IS_COMPLETE_MAYBE = "unknown";
 
-    public void display(DisplayData data);
+    public Renderer renderer();
 
-    public JupyterIO getIO();
+    public JupyterIO io();
 
-    public CommManager getCommManager();
+    public default void display(DisplayData data) {
+        this.io().display.display(data);
+    }
 
-    public String getBanner();
-
-    public List<LanguageInfo.Help> getHelpLinks();
+    public CommManager comms();
 
     /**
      * Get the active history manager for the kernel. If the history is ignored this method
@@ -26,9 +28,28 @@ public interface JupyterKernel {
      *
      * @return the active {@link HistoryManager} or {@code null}.
      */
-    public HistoryManager getHistoryManager();
+    public HistoryManager history();
 
-    public DisplayData eval(String expr) throws Exception;
+    /**
+     * Formats an error into a human friendly format. The default implementation prints
+     * the stack trace as written by {@link Throwable#printStackTrace()} with a dividing
+     * separator as a prefix.
+     * <p>
+     * Subclasses may override this method write better messages for specific errors but
+     * may choose to still use this to display the stack trace. In this case it is recommended
+     * to add the output of this call to the end of the output list.
+     *
+     * @param e the error to format
+     *
+     * @return a list of lines that make up the formatted error. This format should
+     *         not include strings with newlines but rather separate strings each to go on a
+     *         new line.
+     */
+    public List<String> formatError(Exception e);
+
+    public String getBanner();
+
+    public List<LanguageInfo.Help> getHelpLinks();
 
     /**
      * Inspect the code to get things such as documentation for a function. This is
@@ -49,6 +70,8 @@ public interface JupyterKernel {
      *                   compiling)
      */
     public DisplayData inspect(String code, int at, boolean extraDetail) throws Exception;
+
+    public DisplayData eval(String expr) throws Exception;
 
     /**
      * Try to autocomplete code at a user's cursor such as finishing a method call or
@@ -74,10 +97,6 @@ public interface JupyterKernel {
      *                   an empty replacements returned.
      */
     public ReplacementOptions complete(String code, int at) throws Exception;
-
-    public static final String IS_COMPLETE_YES = "complete";
-    public static final String IS_COMPLETE_BAD = "invalid";
-    public static final String IS_COMPLETE_MAYBE = "unknown";
 
     /**
      * Check if the code is complete. This gives frontends the tools to provide
@@ -107,38 +126,26 @@ public interface JupyterKernel {
     public LanguageInfo getLanguageInfo();
 
     /**
-     * Invoked when the kernel is being shutdown. This is invoked before the
-     * connection is shutdown so any last minute messages by the concrete
-     * kernel get a chance to send.
+     * The name of the kernel should be unique to this implementation. It is typically the name of the project
+     * providing the implementation. This name can be used to disambiguate kernels implementing the same language. i.e.
+     * IJava vs. another kernel that also implements `java` as it's {@link LanguageInfo#getName() language}. The IJava
+     * kernel would return {@code "IJava"}.
      *
-     * @param isRestarting true if this is a shutdown will soon be followed
-     *                     by a restart. If running in a container or some other
-     *                     spawned vm it may be beneficial to keep it alive for a
-     *                     bit longer as the kernel is likely to be started up
-     *                     again.
+     * @return the name of the kernel.
      */
-    public void onShutdown(boolean isRestarting);
+    public String getKernelName();
+
+    /**
+     * Coupled with the {@link #getKernelName() kernel name}, this provides the version. This version is free to update
+     * independently of the {@link LanguageInfo#getVersion() language version}.
+     *
+     * @return the version of the kernel.
+     */
+    public String getKernelVersion();
 
     /**
      * Invoked when the kernel.json specifies an {@code interrupt_mode} of {@code message}
      * and the frontend requests an interrupt of the currently running cell.
      */
     public void interrupt();
-
-    /**
-     * Formats an error into a human friendly format. The default implementation prints
-     * the stack trace as written by {@link Throwable#printStackTrace()} with a dividing
-     * separator as a prefix.
-     * <p>
-     * Subclasses may override this method write better messages for specific errors but
-     * may choose to still use this to display the stack trace. In this case it is recommended
-     * to add the output of this call to the end of the output list.
-     *
-     * @param e the error to format
-     *
-     * @return a list of lines that make up the formatted error. This format should
-     *         not include strings with newlines but rather separate strings each to go on a
-     *         new line.
-     */
-    public List<String> formatError(Exception e);
 }

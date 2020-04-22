@@ -5,55 +5,69 @@ import io.github.spencerpark.jupyter.api.comm.Comm;
 import io.github.spencerpark.jupyter.api.comm.CommFactory;
 import io.github.spencerpark.jupyter.api.comm.CommManager;
 import io.github.spencerpark.jupyter.api.comm.CommTarget;
-import io.github.spencerpark.jupyter.channels.JupyterSocket;
-import io.github.spencerpark.jupyter.channels.ReplyEnvironment;
-import io.github.spencerpark.jupyter.messages.Message;
 import io.github.spencerpark.jupyter.messages.MessageContext;
-import io.github.spencerpark.jupyter.messages.comm.CommCloseCommand;
-import io.github.spencerpark.jupyter.messages.comm.CommMsgCommand;
-import io.github.spencerpark.jupyter.messages.comm.CommOpenCommand;
-import io.github.spencerpark.jupyter.messages.reply.CommInfoReply;
-import io.github.spencerpark.jupyter.messages.request.CommInfoRequest;
 
 import java.util.*;
 
 /**
- * A CommManager is responsible for keeping track of a group of comms created by any
- * of their registered {@link CommTarget}s.
+ * A {@link CommManager} implementation that can be shared between the kernel and client implementations of the jupyter
+ * comm protocol.
  */
 public class DefaultCommManager implements CommManager {
-    protected Map<String, CommTarget> targets;
-    protected Map<String, Comm> comms;
-    protected JupyterSocket iopub;
-    protected MessageContext context;
-
-    public DefaultCommManager() {
-        this.targets = new HashMap<>();
-        this.comms = new HashMap<>();
-        this.iopub = null;
+    public static DefaultCommManager createConnectedTo(CommClient client) {
+        DefaultCommManager manager = new DefaultCommManager();
+        manager.connectTo(client);
+        return manager;
     }
 
-    public void setIOPubChannel(JupyterSocket iopub) {
-        this.iopub = iopub;
-    }
+    protected final Map<String, CommTarget> targets = new HashMap<>();
+    protected final Map<String, Comm> comms = new HashMap<>();
+    protected final Deque<MessageContext> context = new LinkedList<>();
 
-    public void setMessageContext(MessageContext context) {
-        this.context = context;
-    }
+    protected CommClient client = null;
 
-    @Override
-    public Iterator<Comm> iterator() {
-        return this.comms.values().iterator();
+    /**
+     * Connect to a (open or closed) client. After connecting this manager will send client
+     * bound messages over this client. After connecting to a client, previous connections
+     * are no longer used and comms connected to that client are disconnected.
+     *
+     * @param client the client to connect to.
+     */
+    public void connectTo(CommClient client) {
+        if (this.client != null && this.client != client) {
+            this.closeAll();
+        }
+
+        this.client = client;
     }
 
     /**
-     * Lookup a comm by its unique id. If the id is unknown
-     * to this manager it may return null.
+     * Push the most recent message context to attach to outgoing messages. For example, to link messages to evaluation
+     * contexts.
      *
-     * @param id the comm id
-     *
-     * @return the {@link Comm} with the associated id or null if the id is unknown
+     * @param context the most recent message context.
      */
+    public void pushContext(MessageContext context) {
+        this.context.push(context);
+    }
+
+    /**
+     * Drop a message context from the context stack. This will remove at most one (most recently pushed) context if
+     * present in the stack.
+     *
+     * @param context the message context to drop.
+     */
+    public void dropContext(MessageContext context) {
+        // A slightly safer pop.
+        this.context.removeFirstOccurrence(context);
+    }
+
+    @Override
+    public synchronized Iterator<Comm> iterator() {
+        // TODO handlers should run on the same thread but double check that this doesn't need better synchronization
+        return new ArrayList<>(this.comms.values()).iterator();
+    }
+
     @Override
     public Comm getCommByID(String id) {
         return this.comms.get(id);
@@ -65,8 +79,11 @@ public class DefaultCommManager implements CommManager {
      *
      * @param comm the comm to register with this handler
      */
-    @Override
     public void registerComm(Comm comm) {
+        if (comm.getManager() != this) {
+            throw new IllegalArgumentException("Can only register comms connected to this manager.");
+        }
+
         this.comms.put(comm.getID(), comm);
     }
 
@@ -78,191 +95,62 @@ public class DefaultCommManager implements CommManager {
      *
      * @return the comm that was unregistered or null if nothing was unregistered.
      */
-    @Override
     public Comm unregisterComm(String id) {
         return this.comms.remove(id);
     }
 
-    /**
-     * Open a communication with the frontend. In the event that the front end does
-     * not have a target registered with the {@code targetName} the expected behaviour is for
-     * it to send a {@code comm_close} message as soon as possible but there is never any
-     * confirmation that the comm is open.
-     *
-     * @param targetName the name of the target on the frontend to message
-     * @param factory    a comm producer. This is used to create the comm.
-     * @param <T>        the type of {@link Comm} that the {@code factory} produces.
-     *
-     * @return a comm who's {@link Comm#send(JsonObject) send} method is targeted at a new comm
-     *         create on the frontend by the target registered with the {@code targetName} or
-     *         {@code null} if the manager could not open the comm.
-     *         <p>
-     *         The latter may happen if the manager is not connected to the frontend
-     */
     @Override
-    public <T extends Comm> T openComm(String targetName, CommFactory<T> factory) {
-        if (this.iopub == null)
+    public <T extends Comm> T openComm(String targetName, JsonObject data, CommFactory<T> factory) {
+        if (this.client == null)
             return null;
+
         String id = UUID.randomUUID().toString();
 
-        CommOpenCommand content = new CommOpenCommand(id, targetName, new JsonObject());
-        Message<CommOpenCommand> message = new Message<>(this.context, CommOpenCommand.MESSAGE_TYPE, content);
-
-        T comm = factory.produce(this, id, targetName, new CommOpenMessageAdapter(message));
-
-        this.iopub.sendMessage(message);
+        T comm = this.client.sendOpen(this.context.peek(), id, targetName, data, msg ->
+                factory.produce(this, id, targetName, msg));
 
         this.registerComm(comm);
 
         return comm;
     }
 
-    /**
-     * Send a message to a comm's frontend component. See {@link Comm#send(JsonObject, Map, List)} as well as
-     * {@link Comm#send(JsonObject)} which is more likely the method to use as the metadata and blobs are lower level
-     * constructs exposed for completeness but are often not necessary.
-     * <p>
-     * See {@link #messageComm(String, JsonObject)} for the higher level partner to this method.
-     *
-     * @param commID   the id of the target comm (or the id of the sending comm as both share the same id)
-     * @param data     the data to send to the frontend
-     * @param metadata any metadata to attach to the message being sent. May be {@code null} if no metadata is present.
-     * @param blobs    any additional raw data to attach to the message. May be {@code null} if no blobs are present.
-     */
+    @Override
     public void messageComm(String commID, JsonObject data, Map<String, Object> metadata, List<byte[]> blobs) {
-        CommMsgCommand content = new CommMsgCommand(commID, data);
-        Message<CommMsgCommand> message = new Message<>(this.context, CommMsgCommand.MESSAGE_TYPE, content, blobs, metadata);
-
-        this.iopub.sendMessage(message);
+        if (this.client != null) {
+            this.client.sendMessage(this.context.peek(), commID, data, metadata, blobs);
+        }
     }
 
-    /**
-     * Send a message to a comm's frontend component. See {@link Comm#send(JsonObject)}
-     *
-     * @param commID the id of the target comm (or the id of the sending comm as both share the same id)
-     * @param data   the data to send to the frontend
-     */
+    @Override
     public void messageComm(String commID, JsonObject data) {
         this.messageComm(commID, data, null, null);
     }
 
-    /**
-     * Close both sides of a communication. This should be invoked whenever a comm is no longer
-     * is use or destroyed as a counterpart is living in the frontend. Failing to invoke this may
-     * leak comm instances on the frontend as well as possibly leaving the manager holding on to
-     * dead references. See {@link Comm#close()}.
-     *
-     * @param comm the comm to close
-     */
     @Override
-    public void closeComm(Comm comm) {
-        CommCloseCommand content = new CommCloseCommand(comm.getID(), new JsonObject());
-        Message<CommCloseCommand> message = new Message<>(this.context, CommCloseCommand.MESSAGE_TYPE, content);
-
-        this.iopub.sendMessage(message);
-
+    public void closeComm(Comm comm, JsonObject data) {
         Comm unregistered = this.unregisterComm(comm.getID());
-        if (unregistered != null)
-            unregistered.onClose(new CommCloseMessageAdapter(message), true);
+
+        // Not great if the client is null but don't let it prevent closing this side.
+        if (this.client != null) {
+            this.client.sendClose(this.context.peek(), comm.getID(), data, msg -> {
+                if (unregistered != null)
+                    unregistered.onClose(msg, true);
+            });
+        }
     }
 
-    /**
-     * Register a target for comm creation at the frontend's request. A target must
-     * first be registered in the kernel so that the frontend may ask to create a new
-     * comm for speaking with the target.
-     *
-     * @param targetName the name of the target which must be specified by frontend's
-     *                   opening up the communication
-     * @param target     a {@link CommTarget} responsible for creating new comms at this
-     *                   target name
-     */
     @Override
     public void registerTarget(String targetName, CommTarget target) {
         this.targets.put(targetName, target);
     }
 
-    /**
-     * Unregister a target. This doesn't unregister comms with that target name but rather
-     * prevents the target from creating anything new.
-     * <p>
-     * See also {@link #registerTarget(String, CommTarget)}
-     *
-     * @param targetName the name of the target to unregister
-     */
     @Override
     public void unregisterTarget(String targetName) {
         this.targets.remove(targetName);
     }
 
-    /**
-     * Lookup a target with the given name. See {@link #registerTarget(String, CommTarget)}
-     *
-     * @param targetName the target name to lookup
-     *
-     * @return the {@link CommTarget} registered with the {@code targetName}
-     */
     @Override
     public CommTarget getTarget(String targetName) {
         return this.targets.get(targetName);
-    }
-
-    // Default comm message handlers. These shouldn't need to be overridden but are more like
-    // lambda targets that capture this comm manager in it's scope.
-
-    public void handleCommOpenCommand(ReplyEnvironment env, Message<CommOpenCommand> commOpenCommandMessage) {
-        CommOpenCommand openCommand = commOpenCommandMessage.getContent();
-
-        env.setBusyDeferIdle();
-
-        CommTarget target = this.getTarget(openCommand.getTargetName());
-        if (target == null) {
-            CommCloseCommand closeCommand = new CommCloseCommand(openCommand.getCommID(), new JsonObject());
-            env.publish(closeCommand);
-        } else {
-            Comm comm = target.createComm(this, openCommand.getCommID(), openCommand.getTargetName(), new CommOpenMessageAdapter(commOpenCommandMessage));
-            this.registerComm(comm);
-        }
-    }
-
-    public void handleCommMsgCommand(ReplyEnvironment env, Message<CommMsgCommand> commMsgCommandMessage) {
-        CommMsgCommand msgCommand = commMsgCommandMessage.getContent();
-
-        env.setBusyDeferIdle();
-
-        Comm comm = this.getCommByID(msgCommand.getCommID());
-        if (comm != null) {
-            comm.onMessage(new CommDataMessageAdapter(commMsgCommandMessage));
-        }
-    }
-
-    public void handleCommCloseCommand(ReplyEnvironment env, Message<CommCloseCommand> commCloseCommandMessage) {
-        CommCloseCommand closeCommand = commCloseCommandMessage.getContent();
-
-        env.setBusyDeferIdle();
-
-        Comm comm = this.unregisterComm(closeCommand.getCommID());
-        if (comm != null) {
-            comm.onClose(new CommCloseMessageAdapter(commCloseCommandMessage), false);
-        }
-    }
-
-    public void handleCommInfoRequest(ReplyEnvironment env, Message<CommInfoRequest> commInfoRequestMessage) {
-        CommInfoRequest request = commInfoRequestMessage.getContent();
-
-        env.setBusyDeferIdle();
-
-        Map<String, CommInfoReply.CommInfo> comms = new LinkedHashMap<>();
-
-        String targetNameFilter = request.getTargetName();
-        if (targetNameFilter != null) {
-            this.forEach(comm -> {
-                if (targetNameFilter.equals(comm.getTargetName()))
-                    comms.put(comm.getID(), new CommInfoReply.CommInfo(comm.getTargetName()));
-            });
-        } else {
-            this.forEach(comm -> comms.put(comm.getID(), new CommInfoReply.CommInfo(comm.getTargetName())));
-        }
-
-        env.reply(new CommInfoReply(comms));
     }
 }

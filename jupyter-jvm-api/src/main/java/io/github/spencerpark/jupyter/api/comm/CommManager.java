@@ -2,7 +2,8 @@ package io.github.spencerpark.jupyter.api.comm;
 
 import com.google.gson.JsonObject;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A CommManager is responsible for keeping track of a group of comms created by any
@@ -20,30 +21,13 @@ public interface CommManager extends Iterable<Comm> {
     public Comm getCommByID(String id);
 
     /**
-     * Register a new comm that this manager should forward messages to in the event that
-     * it receives one addressed to a comm with the the {@code comm}'s id.
-     *
-     * @param comm the comm to register with this handler
-     */
-    public void registerComm(Comm comm);
-
-    /**
-     * Unregister a comm from this manager. This prevents the manager from forwarding messages
-     * to a previously {@link #registerComm(Comm) registered} comm with the {@code id}.
-     *
-     * @param id the id of the destination to unregister
-     *
-     * @return the comm that was unregistered or null if nothing was unregistered.
-     */
-    public Comm unregisterComm(String id);
-
-    /**
      * Open a communication with the frontend. In the event that the front end does
      * not have a target registered with the {@code targetName} the expected behaviour is for
      * it to send a {@code comm_close} message as soon as possible but there is never any
      * confirmation that the comm is open.
      *
-     * @param targetName the name of the target on the frontend to message
+     * @param targetName the name of the target on the frontend to message.
+     * @param data       the payload to send with the close message.
      * @param factory    a comm producer. This is used to create the comm.
      * @param <T>        the type of {@link Comm} that the {@code factory} produces.
      *
@@ -53,7 +37,11 @@ public interface CommManager extends Iterable<Comm> {
      *         <p>
      *         The latter may happen if the manager is not connected to the frontend
      */
-    public <T extends Comm> T openComm(String targetName, CommFactory<T> factory);
+    public <T extends Comm> T openComm(String targetName, JsonObject data, CommFactory<T> factory);
+
+    public default <T extends Comm> T openComm(String targetName, CommFactory<T> factory) {
+        return this.openComm(targetName, null, factory);
+    }
 
     /**
      * Send a message to a comm's frontend component. See {@link Comm#send(JsonObject, Map, List)} as well as
@@ -78,14 +66,23 @@ public interface CommManager extends Iterable<Comm> {
     public void messageComm(String commID, JsonObject data);
 
     /**
-     * Close both sides of a communication. This should be invoked whenever a comm is no longer
-     * is use or destroyed as a counterpart is living in the frontend. Failing to invoke this may
+     * Close both sides of a comm. This should be invoked whenever a comm is no longer
+     * in use or destroyed, as a counterpart is living in the frontend. Failing to invoke this may
      * leak comm instances on the frontend as well as possibly leaving the manager holding on to
      * dead references. See {@link Comm#close()}.
      *
-     * @param comm the comm to close
+     * @param comm the comm to close.
+     * @param data the payload to send with the close message.
      */
-    public void closeComm(Comm comm);
+    public void closeComm(Comm comm, JsonObject data);
+
+    public default void closeComm(Comm comm) {
+        this.closeComm(comm, null);
+    }
+
+    public default void closeAll() {
+        this.forEach(Comm::close);
+    }
 
     /**
      * Register a target for comm creation at the frontend's request. A target must

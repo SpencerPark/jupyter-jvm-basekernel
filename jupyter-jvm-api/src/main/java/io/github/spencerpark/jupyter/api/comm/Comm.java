@@ -23,6 +23,10 @@ public abstract class Comm {
         this.targetName = targetName;
     }
 
+    public CommManager getManager() {
+        return this.manager;
+    }
+
     public String getID() {
         return this.id;
     }
@@ -72,7 +76,7 @@ public abstract class Comm {
      * <dt>If {@code !sending}:</dt>
      * <dd>
      * then this method may be interested in using the destructuring data in {@link CommMessage.Close#getData()}
-     * that is snt by the front-end upon triggering th close.
+     * that is sent by the front-end upon triggering the close.
      * </dd>
      * </dl>
      *
@@ -83,6 +87,11 @@ public abstract class Comm {
      *                     ({@code sending == true}) or from the front-end ({@code sending == false}).
      */
     public abstract void onClose(CommMessage.Close closeMessage, boolean sending);
+
+    public final void close(JsonObject msg) {
+        if (this.closed) return;
+        this.manager.closeComm(this, msg);
+    }
 
     public final void close() {
         if (this.closed) return;
