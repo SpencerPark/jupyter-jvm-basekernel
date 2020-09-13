@@ -1,6 +1,8 @@
-package io.github.spencerpark.jupyter.api.magic.registry;
+package io.github.spencerpark.jupyter.kernel.magic.registry;
 
-import io.github.spencerpark.jupyter.api.magic.MagicParser;
+import io.github.spencerpark.jupyter.api.magic.registry.MagicArgsParseException;
+import io.github.spencerpark.jupyter.api.magic.registry.MagicsArgs;
+import io.github.spencerpark.jupyter.kernel.magic.MagicParser;
 import org.hamcrest.Matcher;
 import org.junit.Rule;
 import org.junit.Test;

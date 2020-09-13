@@ -83,6 +83,7 @@ public abstract class BaseZmqJupyterClient implements AutoCloseable {
         return handler == null ? this.getWildReplyHandler() : handler;
     }
 
+    @SuppressWarnings("unchecked")
     private <T extends ReplyType<?>> ReplyHandler<T> getReplyHandlerFor(Message<T> message) {
         // If no parent header then this message is really wild.
         if (!message.hasParentHeader())

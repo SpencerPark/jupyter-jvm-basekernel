@@ -43,7 +43,6 @@ public abstract class JupyterSocket extends ZMQ.Socket {
             .registerTypeHierarchyAdapter(ReplyType.class, new ReplyTypeAdapter(replyGson))
             //.setPrettyPrinting()
             .create();
-    private static final JsonParser json = new JsonParser();
     private static final byte[] EMPTY_JSON_OBJECT = "{}".getBytes(UTF_8);
     private static final Type JSON_OBJ_AS_MAP = new TypeToken<Map<String, Object>>() {
     }.getType();
@@ -96,7 +95,7 @@ public abstract class JupyterSocket extends ZMQ.Socket {
         Header<?> header = gson.fromJson(new String(headerRaw, UTF_8), Header.class);
 
         Header<?> parentHeader = null;
-        JsonElement parentHeaderJson = json.parse(new String(parentHeaderRaw, UTF_8));
+        JsonElement parentHeaderJson = JsonParser.parseString(new String(parentHeaderRaw, UTF_8));
         if (parentHeaderJson.isJsonObject() && parentHeaderJson.getAsJsonObject().size() > 0)
             parentHeader = gson.fromJson(parentHeaderJson, Header.class);
 

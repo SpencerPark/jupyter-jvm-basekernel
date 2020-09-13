@@ -1,8 +1,9 @@
 package io.github.spencerpark.jupyter;
 
+import io.github.spencerpark.jupyter.api.KernelConnectionProperties;
 import io.github.spencerpark.jupyter.channels.JupyterConnection;
 import io.github.spencerpark.jupyter.channels.JupyterSocket;
-import io.github.spencerpark.jupyter.kernel.KernelConnectionProperties;
+import io.github.spencerpark.jupyter.kernel.ZmqKernelConnector;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -34,7 +35,8 @@ public class INashornJS {
         String[] engineArgs = envEngineArgs.split(" ");
 
         NashornKernel kernel = new NashornKernel(engineArgs);
-        kernel.becomeHandlerForConnection(connection);
+        ZmqKernelConnector connector = new ZmqKernelConnector(kernel, connection);
+        connector.connectKernelTo(connection);
 
         connection.connect();
         connection.waitUntilClose();

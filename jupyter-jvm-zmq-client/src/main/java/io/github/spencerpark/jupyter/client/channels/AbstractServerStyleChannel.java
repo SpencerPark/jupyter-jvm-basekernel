@@ -27,6 +27,7 @@ public abstract class AbstractServerStyleChannel extends JupyterSocket {
         return this.ioloop != null;
     }
 
+    @SuppressWarnings("unchecked")
     protected void startServerLoop(String channelThreadName) {
         ZMQ.Poller poller = super.ctx.poller(1);
         poller.register(this, ZMQ.Poller.POLLIN);

@@ -4,6 +4,7 @@ import io.github.spencerpark.jupyter.api.comm.CommManager;
 import io.github.spencerpark.jupyter.api.display.DisplayData;
 import io.github.spencerpark.jupyter.api.display.Renderer;
 import io.github.spencerpark.jupyter.api.history.HistoryManager;
+import io.github.spencerpark.jupyter.api.magic.registry.Magics;
 
 import java.util.List;
 
@@ -21,6 +22,8 @@ public interface JupyterKernel {
     }
 
     public CommManager comms();
+
+    public Magics magics();
 
     /**
      * Get the active history manager for the kernel. If the history is ignored this method

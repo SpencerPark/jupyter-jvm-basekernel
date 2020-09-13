@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 // TODO should be an interface as we intend to create a declarative version.
+@SuppressWarnings("unchecked")
 public class WidgetPropertyContainer implements DisplayDataRenderable, WidgetState, Closeable {
     public static final MIMEType MIME_TYPE = MIMEType.parse("application/vnd.jupyter.widget-view+json");
 

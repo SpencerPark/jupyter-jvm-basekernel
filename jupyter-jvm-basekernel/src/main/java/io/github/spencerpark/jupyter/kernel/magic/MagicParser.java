@@ -1,4 +1,9 @@
-package io.github.spencerpark.jupyter.api.magic;
+package io.github.spencerpark.jupyter.kernel.magic;
+
+import io.github.spencerpark.jupyter.api.magic.CellMagicArgs;
+import io.github.spencerpark.jupyter.api.magic.CellMagicParseContext;
+import io.github.spencerpark.jupyter.api.magic.LineMagicArgs;
+import io.github.spencerpark.jupyter.api.magic.LineMagicParseContext;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -8,52 +13,57 @@ import java.util.regex.Pattern;
 
 public class MagicParser {
     public static List<String> split(String args) {
-        args = args.trim();
-
         List<String> split = new LinkedList<>();
 
         StringBuilder current = new StringBuilder();
+        boolean inArg = false;
         boolean inQuotes = false;
         boolean escape = false;
         for (char c : args.toCharArray()) {
+            if (escape) {
+                // No matter what the character is, it is meant literally.
+                current.append(c);
+                escape = false;
+                continue;
+            }
+
             switch (c) {
                 case ' ':
                 case '\t':
                     if (inQuotes) {
+                        // In quotes so this whitespace is part of the arg.
                         current.append(c);
-                    } else if (current.length() > 0) {
-                        // If whitespace is closing the string the add the current and reset
+                    } else if (inArg) {
+                        // This whitespace must be closing the arg. If current.length() == 0 then it
+                        // is the case of extra space between args. In that case we don't want to include
+                        // an empty arg in the middle...
                         split.add(current.toString());
                         current.setLength(0);
+                        inArg = false;
                     }
                     break;
                 case '\\':
-                    if (escape) {
-                        current.append("\\\\");
-                        escape = false;
-                    } else {
-                        escape = true;
-                    }
+                    escape = true;
+                    inArg = true;
                     break;
-                case '\"':
-                    if (escape) {
-                        current.append('"');
-                        escape = false;
+                case '"':
+                    // An opening or closing quote that is not escaped. The quote is not
+                    // part of the arg.
+                    if (inQuotes) {
+                        inQuotes = false;
                     } else {
-                        if (current.length() > 0 && inQuotes) {
-                            split.add(current.toString());
-                            current.setLength(0);
-                            inQuotes = false;
-                        } else {
-                            inQuotes = true;
-                        }
+                        inArg = true;
+                        inQuotes = true;
                     }
                     break;
                 default:
                     current.append(c);
+                    inArg = true;
+                    break;
             }
         }
 
+        // The non-empty tail of the string is the last arg.
         if (current.length() > 0) {
             split.add(current.toString());
         }

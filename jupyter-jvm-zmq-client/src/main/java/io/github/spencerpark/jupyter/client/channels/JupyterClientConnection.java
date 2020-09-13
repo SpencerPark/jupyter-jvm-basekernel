@@ -100,6 +100,7 @@ public class JupyterClientConnection implements Closeable {
         });
     }
 
+    @SuppressWarnings("unchecked")
     public <T> MessageHandler<T> getHandler(MessageType<T> type) {
         return (MessageHandler<T>) this.handlers.get(type);
     }

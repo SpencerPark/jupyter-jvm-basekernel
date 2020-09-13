@@ -85,6 +85,7 @@ public class StatePatch {
 
                         int index = path.get(1).getAsInt();
                         buffersForKey.set(index, buffer);
+                        break;
                     default:
                         throw new IllegalArgumentException("paths empty or longer than 2 are not supported.");
                 }

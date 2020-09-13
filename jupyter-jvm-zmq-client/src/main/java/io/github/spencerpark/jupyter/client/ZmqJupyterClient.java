@@ -79,6 +79,7 @@ public class ZmqJupyterClient extends BaseZmqJupyterClient implements JupyterCli
         this.beginExecutingListeners.get().forEach(c -> c.onBeginExecutingCode(input.getCode(), input.getCount()));
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     protected <T> ReplyHandler<T> getWildReplyHandler() {
         return (ReplyHandler<T>) this.wildReplyHandler;
