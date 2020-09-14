@@ -53,10 +53,12 @@ public abstract class BaseKernel implements JupyterKernel {
         this(JupyterSocket.UTF_8);
     }
 
+    @Override
     public Renderer renderer() {
         return this.renderer;
     }
 
+    @Override
     public void display(DisplayData data) {
         this.io.display.display(data);
     }
