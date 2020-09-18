@@ -40,7 +40,7 @@ public class ContainerClassLoader extends URLClassLoader {
                 try {
                     // First check this loader.
                     clazz = this.findClass(name);
-                } catch (ClassNotFoundException _) {
+                } catch (ClassNotFoundException e) {
                     // Thrown by findClass if the lookup fails, in this case we defer to
                     // the parent loader.
                     // Relying on parent to properly implement the impl note dictating
