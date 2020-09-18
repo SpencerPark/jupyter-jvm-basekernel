@@ -52,7 +52,7 @@ public class DefaultRenderer implements Renderer {
     private final Map<String, MIMEType> suffixMappings;
 
     public DefaultRenderer() {
-        this.renderFunctions = new HashMap<>();
+        this.renderFunctions = new WeakHashMap<>();
         this.suffixMappings = new HashMap<>();
     }
 
