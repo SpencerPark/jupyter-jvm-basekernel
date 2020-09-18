@@ -6,7 +6,6 @@ import io.github.spencerpark.jupyter.spi.JupyterKernelExtension;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,7 +14,7 @@ import java.util.LinkedList;
 import java.util.ServiceLoader;
 import java.util.stream.Stream;
 
-public class JupyterKernelExtensionClassLoader extends URLClassLoader {
+public class JupyterKernelExtensionClassLoader extends ContainerClassLoader {
     private static URL toURL(Path path) {
         try {
             return path.toUri().toURL();
