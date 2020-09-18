@@ -32,7 +32,7 @@ public class ZmqKernelConnector {
     protected final AtomicInteger executionCount = new AtomicInteger(1);
     private final BaseKernel kernel;
 
-    public ZmqKernelConnector(BaseKernel kernel, JupyterConnection connection) {
+    public ZmqKernelConnector(BaseKernel kernel) {
         this.kernel = kernel;
     }
 
