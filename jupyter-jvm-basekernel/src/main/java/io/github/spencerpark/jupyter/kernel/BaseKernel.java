@@ -23,6 +23,18 @@ import java.util.LinkedList;
 import java.util.List;
 
 public abstract class BaseKernel implements JupyterKernel {
+    public static String getImplementationGroupName() {
+        return BaseKernelBuildInfo.GROUP;
+    }
+
+    public static String getImplementationArtifactName() {
+        return BaseKernelBuildInfo.NAME;
+    }
+
+    public static String getImplementationVersion() {
+        return BaseKernelBuildInfo.VERSION;
+    }
+
     protected final DefaultJupyterIO io;
     private boolean shouldReplaceStdStreams;
 
