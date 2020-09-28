@@ -1,10 +1,11 @@
 package io.github.spencerpark.jupyter.client.channels;
 
+import io.github.spencerpark.jupyter.api.KernelConnectionProperties;
 import io.github.spencerpark.jupyter.channels.JupyterSocket;
 import io.github.spencerpark.jupyter.channels.Loop;
-import io.github.spencerpark.jupyter.api.KernelConnectionProperties;
 import io.github.spencerpark.jupyter.messages.HMACGenerator;
 import org.zeromq.SocketType;
+import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
 import java.util.Arrays;
@@ -57,11 +58,11 @@ public class HeartbeatClientChannel extends JupyterSocket {
     private AtomicInteger consecutiveFailureCount = new AtomicInteger(0);
     private AtomicReference<State> state = new AtomicReference<>(State.PAUSED);
 
-    public HeartbeatClientChannel(ZMQ.Context context, HMACGenerator hmacGenerator) {
+    public HeartbeatClientChannel(ZContext context, HMACGenerator hmacGenerator) {
         this(context, hmacGenerator, DEFAULT_ALLOWED_FAILURES_UNTIL_CONSIDERED_DEAD, DEFAULT_MS_UNTIL_CONSIDERED_DEAD);
     }
 
-    public HeartbeatClientChannel(ZMQ.Context context, HMACGenerator hmacGenerator, int numAllowedFailuresBeforeConsideredDead, long msUntilConsideredDead) {
+    public HeartbeatClientChannel(ZContext context, HMACGenerator hmacGenerator, int numAllowedFailuresBeforeConsideredDead, long msUntilConsideredDead) {
         super(context, SocketType.REQ, hmacGenerator, Logger.getLogger("HeartbeatChannel-client"));
         this.numAllowedFailuresBeforeConsideredDead = numAllowedFailuresBeforeConsideredDead;
         this.timeUntilConsideredDead = msUntilConsideredDead;
@@ -155,7 +156,7 @@ public class HeartbeatClientChannel extends JupyterSocket {
         logger.log(Level.INFO, String.format("Binding %s to %s.", channelThreadName, addr));
         super.connect(addr);
 
-        ZMQ.Poller poller = super.ctx.poller(1);
+        ZMQ.Poller poller = super.ctx.createPoller(1);
         poller.register(this, ZMQ.Poller.POLLIN);
 
         byte[] pingMsg = new byte[4];

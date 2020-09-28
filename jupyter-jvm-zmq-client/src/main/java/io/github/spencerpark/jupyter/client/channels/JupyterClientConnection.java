@@ -1,13 +1,13 @@
 package io.github.spencerpark.jupyter.client.channels;
 
+import io.github.spencerpark.jupyter.api.KernelConnectionProperties;
 import io.github.spencerpark.jupyter.channels.DefaultReplyEnvironment;
 import io.github.spencerpark.jupyter.channels.JupyterSocket;
 import io.github.spencerpark.jupyter.channels.ReplyEnvironment;
-import io.github.spencerpark.jupyter.api.KernelConnectionProperties;
 import io.github.spencerpark.jupyter.messages.HMACGenerator;
 import io.github.spencerpark.jupyter.messages.Message;
 import io.github.spencerpark.jupyter.messages.MessageType;
-import org.zeromq.ZMQ;
+import org.zeromq.ZContext;
 
 import java.io.Closeable;
 import java.security.InvalidKeyException;
@@ -20,7 +20,7 @@ public class JupyterClientConnection implements Closeable {
     private final KernelConnectionProperties connProps;
 
     private boolean isConnected = false;
-    private final ZMQ.Context ctx;
+    private final ZContext ctx;
 
     private final Map<MessageType<?>, MessageHandler<?>> handlers;
 
@@ -32,7 +32,7 @@ public class JupyterClientConnection implements Closeable {
 
     public JupyterClientConnection(KernelConnectionProperties connProps) throws NoSuchAlgorithmException, InvalidKeyException {
         this.connProps = connProps;
-        this.ctx = ZMQ.context(1);
+        this.ctx = new ZContext(1);
 
         HMACGenerator hmacGenerator = HMACGenerator.fromConnectionProps(connProps);
 
@@ -115,7 +115,7 @@ public class JupyterClientConnection implements Closeable {
 
     @Override
     public void close() {
-        forEachSocket(JupyterSocket::close);
+        this.ctx.close();
     }
 
     public void waitUntilClose() {

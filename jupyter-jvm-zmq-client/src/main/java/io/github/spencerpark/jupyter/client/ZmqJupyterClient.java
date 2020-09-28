@@ -1,6 +1,7 @@
 package io.github.spencerpark.jupyter.client;
 
 import io.github.spencerpark.jupyter.api.ExpressionValue;
+import io.github.spencerpark.jupyter.api.KernelConnectionProperties;
 import io.github.spencerpark.jupyter.api.ReplacementOptions;
 import io.github.spencerpark.jupyter.api.display.DisplayData;
 import io.github.spencerpark.jupyter.api.history.HistoryEntry;
@@ -17,6 +18,8 @@ import io.github.spencerpark.jupyter.messages.publish.PublishStatus;
 import io.github.spencerpark.jupyter.messages.reply.*;
 import io.github.spencerpark.jupyter.messages.request.*;
 
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -24,15 +27,25 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 public class ZmqJupyterClient extends BaseZmqJupyterClient implements JupyterClient {
+    public static ZmqJupyterClient createConnectedTo(KernelConnectionProperties connectionProps) throws InvalidKeyException, NoSuchAlgorithmException {
+        return createConnectedTo(new JupyterClientConnection(connectionProps));
+    }
+
+    public static ZmqJupyterClient createConnectedTo(KernelConnectionProperties connectionProps, ReplyHandler<?> wildReplyHandler) throws InvalidKeyException, NoSuchAlgorithmException {
+        return createConnectedTo(new JupyterClientConnection(connectionProps), wildReplyHandler);
+    }
+
     public static ZmqJupyterClient createConnectedTo(JupyterClientConnection connection) {
-        ZmqJupyterClient client = new ZmqJupyterClient();
-        client.connect(connection);
-        return client;
+        return connectTo(new ZmqJupyterClient(), connection);
     }
 
     public static ZmqJupyterClient createConnectedTo(JupyterClientConnection connection, ReplyHandler<?> wildReplyHandler) {
-        ZmqJupyterClient client = new ZmqJupyterClient(wildReplyHandler);
+        return connectTo(new ZmqJupyterClient(wildReplyHandler), connection);
+    }
+
+    private static ZmqJupyterClient connectTo(ZmqJupyterClient client, JupyterClientConnection connection) {
         client.connect(connection);
+        connection.connect();
         return client;
     }
 
@@ -228,7 +241,7 @@ public class ZmqJupyterClient extends BaseZmqJupyterClient implements JupyterCli
 
     @Override
     public synchronized KernelInfo getKernelInfo() {
-        if (this.kernelInfo != null)
+        if (this.kernelInfo == null)
             this.kernelInfo = this.getKernelInfoAsync().join().getOrThrowPublished();
 
         return this.kernelInfo;

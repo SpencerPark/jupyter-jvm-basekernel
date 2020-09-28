@@ -7,13 +7,13 @@ import io.github.spencerpark.jupyter.messages.MessageContext;
 import io.github.spencerpark.jupyter.messages.reply.InputReply;
 import io.github.spencerpark.jupyter.messages.request.InputRequest;
 import org.zeromq.SocketType;
-import org.zeromq.ZMQ;
+import org.zeromq.ZContext;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class StdinChannel extends JupyterSocket {
-    public StdinChannel(ZMQ.Context context, HMACGenerator hmacGenerator) {
+    public StdinChannel(ZContext context, HMACGenerator hmacGenerator) {
         super(context, SocketType.ROUTER, hmacGenerator, Logger.getLogger("StdinChannel"));
     }
 

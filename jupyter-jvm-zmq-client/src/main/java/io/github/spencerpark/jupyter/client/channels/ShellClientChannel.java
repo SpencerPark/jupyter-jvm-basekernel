@@ -1,10 +1,10 @@
 package io.github.spencerpark.jupyter.client.channels;
 
-import io.github.spencerpark.jupyter.channels.JupyterSocket;
 import io.github.spencerpark.jupyter.api.KernelConnectionProperties;
+import io.github.spencerpark.jupyter.channels.JupyterSocket;
 import io.github.spencerpark.jupyter.messages.HMACGenerator;
 import org.zeromq.SocketType;
-import org.zeromq.ZMQ;
+import org.zeromq.ZContext;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -16,11 +16,11 @@ public class ShellClientChannel extends AbstractServerStyleChannel {
 
     private final boolean isControl;
 
-    public ShellClientChannel(ZMQ.Context context, HMACGenerator hmacGenerator, boolean isControl, JupyterClientConnection connection) {
+    public ShellClientChannel(ZContext context, HMACGenerator hmacGenerator, boolean isControl, JupyterClientConnection connection) {
         this(context, hmacGenerator, isControl, connection, DEFAULT_LOOP_SLEEP_MS);
     }
 
-    public ShellClientChannel(ZMQ.Context context, HMACGenerator hmacGenerator, boolean isControl, JupyterClientConnection connection, long sleep) {
+    public ShellClientChannel(ZContext context, HMACGenerator hmacGenerator, boolean isControl, JupyterClientConnection connection, long sleep) {
         super(context, SocketType.DEALER, hmacGenerator, Logger.getLogger(isControl ? "ControlChannel-client" : "ShellChannel-client"), connection, sleep);
         this.isControl = isControl;
     }

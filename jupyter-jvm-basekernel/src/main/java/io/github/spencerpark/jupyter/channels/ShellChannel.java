@@ -4,6 +4,7 @@ import io.github.spencerpark.jupyter.api.KernelConnectionProperties;
 import io.github.spencerpark.jupyter.messages.HMACGenerator;
 import io.github.spencerpark.jupyter.messages.Message;
 import org.zeromq.SocketType;
+import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -20,14 +21,14 @@ public class ShellChannel extends JupyterSocket {
     private final JupyterConnection connection;
     private final long sleep;
 
-    public ShellChannel(ZMQ.Context context, HMACGenerator hmacGenerator, boolean isControl, JupyterConnection connection, long sleep) {
+    public ShellChannel(ZContext context, HMACGenerator hmacGenerator, boolean isControl, JupyterConnection connection, long sleep) {
         super(context, SocketType.ROUTER, hmacGenerator, Logger.getLogger(isControl ? "ControlChannel" : "ShellChannel"));
         this.isControl = isControl;
         this.connection = connection;
         this.sleep = sleep;
     }
 
-    public ShellChannel(ZMQ.Context context, HMACGenerator hmacGenerator, boolean isControl, JupyterConnection connection) {
+    public ShellChannel(ZContext context, HMACGenerator hmacGenerator, boolean isControl, JupyterConnection connection) {
         this(context, hmacGenerator, isControl, connection, SHELL_DEFAULT_LOOP_SLEEP_MS);
     }
 
@@ -48,7 +49,7 @@ public class ShellChannel extends JupyterSocket {
         logger.log(Level.INFO, String.format("Binding %s to %s.", channelThreadName, addr));
         super.bind(addr);
 
-        ZMQ.Poller poller = super.ctx.poller(1);
+        ZMQ.Poller poller = super.ctx.createPoller(1);
         poller.register(this, ZMQ.Poller.POLLIN);
 
         this.ioloop = new Loop(channelThreadName, this.sleep, () -> {

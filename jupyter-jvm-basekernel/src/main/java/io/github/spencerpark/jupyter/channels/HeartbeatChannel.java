@@ -3,6 +3,7 @@ package io.github.spencerpark.jupyter.channels;
 import io.github.spencerpark.jupyter.api.KernelConnectionProperties;
 import io.github.spencerpark.jupyter.messages.HMACGenerator;
 import org.zeromq.SocketType;
+import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -17,12 +18,12 @@ public class HeartbeatChannel extends JupyterSocket {
     private final long sleep;
     private volatile Loop pulse;
 
-    public HeartbeatChannel(ZMQ.Context context, HMACGenerator hmacGenerator, long sleep) {
+    public HeartbeatChannel(ZContext context, HMACGenerator hmacGenerator, long sleep) {
         super(context, SocketType.REP, hmacGenerator, Logger.getLogger("HeartbeatChannel"));
         this.sleep = sleep;
     }
 
-    public HeartbeatChannel(ZMQ.Context context, HMACGenerator hmacGenerator) {
+    public HeartbeatChannel(ZContext context, HMACGenerator hmacGenerator) {
         this(context, hmacGenerator, HB_DEFAULT_SLEEP_MS);
     }
 
@@ -41,7 +42,7 @@ public class HeartbeatChannel extends JupyterSocket {
         logger.log(Level.INFO, String.format("Binding %s to %s.", channelThreadName, addr));
         super.bind(addr);
 
-        ZMQ.Poller poller = super.ctx.poller(1);
+        ZMQ.Poller poller = super.ctx.createPoller(1);
         poller.register(this, ZMQ.Poller.POLLIN);
 
         this.pulse = new Loop(channelThreadName, this.sleep, () -> {
@@ -49,7 +50,7 @@ public class HeartbeatChannel extends JupyterSocket {
             if (events > 0) {
                 byte[] msg = this.recv();
                 if (msg == null) {
-                    //Error during receive, just continue
+                    // Error during receive, just continue
                     super.logger.log(Level.SEVERE, "Poll returned 1 event but could not read the echo string");
                     return;
                 }

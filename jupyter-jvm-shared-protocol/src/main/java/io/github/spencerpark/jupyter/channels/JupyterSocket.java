@@ -14,6 +14,7 @@ import io.github.spencerpark.jupyter.messages.publish.PublishStatus;
 import io.github.spencerpark.jupyter.messages.reply.ErrorReply;
 import io.github.spencerpark.jupyter.messages.request.HistoryRequest;
 import org.zeromq.SocketType;
+import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
 import java.lang.reflect.Type;
@@ -49,13 +50,13 @@ public abstract class JupyterSocket extends ZMQ.Socket {
 
     public static final Logger JUPYTER_LOGGER = Logger.getLogger("Jupyter");
 
-    protected final ZMQ.Context ctx;
+    protected final ZContext ctx;
     protected final HMACGenerator hmacGenerator;
     protected final Logger logger;
     protected boolean closed;
 
-    protected JupyterSocket(ZMQ.Context context, SocketType type, HMACGenerator hmacGenerator, Logger logger) {
-        super(context, type);
+    protected JupyterSocket(ZContext context, SocketType type, HMACGenerator hmacGenerator, Logger logger) {
+        super(context.getContext(), type);
         this.ctx = context;
         this.hmacGenerator = hmacGenerator;
         logger.setParent(JUPYTER_LOGGER);

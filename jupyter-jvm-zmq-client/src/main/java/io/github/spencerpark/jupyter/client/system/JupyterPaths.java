@@ -28,12 +28,15 @@ public class JupyterPaths {
             .create();
     private static final String PY_PRINT_SYS_PREFIX_TO_STDOUT = "import sys; sys.stdout.write(sys.prefix)";
 
+    public static JupyterPaths empty() {
+        return new JupyterPaths(Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+    }
+
     public static JupyterPaths withoutSysPrefix() {
         return JupyterPaths.fromSysPrefix(null);
     }
 
     public static JupyterPaths fromSysPrefix(Path sysPrefix) {
-        // config data runtime
         return new JupyterPaths(
                 JupyterPaths.getConfigPath(sysPrefix),
                 JupyterPaths.getPath(sysPrefix),
@@ -70,7 +73,7 @@ public class JupyterPaths {
 
     private static Os OS;
 
-    public static Os getOs() {
+    private static Os getOs() {
         if (JupyterPaths.OS == null) {
             // Detect the os in the same manner as jupyter to get similar results
             String osName = System.getProperty("os.name", "assuming linux").toLowerCase(Locale.ENGLISH);

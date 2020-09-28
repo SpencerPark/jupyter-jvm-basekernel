@@ -1,12 +1,12 @@
 package io.github.spencerpark.jupyter.channels;
 
 import io.github.spencerpark.jupyter.api.KernelConnectionProperties;
+import io.github.spencerpark.jupyter.messages.HMACGenerator;
 import io.github.spencerpark.jupyter.messages.Message;
 import io.github.spencerpark.jupyter.messages.MessageContext;
-import io.github.spencerpark.jupyter.messages.HMACGenerator;
 import io.github.spencerpark.jupyter.messages.MessageType;
 import io.github.spencerpark.jupyter.messages.publish.PublishStatus;
-import org.zeromq.ZMQ;
+import org.zeromq.ZContext;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -18,7 +18,7 @@ public class JupyterConnection {
     private final KernelConnectionProperties connProps;
 
     private boolean isConnected = false;
-    private final ZMQ.Context ctx;
+    private final ZContext ctx;
 
     protected final HeartbeatChannel heartbeat;
     protected final ShellChannel shell;
@@ -30,7 +30,7 @@ public class JupyterConnection {
 
     public JupyterConnection(KernelConnectionProperties connProps) throws NoSuchAlgorithmException, InvalidKeyException {
         this.connProps = connProps;
-        this.ctx = ZMQ.context(1);
+        this.ctx = new ZContext(1);
 
         HMACGenerator hmacGenerator = HMACGenerator.fromConnectionProps(connProps);
 
@@ -78,7 +78,6 @@ public class JupyterConnection {
     }
 
     public void close() {
-        forEachSocket(JupyterSocket::close);
         this.ctx.close();
     }
 

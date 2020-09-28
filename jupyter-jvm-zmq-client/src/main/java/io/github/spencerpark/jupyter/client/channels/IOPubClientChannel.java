@@ -1,10 +1,10 @@
 package io.github.spencerpark.jupyter.client.channels;
 
-import io.github.spencerpark.jupyter.channels.JupyterSocket;
 import io.github.spencerpark.jupyter.api.KernelConnectionProperties;
+import io.github.spencerpark.jupyter.channels.JupyterSocket;
 import io.github.spencerpark.jupyter.messages.HMACGenerator;
 import org.zeromq.SocketType;
-import org.zeromq.ZMQ;
+import org.zeromq.ZContext;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -14,11 +14,11 @@ public class IOPubClientChannel extends AbstractServerStyleChannel {
     private static final long DEFAULT_LOOP_SLEEP_MS = 50;
     private static final AtomicInteger NEXT_INSTANCE_ID = new AtomicInteger();
 
-    public IOPubClientChannel(ZMQ.Context context, HMACGenerator hmacGenerator, JupyterClientConnection connection) {
+    public IOPubClientChannel(ZContext context, HMACGenerator hmacGenerator, JupyterClientConnection connection) {
         this(context, hmacGenerator, connection, DEFAULT_LOOP_SLEEP_MS);
     }
 
-    public IOPubClientChannel(ZMQ.Context context, HMACGenerator hmacGenerator, JupyterClientConnection connection, long sleep) {
+    public IOPubClientChannel(ZContext context, HMACGenerator hmacGenerator, JupyterClientConnection connection, long sleep) {
         super(context, SocketType.SUB, hmacGenerator, Logger.getLogger("IOPubChannel-client"), connection, sleep);
     }
 

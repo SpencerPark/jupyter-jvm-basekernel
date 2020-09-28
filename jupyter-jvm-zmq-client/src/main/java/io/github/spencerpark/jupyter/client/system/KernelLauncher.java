@@ -46,7 +46,6 @@ public class KernelLauncher {
 
     public static KernelConnectionProperties createLocalTcpProps() {
         int[] ports = KernelLauncher.findOpenPorts(5);
-        System.out.println(Arrays.toString(ports));
         return new KernelConnectionProperties(
                 "127.0.0.1",
                 ports[0], ports[1], ports[2], ports[3], ports[4],
