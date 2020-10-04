@@ -22,10 +22,6 @@ public class Header<T> {
 
     private final String version;
 
-    public Header(MessageType<T> type) {
-        this("", type);
-    }
-
     public Header(String sessionId, MessageType<T> type) {
         this(
                 UUID.randomUUID().toString(),
@@ -41,7 +37,7 @@ public class Header<T> {
         this(
                 UUID.randomUUID().toString(),
                 ctx != null ? ctx.getHeader().getUsername() : KERNEL_USERNAME,
-                ctx != null ? ctx.getHeader().getSessionId() : null,
+                ctx != null ? ctx.getHeader().getSessionId() : "",
                 KernelTimestamp.now(),
                 type,
                 PROTOCOL_VERISON

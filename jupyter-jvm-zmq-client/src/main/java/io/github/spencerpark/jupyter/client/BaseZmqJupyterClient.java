@@ -18,17 +18,24 @@ import io.github.spencerpark.jupyter.messages.reply.*;
 import io.github.spencerpark.jupyter.messages.request.InputRequest;
 
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class BaseZmqJupyterClient implements AutoCloseable {
+    private final String sessionId;
     private final DefaultCommManager commManager;
 
     private JupyterClientConnection connection;
     private final Map<String, ShellReplyHandler<?>> activeReplyHandlers = new ConcurrentHashMap<>();
 
-    public BaseZmqJupyterClient(DefaultCommManager commManager) {
+    public BaseZmqJupyterClient(String sessionId, DefaultCommManager commManager) {
+        this.sessionId = sessionId;
         this.commManager = commManager;
+    }
+
+    public BaseZmqJupyterClient(DefaultCommManager commManager) {
+        this(UUID.randomUUID().toString(), commManager);
     }
 
     public BaseZmqJupyterClient() {
@@ -47,11 +54,22 @@ public abstract class BaseZmqJupyterClient implements AutoCloseable {
         if (this.connection == null)
             throw new IllegalStateException("Client not connected.");
 
+        return this.performRequest(content, this.connection.getShell(), ioProvider);
+    }
+
+    public <Req extends ContentType<Req>&RequestType<Rep>, Rep> ShellReplyHandler<Rep> performControlRequest(Req content, IOProvider ioProvider) {
+        if (this.connection == null)
+            throw new IllegalStateException("Client not connected.");
+
+        return this.performRequest(content, this.connection.getControl(), ioProvider);
+    }
+
+    private <Req extends ContentType<Req>&RequestType<Rep>, Rep> ShellReplyHandler<Rep> performRequest(Req content, ShellClientChannel channel, IOProvider ioProvider) {
         // Initialize a promise that will complete when the handler receives a reply.
         ShellReplyHandler<Rep> handler = new ShellReplyHandler<>(content.getReplyType(), ioProvider);
 
         // Initialize the request.
-        Header<Req> header = new Header<>(content.getType());
+        Header<Req> header = new Header<>(this.sessionId, content.getType());
         Message<Req> message = new Message<>(header, content);
         String reqId = header.getId();
 
@@ -61,9 +79,7 @@ public abstract class BaseZmqJupyterClient implements AutoCloseable {
         handler.getFutureResult().whenComplete((res, ex) ->
                 this.activeReplyHandlers.remove(reqId, handler));
 
-        // Send the message on the shell channel (all these requests go on the shell).
-        ShellClientChannel shell = this.connection.getShell();
-        shell.sendMessage(message);
+        channel.sendMessage(message);
 
         return handler;
     }

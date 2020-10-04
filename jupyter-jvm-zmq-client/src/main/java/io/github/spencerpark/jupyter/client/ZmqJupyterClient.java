@@ -249,7 +249,7 @@ public class ZmqJupyterClient extends BaseZmqJupyterClient implements JupyterCli
 
     @Override
     public CompletableFuture<Result<Void>> shutdownAsync() {
-        ShellReplyHandler<ShutdownReply> replyHandler = this.performShellRequest(ShutdownRequest.SHUTDOWN, IOProvider.NULL);
+        ShellReplyHandler<ShutdownReply> replyHandler = this.performControlRequest(ShutdownRequest.SHUTDOWN, IOProvider.NULL);
 
         return replyHandler.getFutureResult().thenApply(res -> res.map(reply -> null));
     }
@@ -258,7 +258,7 @@ public class ZmqJupyterClient extends BaseZmqJupyterClient implements JupyterCli
     public CompletableFuture<Result<Void>> interruptAsync() {
         InterruptRequest request = new InterruptRequest();
 
-        ShellReplyHandler<InterruptReply> replyHandler = this.performShellRequest(request, IOProvider.NULL);
+        ShellReplyHandler<InterruptReply> replyHandler = this.performControlRequest(request, IOProvider.NULL);
 
         return replyHandler.getFutureResult().thenApply(res -> res.map(reply -> null));
     }
