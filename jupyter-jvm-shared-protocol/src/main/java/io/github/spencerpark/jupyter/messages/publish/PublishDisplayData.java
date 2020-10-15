@@ -1,0 +1,18 @@
+package io.github.spencerpark.jupyter.messages.publish;
+
+import io.github.spencerpark.jupyter.api.display.DisplayData;
+import io.github.spencerpark.jupyter.messages.ContentType;
+import io.github.spencerpark.jupyter.messages.MessageType;
+
+public class PublishDisplayData extends DisplayData implements ContentType<PublishDisplayData> {
+    public static final MessageType<PublishDisplayData> MESSAGE_TYPE = MessageType.PUBLISH_DISPLAY_DATA;
+
+    @Override
+    public MessageType<PublishDisplayData> getType() {
+        return MESSAGE_TYPE;
+    }
+
+    public PublishDisplayData(DisplayData data) {
+        super(data);
+    }
+}

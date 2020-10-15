@@ -1,1 +1,11 @@
-rootProject.name = 'jupyter-jvm-basekernel'
+rootProject.name = 'jupyter-jvm'
+
+include 'jupyter-jvm-shared-protocol'
+include 'jupyter-jvm-basekernel'
+include 'jupyter-jvm-api'
+include 'jupyter-jvm-zmq-client'
+include 'jupyter-jvm-client-api'
+
+include 'jupyter-jvm-ipywidgets'
+
+include 'docs'

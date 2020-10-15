@@ -1,15 +1,26 @@
-plugins {
-    id "java"
-    id "io.github.spencerpark.jupyter-kernel-installer" version "2.1.0"
+buildscript {
+    repositories {
+        mavenLocal()
+    }
+    dependencies {
+        classpath "io.github.spencerpark:jupyter-kernel-installer:3.0.0-SNAPSHOT"
+    }
 }
 
-group 'io.github.spencerpark'
+plugins {
+    id "java"
+    // id "io.github.spencerpark.jupyter-kernel-installer" version "2.1.0" // <1>
+}
+
+apply plugin: "io.github.spencerpark.jupyter-kernel-installer"
+
+group 'io.github.spencerpark' // <2>
 version '1.0.0-SNAPSHOT'
 
 sourceCompatibility = 1.8
 
 wrapper {
-    gradleVersion = '4.8.1'
+    gradleVersion = '6.0'
     distributionType = Wrapper.DistributionType.ALL
 }
 
@@ -25,20 +36,20 @@ configurations {
 }
 
 dependencies {
-    shade group: 'io.github.spencerpark', name: 'jupyter-jvm-basekernel', version: '2.2.4'
+    shade group: 'io.github.spencerpark', name: 'jupyter-jvm-basekernel', version: '3.0.0-SNAPSHOT' // <3>
 }
 
 jar {
-    //Include all shaded dependencies in the jar
+    // Include all shaded dependencies in the jar
     from configurations.shade
             .collect { it.isDirectory() ? it : zipTree(it) }
 
     manifest {
-        attributes('Main-class': 'io.github.spencerpark.jupyter.INashornJS')
+        attributes('Main-class': 'io.github.spencerpark.jupyter.INashornJS') // <4>
     }
 }
 
-jupyter {
+jupyter { // <5>
     kernelName = 'nashorn-js'
     kernelDisplayName = 'NashornJS'
     kernelLanguage = 'js'
@@ -53,6 +64,6 @@ jupyter {
 
 zipKernel {
     installers {
-        with 'python'
+        with 'python' // <6>
     }
 }
