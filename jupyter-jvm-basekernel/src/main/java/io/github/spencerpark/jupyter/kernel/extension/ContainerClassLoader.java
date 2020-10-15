@@ -17,7 +17,6 @@ public class ContainerClassLoader extends URLClassLoader {
     public ContainerClassLoader(URL[] urls, ClassLoader parent) {
         super(urls, parent != null ? parent : ClassLoader.getSystemClassLoader());
         this.parent = this.getParent();
-        // TODO test and implement loader delegate on top of this. Also get right of extension classloader...
     }
 
     @Override

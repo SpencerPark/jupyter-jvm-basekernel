@@ -6,6 +6,7 @@ import io.github.spencerpark.jupyter.api.display.mime.MIMEType;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.StringJoiner;
 
 public class DisplayData {
     public static final String DISPLAY_ID_KEY = "display_id";
@@ -170,5 +171,14 @@ public class DisplayData {
 
     public void putSVG(String svg) {
         this.putData("image/svg+xml", svg);
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", DisplayData.class.getSimpleName() + "[", "]")
+                .add("data=" + data)
+                .add("metadata=" + metadata)
+                .add("transientData=" + transientData)
+                .toString();
     }
 }
