@@ -1,17 +1,22 @@
 package io.github.spencerpark.jupyter.kernel.display;
 
 import io.github.spencerpark.jupyter.kernel.display.mime.MIMEType;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 
 public class RendererTest {
     private Renderer renderer;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         this.renderer = new Renderer();
         this.renderer.createRegistration(D.class)

@@ -15,13 +15,14 @@ repositories {
 }
 
 dependencies {
-    implementation(group = "org.zeromq", name = "jeromq", version = "0.5.1")
-    api(group = "com.google.code.gson", name = "gson", version = "2.8.5")
+    implementation("org.zeromq:jeromq:0.5.1")
+    api("com.google.code.gson:gson:2.10.1")
 
-    testImplementation(group = "junit", name = "junit", version = "4.12")
-    testImplementation(group = "org.hamcrest", name = "hamcrest-all", version = "1.3")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation("org.hamcrest:hamcrest:2.2")
 
-    testImplementation(group = "com.google.jimfs", name = "jimfs", version = "1.1")
+    testImplementation("com.google.jimfs:jimfs:1.3.0")
 }
 
 java {
@@ -35,6 +36,10 @@ java {
 
 tasks.withType<JavaCompile> {
     options.compilerArgs.add("-parameters")
+}
+
+tasks.named<Test>("test") {
+    useJUnitPlatform()
 }
 
 tasks.processResources {
