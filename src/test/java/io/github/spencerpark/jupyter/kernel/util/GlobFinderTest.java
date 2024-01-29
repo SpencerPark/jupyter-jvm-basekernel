@@ -2,26 +2,26 @@ package io.github.spencerpark.jupyter.kernel.util;
 
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@RunWith(Parameterized.class)
 public class GlobFinderTest {
     private static final Configuration WIN_FS = Configuration.windows().toBuilder().setWorkingDirectory("C:/dir-a").build();
     private static final Configuration UNIX_FS = Configuration.unix().toBuilder().setWorkingDirectory("/dir-a").build();
@@ -77,139 +77,124 @@ public class GlobFinderTest {
         return Arrays.stream(files).collect(Collectors.toSet());
     }
 
-    @Parameterized.Parameters(name = "{index} :: {1}")
-    public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-                { WIN_FS, "C:/*", allFilesMapped(s -> "C:/" + s), allFilesAndDirsMapped(s -> "C:/" + s) },
-                { UNIX_FS, "/*", allFilesMapped(s -> "/" + s), allFilesAndDirsMapped(s -> "/" + s) },
-                { OSX_FS, "/*", allFilesMapped(s -> "/" + s), allFilesAndDirsMapped(s -> "/" + s) },
+    public static Stream<Arguments> data() {
+        return Stream.of(
+                Arguments.of(WIN_FS, "C:/*", allFilesMapped(s -> "C:/" + s), allFilesAndDirsMapped(s -> "C:/" + s)),
+                Arguments.of(UNIX_FS, "/*", allFilesMapped(s -> "/" + s), allFilesAndDirsMapped(s -> "/" + s)),
+                Arguments.of(OSX_FS, "/*", allFilesMapped(s -> "/" + s), allFilesAndDirsMapped(s -> "/" + s)),
 
                 // Implicit * appended with trailing / in file mode but not path mode.
-                { WIN_FS, "C:/*/", allDirsFlatMapped(d -> allFilesMapped(s -> "C:/" + d + "/" + s)), allFilesAndDirsMapped(s -> "C:/" + s) },
-                { UNIX_FS, "/*/", allDirsFlatMapped(d -> allFilesMapped(s -> "/" + d + "/" + s)), allFilesAndDirsMapped(s -> "/" + s) },
-                { OSX_FS, "/*/", allDirsFlatMapped(d -> allFilesMapped(s -> "/" + d + "/" + s)), allFilesAndDirsMapped(s -> "/" + s) },
+                Arguments.of(WIN_FS, "C:/*/", allDirsFlatMapped(d -> allFilesMapped(s -> "C:/" + d + "/" + s)), allFilesAndDirsMapped(s -> "C:/" + s)),
+                Arguments.of(UNIX_FS, "/*/", allDirsFlatMapped(d -> allFilesMapped(s -> "/" + d + "/" + s)), allFilesAndDirsMapped(s -> "/" + s)),
+                Arguments.of(OSX_FS, "/*/", allDirsFlatMapped(d -> allFilesMapped(s -> "/" + d + "/" + s)), allFilesAndDirsMapped(s -> "/" + s)),
 
-                { WIN_FS, "C:/c.txt", setOf("C:/c.txt"), setOf("C:/c.txt") },
-                { UNIX_FS, "/c.txt", setOf("/c.txt"), setOf("/c.txt") },
-                { OSX_FS, "/c.txt", setOf("/c.txt"), setOf("/c.txt") },
+                Arguments.of(WIN_FS, "C:/c.txt", setOf("C:/c.txt"), setOf("C:/c.txt")),
+                Arguments.of(UNIX_FS, "/c.txt", setOf("/c.txt"), setOf("/c.txt")),
+                Arguments.of(OSX_FS, "/c.txt", setOf("/c.txt"), setOf("/c.txt")),
 
-                { WIN_FS, "C:/*/c.txt", allDirsMapped(d -> "C:/" + d + "/c.txt"), allDirsMapped(d -> "C:/" + d + "/c.txt") },
-                { UNIX_FS, "/*/c.txt", allDirsMapped(d -> "/" + d + "/c.txt"), allDirsMapped(d -> "/" + d + "/c.txt") },
-                { OSX_FS, "/*/c.txt", allDirsMapped(d -> "/" + d + "/c.txt"), allDirsMapped(d -> "/" + d + "/c.txt") },
+                Arguments.of(WIN_FS, "C:/*/c.txt", allDirsMapped(d -> "C:/" + d + "/c.txt"), allDirsMapped(d -> "C:/" + d + "/c.txt")),
+                Arguments.of(UNIX_FS, "/*/c.txt", allDirsMapped(d -> "/" + d + "/c.txt"), allDirsMapped(d -> "/" + d + "/c.txt")),
+                Arguments.of(OSX_FS, "/*/c.txt", allDirsMapped(d -> "/" + d + "/c.txt"), allDirsMapped(d -> "/" + d + "/c.txt")),
 
-                { WIN_FS, "C:/dir-b/*.txt", allFilesFilterMapped(f -> f.endsWith(".txt"), f -> "C:/dir-b/" + f), allFilesFilterMapped(f -> f.endsWith(".txt"), f -> "C:/dir-b/" + f) },
-                { UNIX_FS, "/dir-b/*.txt", allFilesFilterMapped(f -> f.endsWith(".txt"), f -> "/dir-b/" + f), allFilesFilterMapped(f -> f.endsWith(".txt"), f -> "/dir-b/" + f) },
-                { OSX_FS, "/dir-b/*.txt", allFilesFilterMapped(f -> f.endsWith(".txt"), f -> "/dir-b/" + f), allFilesFilterMapped(f -> f.endsWith(".txt"), f -> "/dir-b/" + f) },
+                Arguments.of(WIN_FS, "C:/dir-b/*.txt", allFilesFilterMapped(f -> f.endsWith(".txt"), f -> "C:/dir-b/" + f), allFilesFilterMapped(f -> f.endsWith(".txt"), f -> "C:/dir-b/" + f)),
+                Arguments.of(UNIX_FS, "/dir-b/*.txt", allFilesFilterMapped(f -> f.endsWith(".txt"), f -> "/dir-b/" + f), allFilesFilterMapped(f -> f.endsWith(".txt"), f -> "/dir-b/" + f)),
+                Arguments.of(OSX_FS, "/dir-b/*.txt", allFilesFilterMapped(f -> f.endsWith(".txt"), f -> "/dir-b/" + f), allFilesFilterMapped(f -> f.endsWith(".txt"), f -> "/dir-b/" + f)),
 
-                { WIN_FS, "*.pdf", allFilesFilterMapped(f -> f.endsWith(".pdf"), f -> "./" + f), allFilesFilterMapped(f -> f.endsWith(".pdf"), f -> "./" + f) },
-                { UNIX_FS, "*.pdf", allFilesFilterMapped(f -> f.endsWith(".pdf"), f -> "./" + f), allFilesFilterMapped(f -> f.endsWith(".pdf"), f -> "./" + f) },
-                { OSX_FS, "*.pdf", allFilesFilterMapped(f -> f.endsWith(".pdf"), f -> "./" + f), allFilesFilterMapped(f -> f.endsWith(".pdf"), f -> "./" + f) },
+                Arguments.of(WIN_FS, "*.pdf", allFilesFilterMapped(f -> f.endsWith(".pdf"), f -> "./" + f), allFilesFilterMapped(f -> f.endsWith(".pdf"), f -> "./" + f)),
+                Arguments.of(UNIX_FS, "*.pdf", allFilesFilterMapped(f -> f.endsWith(".pdf"), f -> "./" + f), allFilesFilterMapped(f -> f.endsWith(".pdf"), f -> "./" + f)),
+                Arguments.of(OSX_FS, "*.pdf", allFilesFilterMapped(f -> f.endsWith(".pdf"), f -> "./" + f), allFilesFilterMapped(f -> f.endsWith(".pdf"), f -> "./" + f)),
 
-                { WIN_FS, "*/dir.c/*.svg", allDirsFlatMapped(d -> allFilesFilterMapped(f -> f.endsWith(".svg"), f -> "./" + d + "/dir.c/" + f)), allDirsFlatMapped(d -> allFilesFilterMapped(f -> f.endsWith(".svg"), f -> "./" + d + "/dir.c/" + f)) },
-                { UNIX_FS, "*/dir.c/*.svg", allDirsFlatMapped(d -> allFilesFilterMapped(f -> f.endsWith(".svg"), f -> "./" + d + "/dir.c/" + f)), allDirsFlatMapped(d -> allFilesFilterMapped(f -> f.endsWith(".svg"), f -> "./" + d + "/dir.c/" + f)) },
-                { OSX_FS, "*/dir.c/*.svg", allDirsFlatMapped(d -> allFilesFilterMapped(f -> f.endsWith(".svg"), f -> "./" + d + "/dir.c/" + f)), allDirsFlatMapped(d -> allFilesFilterMapped(f -> f.endsWith(".svg"), f -> "./" + d + "/dir.c/" + f)) },
+                Arguments.of(WIN_FS, "*/dir.c/*.svg", allDirsFlatMapped(d -> allFilesFilterMapped(f -> f.endsWith(".svg"), f -> "./" + d + "/dir.c/" + f)), allDirsFlatMapped(d -> allFilesFilterMapped(f -> f.endsWith(".svg"), f -> "./" + d + "/dir.c/" + f))),
+                Arguments.of(UNIX_FS, "*/dir.c/*.svg", allDirsFlatMapped(d -> allFilesFilterMapped(f -> f.endsWith(".svg"), f -> "./" + d + "/dir.c/" + f)), allDirsFlatMapped(d -> allFilesFilterMapped(f -> f.endsWith(".svg"), f -> "./" + d + "/dir.c/" + f))),
+                Arguments.of(OSX_FS, "*/dir.c/*.svg", allDirsFlatMapped(d -> allFilesFilterMapped(f -> f.endsWith(".svg"), f -> "./" + d + "/dir.c/" + f)), allDirsFlatMapped(d -> allFilesFilterMapped(f -> f.endsWith(".svg"), f -> "./" + d + "/dir.c/" + f))),
 
-                { WIN_FS, "?.pdf", setOf("C:/dir-a/a.pdf"), setOf("C:/dir-a/a.pdf") },
-                { UNIX_FS, "?.pdf", setOf("/dir-a/a.pdf"), setOf("/dir-a/a.pdf") },
-                { OSX_FS, "?.pdf", setOf("/dir-a/a.pdf"), setOf("/dir-a/a.pdf") },
+                Arguments.of(WIN_FS, "?.pdf", setOf("C:/dir-a/a.pdf"), setOf("C:/dir-a/a.pdf")),
+                Arguments.of(UNIX_FS, "?.pdf", setOf("/dir-a/a.pdf"), setOf("/dir-a/a.pdf")),
+                Arguments.of(OSX_FS, "?.pdf", setOf("/dir-a/a.pdf"), setOf("/dir-a/a.pdf")),
 
-                { WIN_FS, "C:/dir-?/?.pdf", setOf("C:/dir-a/a.pdf", "C:/dir-b/a.pdf"), setOf("C:/dir-a/a.pdf", "C:/dir-b/a.pdf") },
-                { UNIX_FS, "/dir-?/?.pdf", setOf("/dir-a/a.pdf", "/dir-b/a.pdf"), setOf("/dir-a/a.pdf", "/dir-b/a.pdf") },
-                { OSX_FS, "/dir-?/?.pdf", setOf("/dir-a/a.pdf", "/dir-b/a.pdf"), setOf("/dir-a/a.pdf", "/dir-b/a.pdf") },
+                Arguments.of(WIN_FS, "C:/dir-?/?.pdf", setOf("C:/dir-a/a.pdf", "C:/dir-b/a.pdf"), setOf("C:/dir-a/a.pdf", "C:/dir-b/a.pdf")),
+                Arguments.of(UNIX_FS, "/dir-?/?.pdf", setOf("/dir-a/a.pdf", "/dir-b/a.pdf"), setOf("/dir-a/a.pdf", "/dir-b/a.pdf")),
+                Arguments.of(OSX_FS, "/dir-?/?.pdf", setOf("/dir-a/a.pdf", "/dir-b/a.pdf"), setOf("/dir-a/a.pdf", "/dir-b/a.pdf")),
 
-                { WIN_FS, "C:/dir.c/abc.svg", setOf("C:/dir.c/abc.svg"), setOf("C:/dir.c/abc.svg") },
-                { UNIX_FS, "/dir.c/abc.svg", setOf("/dir.c/abc.svg"), setOf("/dir.c/abc.svg") },
-                { OSX_FS, "/dir.c/abc.svg", setOf("/dir.c/abc.svg"), setOf("/dir.c/abc.svg") },
+                Arguments.of(WIN_FS, "C:/dir.c/abc.svg", setOf("C:/dir.c/abc.svg"), setOf("C:/dir.c/abc.svg")),
+                Arguments.of(UNIX_FS, "/dir.c/abc.svg", setOf("/dir.c/abc.svg"), setOf("/dir.c/abc.svg")),
+                Arguments.of(OSX_FS, "/dir.c/abc.svg", setOf("/dir.c/abc.svg"), setOf("/dir.c/abc.svg")),
 
-                { WIN_FS, "C:/bad", Collections.emptySet(), Collections.emptySet() },
-                { UNIX_FS, "/bad", Collections.emptySet(), Collections.emptySet() },
-                { OSX_FS, "/bad", Collections.emptySet(), Collections.emptySet() },
+                Arguments.of(WIN_FS, "C:/bad", Collections.emptySet(), Collections.emptySet()),
+                Arguments.of(UNIX_FS, "/bad", Collections.emptySet(), Collections.emptySet()),
+                Arguments.of(OSX_FS, "/bad", Collections.emptySet(), Collections.emptySet()),
 
-                { WIN_FS, "C:/*/*/*/*/*/*/*", Collections.emptySet(), Collections.emptySet() },
-                { UNIX_FS, "/*/*/*/*/*/*/*", Collections.emptySet(), Collections.emptySet() },
-                { OSX_FS, "/*/*/*/*/*/*/*", Collections.emptySet(), Collections.emptySet() },
+                Arguments.of(WIN_FS, "C:/*/*/*/*/*/*/*", Collections.emptySet(), Collections.emptySet()),
+                Arguments.of(UNIX_FS, "/*/*/*/*/*/*/*", Collections.emptySet(), Collections.emptySet()),
+                Arguments.of(OSX_FS, "/*/*/*/*/*/*/*", Collections.emptySet(), Collections.emptySet()),
 
-                { WIN_FS, "C:/dir-?/", allDirsFlatMapped(d -> !d.startsWith("dir-") ? Collections.emptySet() : allFilesMapped(f -> "C:/" + d + "/" + f)), setOf("C:/dir-a", "C:/dir-b") },
-                { UNIX_FS, "/dir-?/", allDirsFlatMapped(d -> !d.startsWith("dir-") ? Collections.emptySet() : allFilesMapped(f -> "/" + d + "/" + f)), setOf("/dir-a", "/dir-b") },
-                { OSX_FS, "/dir-?/", allDirsFlatMapped(d -> !d.startsWith("dir-") ? Collections.emptySet() : allFilesMapped(f -> "/" + d + "/" + f)), setOf("/dir-a", "/dir-b") },
+                Arguments.of(WIN_FS, "C:/dir-?/", allDirsFlatMapped(d -> !d.startsWith("dir-") ? Collections.emptySet() : allFilesMapped(f -> "C:/" + d + "/" + f)), setOf("C:/dir-a", "C:/dir-b")),
+                Arguments.of(UNIX_FS, "/dir-?/", allDirsFlatMapped(d -> !d.startsWith("dir-") ? Collections.emptySet() : allFilesMapped(f -> "/" + d + "/" + f)), setOf("/dir-a", "/dir-b")),
+                Arguments.of(OSX_FS, "/dir-?/", allDirsFlatMapped(d -> !d.startsWith("dir-") ? Collections.emptySet() : allFilesMapped(f -> "/" + d + "/" + f)), setOf("/dir-a", "/dir-b")),
 
-                { WIN_FS, "C:/*c*", allFilesFilterMapped(f -> f.contains("c"), f -> "C:/" + f), allFilesAndDirsFilterMapped(f -> f.contains("c"), f -> "C:/" + f) },
-                { UNIX_FS, "/*c*", allFilesFilterMapped(f -> f.contains("c"), f -> "/" + f), allFilesAndDirsFilterMapped(f -> f.contains("c"), f -> "/" + f) },
-                { OSX_FS, "/*c*", allFilesFilterMapped(f -> f.contains("c"), f -> "/" + f), allFilesAndDirsFilterMapped(f -> f.contains("c"), f -> "/" + f) },
-        });
+                Arguments.of(WIN_FS, "C:/*c*", allFilesFilterMapped(f -> f.contains("c"), f -> "C:/" + f), allFilesAndDirsFilterMapped(f -> f.contains("c"), f -> "C:/" + f)),
+                Arguments.of(UNIX_FS, "/*c*", allFilesFilterMapped(f -> f.contains("c"), f -> "/" + f), allFilesAndDirsFilterMapped(f -> f.contains("c"), f -> "/" + f)),
+                Arguments.of(OSX_FS, "/*c*", allFilesFilterMapped(f -> f.contains("c"), f -> "/" + f), allFilesAndDirsFilterMapped(f -> f.contains("c"), f -> "/" + f))
+        );
     }
 
-    private final Configuration fsConfig;
-    private final String glob;
-    private final Set<String> files;
-    private final Set<String> paths;
+    private static FileSystem setUp(Configuration fsConfig) throws Exception {
+        FileSystem fs = Jimfs.newFileSystem(fsConfig);
 
-    private FileSystem fs;
-
-    public GlobFinderTest(Configuration fsConfig, String glob, Set<String> files, Set<String> paths) {
-        this.fsConfig = fsConfig;
-        this.glob = glob;
-        this.files = files;
-        this.paths = paths;
-    }
-
-    @Before
-    public void setUp() throws Exception {
-        this.fs = Jimfs.newFileSystem(this.fsConfig);
-
-        List<Path> roots = StreamSupport.stream(this.fs.getRootDirectories().spliterator(), false).collect(Collectors.toList());
-        roots.add(this.fs.getPath("."));
+        List<Path> roots = StreamSupport.stream(fs.getRootDirectories().spliterator(), false).collect(Collectors.toList());
+        roots.add(fs.getPath("."));
 
         for (Path dir1 : roots) {
-            for (String dir2 : new String[]{ ".", "dir-a", "dir-b", "dir.c" }) {
-                for (String dir3 : new String[]{ ".", "dir-a", "dir-b", "dir.c" }) {
-                    for (String dir4 : new String[]{ ".", "dir-a", "dir-b", "dir.c" }) {
-                        Files.createDirectories(this.fs.getPath(dir1.toString(), dir2, dir3, dir4));
+            for (String dir2 : new String[]{".", "dir-a", "dir-b", "dir.c"}) {
+                for (String dir3 : new String[]{".", "dir-a", "dir-b", "dir.c"}) {
+                    for (String dir4 : new String[]{".", "dir-a", "dir-b", "dir.c"}) {
+                        Files.createDirectories(fs.getPath(dir1.toString(), dir2, dir3, dir4));
 
                         for (String file : TEST_FILES_ALL) {
                             try {
-                                Files.createFile(this.fs.getPath(dir1.toString(), dir2, dir3, dir4, file));
-                            } catch (FileAlreadyExistsException ignore) {}
+                                Files.createFile(fs.getPath(dir1.toString(), dir2, dir3, dir4, file));
+                            } catch (FileAlreadyExistsException ignore) {
+                            }
                         }
                     }
                 }
             }
         }
+
+        return fs;
     }
 
-    @After
-    public void tearDown() throws Exception {
-        this.fs = null;
-    }
+    @ParameterizedTest(name = "{index} :: {1}")
+    @MethodSource("data")
+    public void test(Configuration fsConfig, String glob, Set<String> files, Set<String> paths) throws Exception {
+        try (FileSystem fs = setUp(fsConfig)) {
+            GlobFinder finder = new GlobFinder(fs, glob);
 
-    @Test
-    public void test() throws Exception {
-        GlobFinder finder = new GlobFinder(this.fs, this.glob);
+            assertEquals(
+                    files.stream()
+                            .map(fs::getPath)
+                            .map(Path::normalize)
+                            .map(Path::toAbsolutePath)
+                            .collect(Collectors.toSet()),
+                    StreamSupport.stream(finder.computeMatchingFiles().spliterator(), false)
+                            .map(Path::normalize)
+                            .map(Path::toAbsolutePath)
+                            .collect(Collectors.toSet()),
+                    String.format("Glob files: '%s'", glob)
+            );
 
-        assertEquals(
-                String.format("Glob files: '%s'", this.glob),
-                this.files.stream()
-                        .map(this.fs::getPath)
-                        .map(Path::normalize)
-                        .map(Path::toAbsolutePath)
-                        .collect(Collectors.toSet()),
-                StreamSupport.stream(finder.computeMatchingFiles().spliterator(), false)
-                        .map(Path::normalize)
-                        .map(Path::toAbsolutePath)
-                        .collect(Collectors.toSet())
-        );
-
-        assertEquals(
-                String.format("Glob paths: '%s'", this.glob),
-                this.paths.stream()
-                        .map(this.fs::getPath)
-                        .map(Path::normalize)
-                        .map(Path::toAbsolutePath)
-                        .collect(Collectors.toSet()),
-                StreamSupport.stream(finder.computeMatchingPaths().spliterator(), false)
-                        .map(Path::normalize)
-                        .map(Path::toAbsolutePath)
-                        .collect(Collectors.toSet())
-        );
+            assertEquals(
+                    paths.stream()
+                            .map(fs::getPath)
+                            .map(Path::normalize)
+                            .map(Path::toAbsolutePath)
+                            .collect(Collectors.toSet()),
+                    StreamSupport.stream(finder.computeMatchingPaths().spliterator(), false)
+                            .map(Path::normalize)
+                            .map(Path::toAbsolutePath)
+                            .collect(Collectors.toSet()),
+                    String.format("Glob paths: '%s'", glob)
+            );
+        }
     }
 }

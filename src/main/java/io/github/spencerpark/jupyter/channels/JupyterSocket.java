@@ -18,6 +18,7 @@ import org.zeromq.ZMQ;
 
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -26,8 +27,8 @@ public abstract class JupyterSocket extends ZMQ.Socket {
         return transport + "://" + ip + ":" + Integer.toString(port);
     }
 
-    public static final Charset ASCII = Charset.forName("ascii");
-    public static final Charset UTF_8 = Charset.forName("utf8");
+    public static final Charset ASCII = StandardCharsets.US_ASCII;
+    public static final Charset UTF_8 = StandardCharsets.UTF_8;
 
     private static final byte[] IDENTITY_BLOB_DELIMITER = "<IDS|MSG>".getBytes(ASCII); // Comes from a python bytestring
     private static final Gson replyGson = new GsonBuilder()
@@ -43,7 +44,6 @@ public abstract class JupyterSocket extends ZMQ.Socket {
             .registerTypeHierarchyAdapter(ReplyType.class, new ReplyTypeAdapter(replyGson))
             //.setPrettyPrinting()
             .create();
-    private static final JsonParser json = new JsonParser();
     private static final byte[] EMPTY_JSON_OBJECT = "{}".getBytes(UTF_8);
     private static final Type JSON_OBJ_AS_MAP = new TypeToken<Map<String, Object>>() {
     }.getType();
@@ -96,8 +96,8 @@ public abstract class JupyterSocket extends ZMQ.Socket {
         Header<?> header = gson.fromJson(new String(headerRaw, UTF_8), Header.class);
 
         Header<?> parentHeader = null;
-        JsonElement parentHeaderJson = json.parse(new String(parentHeaderRaw, UTF_8));
-        if (parentHeaderJson.isJsonObject() && parentHeaderJson.getAsJsonObject().size() > 0)
+        JsonElement parentHeaderJson = JsonParser.parseString(new String(parentHeaderRaw, UTF_8));
+        if (parentHeaderJson.isJsonObject() && !parentHeaderJson.getAsJsonObject().isEmpty())
             parentHeader = gson.fromJson(parentHeaderJson, Header.class);
 
         Map<String, Object> metadata = gson.fromJson(new String(metadataRaw, UTF_8), JSON_OBJ_AS_MAP);

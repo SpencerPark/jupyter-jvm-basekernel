@@ -1,50 +1,34 @@
 package io.github.spencerpark.jupyter.kernel.display.mime;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.Arrays;
+import java.util.stream.Stream;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@RunWith(Parameterized.class)
 public class MIMETypeTest {
-    @Parameters(name = "{index}: MIMEType.parse({0}) = new MIMEType({1}, {2}, {3}, {4})")
-    public static Iterable<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-                { "application/json", "application", null, "json", null },
-                { "application/xhtml+xml", "application", null, "xhtml", "xml" },
-                { "image/*", "image", null, "*", null },
-                { "image/", "image", null, "", null },
-                { "video", "video", null, null, null },
-                { "video", "video", null, null, null },
-                { "application/vnd.media", "application", "vnd", "media", null },
-                { "application/vnd.media.producer", "application", "vnd", "media.producer", null },
-                { "application/vnd.media.producer+suffix", "application", "vnd", "media.producer", "suffix" },
-                { "application/vnd.media.named+producer+suffix", "application", "vnd", "media.named+producer", "suffix" },
-        });
+    public static Stream<Arguments> data() {
+        return Stream.of(
+                Arguments.of("application/json", "application", null, "json", null),
+                Arguments.of("application/xhtml+xml", "application", null, "xhtml", "xml"),
+                Arguments.of("image/*", "image", null, "*", null),
+                Arguments.of("image/", "image", null, "", null),
+                Arguments.of("video", "video", null, null, null),
+                Arguments.of("video", "video", null, null, null),
+                Arguments.of("application/vnd.media", "application", "vnd", "media", null),
+                Arguments.of("application/vnd.media.producer", "application", "vnd", "media.producer", null),
+                Arguments.of("application/vnd.media.producer+suffix", "application", "vnd", "media.producer", "suffix"),
+                Arguments.of("application/vnd.media.named+producer+suffix", "application", "vnd", "media.named+producer", "suffix")
+        );
     }
 
-    private String raw;
-    private String type;
-    private String tree;
-    private String subtype;
-    private String suffix;
-
-    public MIMETypeTest(String raw, String type, String tree, String subtype, String suffix) {
-        this.raw = raw;
-        this.type = type;
-        this.tree = tree;
-        this.subtype = subtype;
-        this.suffix = suffix;
-    }
-
-    @Test
-    public void test() {
-        MIMEType parsed = MIMEType.parse(this.raw);
-        MIMEType expected = new MIMEType(this.type, this.tree, this.subtype, this.suffix);
+    @ParameterizedTest(name = "{index}: MIMEType.parse({0}) = new MIMEType({1}, {2}, {3}, {4})")
+    @MethodSource("data")
+    public void test(String raw, String type, String tree, String subtype, String suffix) {
+        MIMEType parsed = MIMEType.parse(raw);
+        MIMEType expected = new MIMEType(type, tree, subtype, suffix);
 
         assertEquals(expected, parsed);
     }
