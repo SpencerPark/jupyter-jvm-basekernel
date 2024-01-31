@@ -34,6 +34,7 @@ public abstract class JupyterSocket extends ZMQ.Socket {
     private static final Gson replyGson = new GsonBuilder()
             .registerTypeAdapter(HistoryEntry.class, HistoryEntryAdapter.INSTANCE)
             .registerTypeAdapter(ExpressionValue.class, ExpressionValueAdapter.INSTANCE)
+            .registerTypeAdapterFactory(JsonInlineAdapter.FACTORY)
             .create();
     private static final Gson gson = new GsonBuilder()
             .registerTypeAdapter(KernelTimestamp.class, KernelTimestampAdapter.INSTANCE)
@@ -42,6 +43,7 @@ public abstract class JupyterSocket extends ZMQ.Socket {
             .registerTypeAdapter(PublishStatus.class, PublishStatusAdapter.INSTANCE)
             .registerTypeAdapter(HistoryRequest.class, HistoryRequestAdapter.INSTANCE)
             .registerTypeHierarchyAdapter(ReplyType.class, new ReplyTypeAdapter(replyGson))
+            .registerTypeAdapterFactory(JsonInlineAdapter.FACTORY)
             //.setPrettyPrinting()
             .create();
     private static final byte[] EMPTY_JSON_OBJECT = "{}".getBytes(UTF_8);

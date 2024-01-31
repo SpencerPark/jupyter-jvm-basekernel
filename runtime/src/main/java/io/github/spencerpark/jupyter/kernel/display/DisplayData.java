@@ -18,8 +18,10 @@ public class DisplayData {
         return bundle == null ? EMPTY : bundle;
     }
 
+    @SerializedName("data")
     private final Map<String, Object> data;
 
+    @SerializedName("metadata")
     private Map<String, Object> metadata = new LinkedHashMap<>();
 
     @SerializedName("transient")
