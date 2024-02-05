@@ -2,7 +2,7 @@ package io.github.spencerpark.jupyter.messages.debug;
 
 import com.google.gson.annotations.SerializedName;
 
-public final class DapResponse<B> extends DapProtocolMessage {
+public final class DapResponse<A, B> extends DapProtocolMessage {
     public static final class ErrorBody {
         @SerializedName("error")
         private final DapErrorMessage error;
@@ -20,7 +20,7 @@ public final class DapResponse<B> extends DapProtocolMessage {
     private final int requestSeq;
 
     @SerializedName("command")
-    private final String command;
+    private final DapCommandType<A, B> command;
 
     // If true the payload is in `body`, otherwise the `body` is a serialized error.
     @SerializedName("success")
@@ -35,15 +35,15 @@ public final class DapResponse<B> extends DapProtocolMessage {
     @SerializedName("body")
     private final Object body;
 
-    public static <B> DapResponse<B> error(int seq, int requestSeq, String command, String message, DapErrorMessage error) {
+    public static <A, B> DapResponse<A, B> error(int seq, int requestSeq, DapCommandType<A, B> command, String message, DapErrorMessage error) {
         return new DapResponse<>(seq, requestSeq, command, false, message, new ErrorBody(error));
     }
 
-    public static <B> DapResponse<B> success(int seq, int requestSeq, String command, B body) {
+    public static <A, B> DapResponse<A, B> success(int seq, int requestSeq, DapCommandType<A, B> command, B body) {
         return new DapResponse<>(seq, requestSeq, command, true, null, body);
     }
 
-    public DapResponse(int seq, int requestSeq, String command, boolean success, String message, Object body) {
+    public DapResponse(int seq, int requestSeq, DapCommandType<A, B> command, boolean success, String message, Object body) {
         super(seq, Type.RESPONSE);
         this.requestSeq = requestSeq;
         this.command = command;
@@ -56,7 +56,7 @@ public final class DapResponse<B> extends DapProtocolMessage {
         return requestSeq;
     }
 
-    public String getCommand() {
+    public DapCommandType<A, B> getCommand() {
         return command;
     }
 

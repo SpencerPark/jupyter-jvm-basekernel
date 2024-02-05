@@ -8,8 +8,21 @@ import com.google.gson.reflect.TypeToken;
 import io.github.spencerpark.jupyter.kernel.ExpressionValue;
 import io.github.spencerpark.jupyter.kernel.KernelConnectionProperties;
 import io.github.spencerpark.jupyter.kernel.history.HistoryEntry;
-import io.github.spencerpark.jupyter.messages.*;
-import io.github.spencerpark.jupyter.messages.adapters.*;
+import io.github.spencerpark.jupyter.messages.HMACGenerator;
+import io.github.spencerpark.jupyter.messages.Header;
+import io.github.spencerpark.jupyter.messages.KernelTimestamp;
+import io.github.spencerpark.jupyter.messages.Message;
+import io.github.spencerpark.jupyter.messages.MessageType;
+import io.github.spencerpark.jupyter.messages.ReplyType;
+import io.github.spencerpark.jupyter.messages.adapters.ExpressionValueAdapter;
+import io.github.spencerpark.jupyter.messages.adapters.HeaderAdapter;
+import io.github.spencerpark.jupyter.messages.adapters.HistoryEntryAdapter;
+import io.github.spencerpark.jupyter.messages.adapters.HistoryRequestAdapter;
+import io.github.spencerpark.jupyter.messages.adapters.JsonBox;
+import io.github.spencerpark.jupyter.messages.adapters.KernelTimestampAdapter;
+import io.github.spencerpark.jupyter.messages.adapters.MessageTypeAdapter;
+import io.github.spencerpark.jupyter.messages.adapters.PublishStatusAdapter;
+import io.github.spencerpark.jupyter.messages.adapters.ReplyTypeAdapter;
 import io.github.spencerpark.jupyter.messages.publish.PublishStatus;
 import io.github.spencerpark.jupyter.messages.reply.ErrorReply;
 import io.github.spencerpark.jupyter.messages.request.HistoryRequest;
@@ -19,7 +32,11 @@ import org.zeromq.ZMQ;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 public abstract class JupyterSocket extends ZMQ.Socket {
@@ -31,19 +48,17 @@ public abstract class JupyterSocket extends ZMQ.Socket {
     public static final Charset UTF_8 = StandardCharsets.UTF_8;
 
     private static final byte[] IDENTITY_BLOB_DELIMITER = "<IDS|MSG>".getBytes(ASCII); // Comes from a python bytestring
-    private static final Gson replyGson = new GsonBuilder()
+    private static final Gson replyGson = JsonBox.registerTypeAdapters(new GsonBuilder())
             .registerTypeAdapter(HistoryEntry.class, HistoryEntryAdapter.INSTANCE)
             .registerTypeAdapter(ExpressionValue.class, ExpressionValueAdapter.INSTANCE)
-            .registerTypeAdapterFactory(JsonInlineAdapter.FACTORY)
             .create();
-    private static final Gson gson = new GsonBuilder()
+    private static final Gson gson = JsonBox.registerTypeAdapters(new GsonBuilder())
             .registerTypeAdapter(KernelTimestamp.class, KernelTimestampAdapter.INSTANCE)
             .registerTypeAdapter(Header.class, HeaderAdapter.INSTANCE)
             .registerTypeAdapter(MessageType.class, MessageTypeAdapter.INSTANCE)
             .registerTypeAdapter(PublishStatus.class, PublishStatusAdapter.INSTANCE)
             .registerTypeAdapter(HistoryRequest.class, HistoryRequestAdapter.INSTANCE)
             .registerTypeHierarchyAdapter(ReplyType.class, new ReplyTypeAdapter(replyGson))
-            .registerTypeAdapterFactory(JsonInlineAdapter.FACTORY)
             //.setPrettyPrinting()
             .create();
     private static final byte[] EMPTY_JSON_OBJECT = "{}".getBytes(UTF_8);

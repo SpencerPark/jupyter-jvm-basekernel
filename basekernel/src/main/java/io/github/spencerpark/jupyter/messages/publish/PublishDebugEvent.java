@@ -1,12 +1,10 @@
 package io.github.spencerpark.jupyter.messages.publish;
 
-import com.google.gson.JsonObject;
 import io.github.spencerpark.jupyter.messages.ContentType;
 import io.github.spencerpark.jupyter.messages.MessageType;
-import io.github.spencerpark.jupyter.messages.adapters.JsonInline;
-import io.github.spencerpark.jupyter.messages.debug.DapEvent;
+import io.github.spencerpark.jupyter.messages.adapters.JsonBox;
 
-public class PublishDebugEvent implements ContentType<PublishDebugEvent> {
+public class PublishDebugEvent implements JsonBox, ContentType<PublishDebugEvent> {
     public static final MessageType<PublishDebugEvent> MESSAGE_TYPE = MessageType.PUBLISH_DEBUG_EVENT;
 
     @Override
@@ -14,14 +12,14 @@ public class PublishDebugEvent implements ContentType<PublishDebugEvent> {
         return MESSAGE_TYPE;
     }
 
-    @JsonInline
-    protected final DapEvent<JsonObject> dapEvent;
+    protected final JsonBox.Wrapper dapEvent;
 
-    public PublishDebugEvent(DapEvent<JsonObject> dapEvent) {
+    public PublishDebugEvent(JsonBox.Wrapper dapEvent) {
         this.dapEvent = dapEvent;
     }
 
-    public DapEvent<JsonObject> getDapEvent() {
+    @JsonBox.Unboxer
+    public JsonBox.Wrapper getDapEvent() {
         return dapEvent;
     }
 }

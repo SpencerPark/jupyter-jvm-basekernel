@@ -4,19 +4,23 @@ import com.google.gson.annotations.SerializedName;
 
 public final class DapEvent<B> extends DapProtocolMessage {
     @SerializedName("event")
-    private final String event;
+    private final DapEventType<B> event;
 
     // Optional
     @SerializedName("body")
     private final B body;
 
-    public DapEvent(int seq, String event, B body) {
+    public DapEvent(int seq, DapEventType<B> event, B body) {
         super(seq, Type.EVENT);
         this.event = event;
         this.body = body;
     }
 
-    public String getEvent() {
+    public DapEvent(int seq, DapEventType<B> event) {
+        this(seq, event, null);
+    }
+
+    public DapEventType<B> getEvent() {
         return event;
     }
 
