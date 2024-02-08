@@ -26,6 +26,8 @@ import io.github.spencerpark.jupyter.messages.adapters.ReplyTypeAdapter;
 import io.github.spencerpark.jupyter.messages.publish.PublishStatus;
 import io.github.spencerpark.jupyter.messages.reply.ErrorReply;
 import io.github.spencerpark.jupyter.messages.request.HistoryRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zeromq.SocketType;
 import org.zeromq.ZMQ;
 
@@ -37,9 +39,10 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 public abstract class JupyterSocket extends ZMQ.Socket {
+    private static final Logger LOG = LoggerFactory.getLogger(JupyterSocket.class);
+
     protected static String formatAddress(String transport, String ip, int port) {
         return transport + "://" + ip + ":" + Integer.toString(port);
     }
@@ -62,22 +65,16 @@ public abstract class JupyterSocket extends ZMQ.Socket {
             //.setPrettyPrinting()
             .create();
     private static final byte[] EMPTY_JSON_OBJECT = "{}".getBytes(UTF_8);
-    private static final Type JSON_OBJ_AS_MAP = new TypeToken<Map<String, Object>>() {
-    }.getType();
-
-    public static final Logger JUPYTER_LOGGER = Logger.getLogger("Jupyter");
+    private static final Type JSON_OBJ_AS_MAP = new TypeToken<Map<String, Object>>() {}.getType();
 
     protected final ZMQ.Context ctx;
     protected final HMACGenerator hmacGenerator;
-    protected final Logger logger;
     protected boolean closed;
 
-    protected JupyterSocket(ZMQ.Context context, SocketType type, HMACGenerator hmacGenerator, Logger logger) {
+    protected JupyterSocket(ZMQ.Context context, SocketType type, HMACGenerator hmacGenerator) {
         super(context, type);
         this.ctx = context;
         this.hmacGenerator = hmacGenerator;
-        logger.setParent(JUPYTER_LOGGER);
-        this.logger = logger;
         this.closed = false;
     }
 
@@ -125,7 +122,9 @@ public abstract class JupyterSocket extends ZMQ.Socket {
         @SuppressWarnings("unchecked")
         Message<?> message = new Message(identities, header, parentHeader, metadata, content, blobs);
 
-        logger.finer(() -> "Received from " + super.base().getSocketOptx(zmq.ZMQ.ZMQ_LAST_ENDPOINT) + ":\n" + gson.toJson(message));
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Received from " + super.base().getSocketOptx(zmq.ZMQ.ZMQ_LAST_ENDPOINT) + ":\n" + gson.toJson(message));
+        }
 
         return message;
     }
@@ -154,7 +153,9 @@ public abstract class JupyterSocket extends ZMQ.Socket {
 
         String hmac = hmacGenerator.calculateSignature(headerRaw, parentHeaderRaw, metadata, content);
 
-        logger.finer(() -> "Sending to " + super.base().getSocketOptx(zmq.ZMQ.ZMQ_LAST_ENDPOINT) + ":\n" + gson.toJson(message));
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Sending to " + super.base().getSocketOptx(zmq.ZMQ.ZMQ_LAST_ENDPOINT) + ":\n" + gson.toJson(message));
+        }
 
         message.getIdentities().forEach(super::sendMore);
         super.sendMore(IDENTITY_BLOB_DELIMITER);

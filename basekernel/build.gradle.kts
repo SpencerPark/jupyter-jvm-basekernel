@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "io.github.spencerpark"
-version = "2.3.0-SNAPSHOT"
+version = "3.0.0-SNAPSHOT"
 
 repositories {
     mavenLocal()
@@ -18,10 +18,12 @@ dependencies {
     implementation(project(":jupyter-jvm-runtime"))
     implementation(libs.jeromq)
     api(libs.gson)
+    api(libs.slf4jApi)
 
     testImplementation(testLibs.junit)
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation(testLibs.hamcrest)
+    testRuntimeOnly(testLibs.slf4jImpl)
 
     testImplementation(testLibs.jimfs)
 }
