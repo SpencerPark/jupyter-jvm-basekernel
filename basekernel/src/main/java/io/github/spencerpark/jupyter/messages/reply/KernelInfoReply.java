@@ -50,17 +50,24 @@ public class KernelInfoReply implements ContentType<KernelInfoReply>, ReplyType<
     protected String banner;
 
     /**
+     * True if the kernel supports debugging, false (default) otherwise.
+     */
+    @SerializedName("debugger")
+    protected boolean supportsDebugging;
+
+    /**
      * Optional help links about the kernel language
      */
     @SerializedName("help_links")
     protected List<LanguageInfo.Help> helpLinks;
 
-    public KernelInfoReply(String protocolVersion, String implementationName, String implementationVersion, LanguageInfo langInfo, String banner, List<LanguageInfo.Help> helpLinks) {
+    public KernelInfoReply(String protocolVersion, String implementationName, String implementationVersion, LanguageInfo langInfo, String banner, boolean supportsDebugging, List<LanguageInfo.Help> helpLinks) {
         this.protocolVersion = protocolVersion;
         this.implementationName = implementationName;
         this.implementationVersion = implementationVersion;
         this.langInfo = langInfo;
         this.banner = banner;
+        this.supportsDebugging = supportsDebugging;
         this.helpLinks = helpLinks;
     }
 
@@ -82,6 +89,10 @@ public class KernelInfoReply implements ContentType<KernelInfoReply>, ReplyType<
 
     public String getBanner() {
         return banner;
+    }
+
+    public boolean getSupportsDebugging() {
+        return supportsDebugging;
     }
 
     public List<LanguageInfo.Help> getHelpLinks() {

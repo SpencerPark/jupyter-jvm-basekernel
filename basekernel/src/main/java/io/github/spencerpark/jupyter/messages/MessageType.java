@@ -3,9 +3,38 @@ package io.github.spencerpark.jupyter.messages;
 import io.github.spencerpark.jupyter.messages.comm.CommCloseCommand;
 import io.github.spencerpark.jupyter.messages.comm.CommMsgCommand;
 import io.github.spencerpark.jupyter.messages.comm.CommOpenCommand;
-import io.github.spencerpark.jupyter.messages.publish.*;
-import io.github.spencerpark.jupyter.messages.reply.*;
-import io.github.spencerpark.jupyter.messages.request.*;
+import io.github.spencerpark.jupyter.messages.publish.PublishClearOutput;
+import io.github.spencerpark.jupyter.messages.publish.PublishDebugEvent;
+import io.github.spencerpark.jupyter.messages.publish.PublishDisplayData;
+import io.github.spencerpark.jupyter.messages.publish.PublishError;
+import io.github.spencerpark.jupyter.messages.publish.PublishExecuteInput;
+import io.github.spencerpark.jupyter.messages.publish.PublishExecuteResult;
+import io.github.spencerpark.jupyter.messages.publish.PublishStatus;
+import io.github.spencerpark.jupyter.messages.publish.PublishStream;
+import io.github.spencerpark.jupyter.messages.publish.PublishUpdateDisplayData;
+import io.github.spencerpark.jupyter.messages.reply.CommInfoReply;
+import io.github.spencerpark.jupyter.messages.reply.CompleteReply;
+import io.github.spencerpark.jupyter.messages.reply.DebugReply;
+import io.github.spencerpark.jupyter.messages.reply.ErrorReply;
+import io.github.spencerpark.jupyter.messages.reply.ExecuteReply;
+import io.github.spencerpark.jupyter.messages.reply.HistoryReply;
+import io.github.spencerpark.jupyter.messages.reply.InputReply;
+import io.github.spencerpark.jupyter.messages.reply.InspectReply;
+import io.github.spencerpark.jupyter.messages.reply.InterruptReply;
+import io.github.spencerpark.jupyter.messages.reply.IsCompleteReply;
+import io.github.spencerpark.jupyter.messages.reply.KernelInfoReply;
+import io.github.spencerpark.jupyter.messages.reply.ShutdownReply;
+import io.github.spencerpark.jupyter.messages.request.CommInfoRequest;
+import io.github.spencerpark.jupyter.messages.request.CompleteRequest;
+import io.github.spencerpark.jupyter.messages.request.DebugRequest;
+import io.github.spencerpark.jupyter.messages.request.ExecuteRequest;
+import io.github.spencerpark.jupyter.messages.request.HistoryRequest;
+import io.github.spencerpark.jupyter.messages.request.InputRequest;
+import io.github.spencerpark.jupyter.messages.request.InspectRequest;
+import io.github.spencerpark.jupyter.messages.request.InterruptRequest;
+import io.github.spencerpark.jupyter.messages.request.IsCompleteRequest;
+import io.github.spencerpark.jupyter.messages.request.KernelInfoRequest;
+import io.github.spencerpark.jupyter.messages.request.ShutdownRequest;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,6 +60,7 @@ public class MessageType<T> {
     public static final MessageType<KernelInfoRequest> KERNEL_INFO_REQUEST = new MessageType<>("kernel_info_request", KernelInfoRequest.class);
     public static final MessageType<ShutdownRequest> SHUTDOWN_REQUEST = new MessageType<>("shutdown_request", ShutdownRequest.class);
     public static final MessageType<InterruptRequest> INTERRUPT_REQUEST = new MessageType<>("interrupt_request", InterruptRequest.class);
+    public static final MessageType<DebugRequest> DEBUG_REQUEST = new MessageType<>("debug_request", DebugRequest.class);
 
     //Reply
     public static final MessageType<ExecuteReply> EXECUTE_REPLY = new MessageType<>("execute_reply", ExecuteReply.class);
@@ -42,6 +72,7 @@ public class MessageType<T> {
     public static final MessageType<KernelInfoReply> KERNEL_INFO_REPLY = new MessageType<>("kernel_info_reply", KernelInfoReply.class);
     public static final MessageType<ShutdownReply> SHUTDOWN_REPLY = new MessageType<>("shutdown_reply", ShutdownReply.class);
     public static final MessageType<InterruptReply> INTERRUPT_REPLY = new MessageType<>("interrupt_reply", InterruptReply.class);
+    public static final MessageType<DebugReply> DEBUG_REPLY = new MessageType<>("debug_reply", DebugReply.class);
 
     //Publish
     public static final MessageType<PublishStream> PUBLISH_STREAM = new MessageType<>("stream", PublishStream.class);
@@ -52,6 +83,7 @@ public class MessageType<T> {
     public static final MessageType<PublishError> PUBLISH_ERROR = new MessageType<>("error", PublishError.class);
     public static final MessageType<PublishStatus> PUBLISH_STATUS = new MessageType<>("status", PublishStatus.class);
     public static final MessageType<PublishClearOutput> PUBLISH_CLEAR_OUTPUT = new MessageType<>("clear_output", PublishClearOutput.class);
+    public static final MessageType<PublishDebugEvent> PUBLISH_DEBUG_EVENT = new MessageType<>("debug_event", PublishDebugEvent.class);
 
     //Stdin
     public static final MessageType<InputRequest> INPUT_REQUEST = new MessageType<>("input_request", InputRequest.class);
@@ -114,10 +146,5 @@ public class MessageType<T> {
     @Override
     public int hashCode() {
         return id;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return this == obj;
     }
 }

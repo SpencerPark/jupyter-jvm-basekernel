@@ -6,7 +6,7 @@ import java.util.UUID;
 
 public class Header<T> {
     public static final String KERNEL_USERNAME = "kernel";
-    public static final String PROTOCOL_VERISON = "5.3";
+    public static final String PROTOCOL_VERISON = "5.5";
 
     private final String id;
     private final String username;
