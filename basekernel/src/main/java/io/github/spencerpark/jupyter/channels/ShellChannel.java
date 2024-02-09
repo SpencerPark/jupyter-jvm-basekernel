@@ -79,7 +79,7 @@ public class ShellChannel extends JupyterSocket {
                         this.connection.close();
                     }
                 } else {
-                    log(isControl).error("Unhandled message: {}", message.getHeader().getType().getName());
+                    log(isControl).warn("Unhandled message: {}", message.getHeader().getType().getName());
                 }
             }
         });

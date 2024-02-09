@@ -122,8 +122,8 @@ public abstract class JupyterSocket extends ZMQ.Socket {
         @SuppressWarnings("unchecked")
         Message<?> message = new Message(identities, header, parentHeader, metadata, content, blobs);
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Received from " + super.base().getSocketOptx(zmq.ZMQ.ZMQ_LAST_ENDPOINT) + ":\n" + gson.toJson(message));
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Received from " + super.base().getSocketOptx(zmq.ZMQ.ZMQ_LAST_ENDPOINT) + ":\n" + gson.toJson(message));
         }
 
         return message;
@@ -153,8 +153,8 @@ public abstract class JupyterSocket extends ZMQ.Socket {
 
         String hmac = hmacGenerator.calculateSignature(headerRaw, parentHeaderRaw, metadata, content);
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Sending to " + super.base().getSocketOptx(zmq.ZMQ.ZMQ_LAST_ENDPOINT) + ":\n" + gson.toJson(message));
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Sending to " + super.base().getSocketOptx(zmq.ZMQ.ZMQ_LAST_ENDPOINT) + ":\n" + gson.toJson(message));
         }
 
         message.getIdentities().forEach(super::sendMore);
