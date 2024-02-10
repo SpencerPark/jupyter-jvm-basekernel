@@ -1,13 +1,15 @@
 package io.github.spencerpark.jupyter.channels;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.LongSupplier;
 import java.util.function.ToLongFunction;
-import java.util.logging.Logger;
 
 public class Loop extends Thread {
-    private final Logger logger;
+    private static final Logger LOG = LoggerFactory.getLogger(Loop.class);
 
     private volatile boolean running = false;
     private final LongSupplier loopBody;
@@ -29,8 +31,6 @@ public class Loop extends Thread {
         this.loopBody = target;
 
         this.runNextQueue = new LinkedBlockingQueue<>();
-
-        this.logger = Logger.getLogger("Loop-" + name);
     }
 
     public void onClose(Runnable callback) {
@@ -91,36 +91,36 @@ public class Loop extends Thread {
                 try {
                     Thread.sleep(sleep);
                 } catch (InterruptedException e) {
-                    this.logger.info("Loop interrupted. Stopping...");
+                    LOG.info("Loop interrupted. Stopping...");
                     this.running = false;
                 }
             } else if (sleep < 0) {
-                this.logger.info("Loop interrupted by a negative sleep request. Stopping...");
+                LOG.info("Loop interrupted by a negative sleep request. Stopping...");
                 this.running = false;
             }
         }
 
-        this.logger.info("Running loop shutdown callback.");
+        LOG.info("Running loop shutdown callback.");
 
         if (this.onCloseCb != null)
             this.onCloseCb.run();
         this.onCloseCb = null;
 
-        this.logger.info("Loop stopped.");
+        LOG.info("Loop stopped.");
     }
 
     @Override
     public synchronized void start() {
-        this.logger.info("Loop starting...");
+        LOG.info("Loop starting...");
 
         this.running = true;
         super.start();
 
-        this.logger.info("Loop started.");
+        LOG.info("Loop started.");
     }
 
     public void shutdown() {
         this.running = false;
-        this.logger.info("Loop shutdown.");
+        LOG.info("Loop shutdown.");
     }
 }

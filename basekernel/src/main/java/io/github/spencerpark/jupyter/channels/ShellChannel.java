@@ -3,14 +3,21 @@ package io.github.spencerpark.jupyter.channels;
 import io.github.spencerpark.jupyter.kernel.KernelConnectionProperties;
 import io.github.spencerpark.jupyter.messages.HMACGenerator;
 import io.github.spencerpark.jupyter.messages.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zeromq.SocketType;
 import org.zeromq.ZMQ;
 
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class ShellChannel extends JupyterSocket {
+    private static final Logger SHELL_LOGGER = LoggerFactory.getLogger(ShellChannel.class.getName() + "-shell");
+    private static final Logger CONTROL_LOGGER = LoggerFactory.getLogger(ShellChannel.class.getName() + "-control");
+
+    private static Logger log(boolean isControl) {
+        return isControl ? CONTROL_LOGGER : SHELL_LOGGER;
+    }
+
     private static final long SHELL_DEFAULT_LOOP_SLEEP_MS = 50;
     private static final AtomicInteger SHELL_ID = new AtomicInteger();
 
@@ -21,7 +28,7 @@ public class ShellChannel extends JupyterSocket {
     private final long sleep;
 
     public ShellChannel(ZMQ.Context context, HMACGenerator hmacGenerator, boolean isControl, JupyterConnection connection, long sleep) {
-        super(context, SocketType.ROUTER, hmacGenerator, Logger.getLogger(isControl ? "ControlChannel" : "ShellChannel"));
+        super(context, SocketType.ROUTER, hmacGenerator);
         this.isControl = isControl;
         this.connection = connection;
         this.sleep = sleep;
@@ -45,7 +52,7 @@ public class ShellChannel extends JupyterSocket {
         String addr = JupyterSocket.formatAddress(connProps.getTransport(), connProps.getIp(),
                 isControl ? connProps.getControlPort() : connProps.getShellPort());
 
-        logger.log(Level.INFO, String.format("Binding %s to %s.", channelThreadName, addr));
+        log(isControl).info("Binding {} to {}.", channelThreadName, addr);
         super.bind(addr);
 
         ZMQ.Poller poller = super.ctx.poller(1);
@@ -58,33 +65,33 @@ public class ShellChannel extends JupyterSocket {
 
                 ShellHandler handler = connection.getHandler(message.getHeader().getType());
                 if (handler != null) {
-                    super.logger.info("Handling message: " + message.getHeader().getType().getName());
+                    log(isControl).info("Handling message: {}", message.getHeader().getType().getName());
                     ShellReplyEnvironment env = connection.prepareReplyEnv(this, message);
                     try {
                         handler.handle(env, message);
                     } catch (Exception e) {
-                        super.logger.log(Level.SEVERE, "Unhandled exception handling " + message.getHeader().getType().getName() + ". " + e.getClass().getSimpleName() + " - " + e.getLocalizedMessage());
+                        log(isControl).error("Unhandled exception handling " + message.getHeader().getType().getName(), e);
                     } finally {
                         env.resolveDeferrals();
                     }
                     if (env.isMarkedForShutdown()) {
-                        super.logger.info(channelThreadName + " shutting down connection as environment was marked for shutdown.");
+                        log(isControl).info("{} shutting down connection as environment was marked for shutdown.", channelThreadName);
                         this.connection.close();
                     }
                 } else {
-                    super.logger.log(Level.SEVERE, "Unhandled message: " + message.getHeader().getType().getName());
+                    log(isControl).warn("Unhandled message: {}", message.getHeader().getType().getName());
                 }
             }
         });
 
         this.ioloop.onClose(() -> {
-            logger.log(Level.INFO, channelThreadName + " shutdown.");
+            log(isControl).info("{} shutdown.", channelThreadName);
             this.ioloop = null;
         });
 
         this.ioloop.start();
 
-        logger.log(Level.INFO, "Polling on " + channelThreadName);
+        log(isControl).info("Polling on {}", channelThreadName);
     }
 
     @Override
@@ -100,7 +107,8 @@ public class ShellChannel extends JupyterSocket {
         if (this.ioloop != null) {
             try {
                 this.ioloop.join();
-            } catch (InterruptedException ignored) { }
+            } catch (InterruptedException ignored) {
+            }
         }
     }
 }

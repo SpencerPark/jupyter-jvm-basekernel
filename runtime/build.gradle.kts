@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "io.github.spencerpark"
-version = "2.3.0-SNAPSHOT"
+version = "3.0.0-SNAPSHOT"
 
 repositories {
     mavenLocal()

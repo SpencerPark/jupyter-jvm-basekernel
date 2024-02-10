@@ -12,6 +12,8 @@ import com.google.gson.TypeAdapterFactory;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.annotation.ElementType;
@@ -32,6 +34,8 @@ import java.lang.reflect.Method;
  */
 public interface JsonBox {
     static GsonBuilder registerTypeAdapters(GsonBuilder builder) {
+        final Logger LOG = LoggerFactory.getLogger(JsonBox.class);
+
         builder.registerTypeAdapterFactory(new TypeAdapterFactory() {
             @Override
             public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> typeToken) {
@@ -40,29 +44,40 @@ public interface JsonBox {
                     return null;
                 }
 
+                MethodHandles.Lookup lookup = MethodHandles.lookup();
+                MethodHandle constructor;
                 try {
-                    MethodHandles.Lookup lookup = MethodHandles.lookup();
-                    MethodHandle constructor = lookup.findConstructor(rawType, MethodType.methodType(void.class, Wrapper.class));
-
-                    MethodHandle unboxer = null;
-                    for (Method method : rawType.getMethods()) {
-                        // e.g. @Unboxer Wrapper get() { ... }
-                        if (method.isAnnotationPresent(Unboxer.class)
-                            && method.getParameterCount() == 0
-                            && Wrapper.class.isAssignableFrom(method.getReturnType())
-                        ) {
-                            unboxer = lookup.unreflect(method);
-                            break;
-                        }
-                    }
-                    if (unboxer == null) {
-                        return null;
-                    }
-
-                    return new JsonBoxAdapter<>(gson, constructor, unboxer);
+                    constructor = lookup.findConstructor(rawType, MethodType.methodType(void.class, Wrapper.class));
                 } catch (IllegalAccessException | NoSuchMethodException e) {
+                    LOG.warn("JsonBox type {} must have an accessible constructor with a single {} parameter. Disabling (de)serialization for it.", rawType, Wrapper.class);
                     return null;
                 }
+
+                MethodHandle unboxer = null;
+                for (Method method : rawType.getMethods()) {
+                    // e.g. @Unboxer Wrapper get() { ... }
+                    if (method.isAnnotationPresent(Unboxer.class)) {
+                        if (method.getParameterCount() == 0
+                            && Wrapper.class.isAssignableFrom(method.getReturnType())) {
+                            try {
+                                unboxer = lookup.unreflect(method);
+                            } catch (IllegalAccessException e) {
+                                LOG.warn("JsonBox type {} @Unboxer method is inaccessible. Disabling (de)serialization for it.", rawType);
+                                return null;
+                            }
+                            break;
+                        } else {
+                            LOG.warn("JsonBox type {} has invalid @Unboxer method. It must have no parameters and return a {}. Disabling (de)serialization for it.", rawType, Wrapper.class);
+                            return null;
+                        }
+                    }
+                }
+                if (unboxer == null) {
+                    LOG.warn("JsonBox type {} is missing an @Unboxer method. Disabling (de)serialization for it.", rawType);
+                    return null;
+                }
+
+                return new JsonBoxAdapter<>(gson, constructor, unboxer);
             }
         });
 
@@ -71,7 +86,14 @@ public interface JsonBox {
         builder.registerTypeAdapter(JsonElementWrapper.class,
                 (JsonSerializer<JsonElementWrapper>) (src, typeOfSrc, context) -> src.element);
         builder.registerTypeAdapter(GsonSerializableWrapper.class,
-                (JsonSerializer<GsonSerializableWrapper>) (src, typeOfSrc, context) -> context.serialize(src.value, typeOfSrc));
+                (JsonSerializer<GsonSerializableWrapper>) (src, typeOfSrc, context) -> {
+                    try {
+                        return context.serialize(src.value);
+                    } catch (Exception e) {
+                        LOG.debug("Could not serialize wrapped value=" + src.value + " of type=" + (src.value == null ? "null" : src.value.getClass()) + ":", e);
+                        throw e;
+                    }
+                });
 
         builder.registerTypeAdapter(Wrapper.class,
                 (JsonDeserializer<Wrapper>) (json, typeOfT, context) -> Wrapper.of(json));
@@ -111,6 +133,13 @@ final class JsonStringWrapper implements JsonBox.Wrapper {
     public <V> V unwrap(Gson gson, Class<? extends V> type) {
         return gson.fromJson(this.json, type);
     }
+
+    @Override
+    public String toString() {
+        return "JsonStringWrapper{" +
+               "json='" + json + '\'' +
+               '}';
+    }
 }
 
 final class JsonElementWrapper implements JsonBox.Wrapper {
@@ -123,6 +152,13 @@ final class JsonElementWrapper implements JsonBox.Wrapper {
     @Override
     public <V> V unwrap(Gson gson, Class<? extends V> type) {
         return gson.fromJson(this.element, type);
+    }
+
+    @Override
+    public String toString() {
+        return "JsonElementWrapper{" +
+               "element=" + element +
+               '}';
     }
 }
 
@@ -140,6 +176,13 @@ final class GsonSerializableWrapper implements JsonBox.Wrapper {
             return (V) this.value;
         }
         throw new JsonSyntaxException("Value of type " + this.value.getClass() + " is not assignable to " + type);
+    }
+
+    @Override
+    public String toString() {
+        return "GsonSerializableWrapper{" +
+               "value=" + value +
+               '}';
     }
 }
 
@@ -159,7 +202,11 @@ final class JsonBoxAdapter<V> extends TypeAdapter<V> {
     public void write(JsonWriter out, V value) throws IOException {
         try {
             JsonBox.Wrapper unboxed = (JsonBox.Wrapper) this.unboxer.invoke(value);
-            this.gson.toJson(unboxed, JsonBox.Wrapper.class, out);
+            if (unboxed == null) {
+                out.nullValue();
+            } else {
+                this.gson.toJson(unboxed, unboxed.getClass(), out);
+            }
         } catch (Throwable e) {
             throw new IOException(e);
         }
@@ -170,7 +217,7 @@ final class JsonBoxAdapter<V> extends TypeAdapter<V> {
     public V read(JsonReader in) throws IOException {
         JsonElement content = JsonParser.parseReader(in);
         try {
-            return (V) this.constructor.invokeExact(JsonBox.Wrapper.of(content));
+            return (V) this.constructor.invoke(JsonBox.Wrapper.of(content));
         } catch (Throwable e) {
             throw new IOException(e);
         }

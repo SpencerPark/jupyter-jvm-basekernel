@@ -6,22 +6,23 @@ import io.github.spencerpark.jupyter.messages.Message;
 import io.github.spencerpark.jupyter.messages.MessageContext;
 import io.github.spencerpark.jupyter.messages.reply.InputReply;
 import io.github.spencerpark.jupyter.messages.request.InputRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zeromq.SocketType;
 import org.zeromq.ZMQ;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 public class StdinChannel extends JupyterSocket {
+    private static final Logger LOG = LoggerFactory.getLogger(StdinChannel.class);
+
     public StdinChannel(ZMQ.Context context, HMACGenerator hmacGenerator) {
-        super(context, SocketType.ROUTER, hmacGenerator, Logger.getLogger("StdinChannel"));
+        super(context, SocketType.ROUTER, hmacGenerator);
     }
 
     @Override
     public void bind(KernelConnectionProperties connProps) {
         String addr = JupyterSocket.formatAddress(connProps.getTransport(), connProps.getIp(), connProps.getStdinPort());
 
-        logger.log(Level.INFO, String.format("Binding stdin to %s.", addr));
+        LOG.info("Binding stdin to {}.", addr);
         super.bind(addr);
     }
 
@@ -32,10 +33,8 @@ public class StdinChannel extends JupyterSocket {
      *
      * @param context           a message that the request with input was invoked by such as an execute request
      * @param prompt            a prompt string for the front end to include with the input request
-     * @param isPasswordRequest a flag specifying if the input request is for a password, if so
-     *                          the frontend should obscure the user input (for example with password
-     *                          dots or not echoing the input)
-     *
+     * @param isPasswordRequest a flag specifying if the input request is for a password, if so the frontend should
+     *                          obscure the user input (for example with password dots or not echoing the input)
      * @return the input string from the frontend.
      */
     public synchronized String getInput(MessageContext context, String prompt, boolean isPasswordRequest) {

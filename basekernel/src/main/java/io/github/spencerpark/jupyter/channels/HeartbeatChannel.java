@@ -2,14 +2,16 @@ package io.github.spencerpark.jupyter.channels;
 
 import io.github.spencerpark.jupyter.kernel.KernelConnectionProperties;
 import io.github.spencerpark.jupyter.messages.HMACGenerator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zeromq.SocketType;
 import org.zeromq.ZMQ;
 
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class HeartbeatChannel extends JupyterSocket {
+    private static final Logger LOG = LoggerFactory.getLogger(HeartbeatChannel.class);
+
     private static final long HB_DEFAULT_SLEEP_MS = 500;
 
     private static final AtomicInteger HEARTBEAT_ID = new AtomicInteger();
@@ -18,7 +20,7 @@ public class HeartbeatChannel extends JupyterSocket {
     private volatile Loop pulse;
 
     public HeartbeatChannel(ZMQ.Context context, HMACGenerator hmacGenerator, long sleep) {
-        super(context, SocketType.REP, hmacGenerator, Logger.getLogger("HeartbeatChannel"));
+        super(context, SocketType.REP, hmacGenerator);
         this.sleep = sleep;
     }
 
@@ -38,7 +40,7 @@ public class HeartbeatChannel extends JupyterSocket {
         String channelThreadName = "Heartbeat-" + HEARTBEAT_ID.getAndIncrement();
         String addr = JupyterSocket.formatAddress(connProps.getTransport(), connProps.getIp(), connProps.getHbPort());
 
-        logger.log(Level.INFO, String.format("Binding %s to %s.", channelThreadName, addr));
+        LOG.info("Binding {} to {}.", channelThreadName, addr);
         super.bind(addr);
 
         ZMQ.Poller poller = super.ctx.poller(1);
@@ -49,22 +51,22 @@ public class HeartbeatChannel extends JupyterSocket {
             if (events > 0) {
                 byte[] msg = this.recv();
                 if (msg == null) {
-                    //Error during receive, just continue
-                    super.logger.log(Level.SEVERE, "Poll returned 1 event but could not read the echo string");
+                    // Error during receive, just continue
+                    LOG.error("Poll returned 1 event but could not read the echo string");
                     return;
                 }
                 if (!this.send(msg)) {
-                    super.logger.log(Level.SEVERE, "Could not send heartbeat reply");
+                    LOG.error("Could not send heartbeat reply");
                 }
-                super.logger.log(Level.FINEST, "Heartbeat pulse");
+                LOG.trace("Heartbeat pulse");
             }
         });
         this.pulse.onClose(() -> {
-            logger.log(Level.INFO, channelThreadName + " shutdown.");
+            LOG.info("{} shutdown.", channelThreadName);
             this.pulse = null;
         });
         this.pulse.start();
-        logger.log(Level.INFO, "Polling on " + channelThreadName);
+        LOG.info("Polling on {}", channelThreadName);
     }
 
     @Override
@@ -80,7 +82,8 @@ public class HeartbeatChannel extends JupyterSocket {
         if (this.pulse != null) {
             try {
                 this.pulse.join();
-            } catch (InterruptedException ignored) { }
+            } catch (InterruptedException ignored) {
+            }
         }
     }
 }
