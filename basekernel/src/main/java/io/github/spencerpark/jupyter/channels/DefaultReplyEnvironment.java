@@ -6,17 +6,21 @@ import io.github.spencerpark.jupyter.messages.MessageContext;
 import io.github.spencerpark.jupyter.messages.MessageType;
 import io.github.spencerpark.jupyter.messages.publish.PublishStatus;
 import io.github.spencerpark.jupyter.messages.reply.ErrorReply;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Deque;
 import java.util.LinkedList;
 
 public class DefaultReplyEnvironment implements ReplyEnvironment {
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultReplyEnvironment.class);
+
     private final JupyterSocket shell;
     private final JupyterSocket iopub;
 
     private final MessageContext context;
 
-    private Deque<Runnable> deferred = new LinkedList<>();
+    private final Deque<Runnable> deferred = new LinkedList<>();
     private boolean defer = false;
 
     public DefaultReplyEnvironment(JupyterSocket shell, JupyterSocket iopub, MessageContext context) {
@@ -73,8 +77,13 @@ public class DefaultReplyEnvironment implements ReplyEnvironment {
         if (this.defer)
             throw new IllegalStateException("Reply environment is in defer mode but a resolution was request.");
 
-        while (!deferred.isEmpty())
-            deferred.pop().run();
+        while (!deferred.isEmpty()) {
+            try {
+                deferred.pop().run();
+            } catch (Exception e) {
+                LOG.warn("Ignored exception while resolving deferral for " + this.context.getHeader().getType().getName() + ":", e);
+            }
+        }
     }
 
     @Override

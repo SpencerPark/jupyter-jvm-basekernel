@@ -23,6 +23,12 @@ import io.github.spencerpark.jupyter.messages.adapters.KernelTimestampAdapter;
 import io.github.spencerpark.jupyter.messages.adapters.MessageTypeAdapter;
 import io.github.spencerpark.jupyter.messages.adapters.PublishStatusAdapter;
 import io.github.spencerpark.jupyter.messages.adapters.ReplyTypeAdapter;
+import io.github.spencerpark.jupyter.messages.debug.DapCommandType;
+import io.github.spencerpark.jupyter.messages.debug.DapEventType;
+import io.github.spencerpark.jupyter.messages.debug.DapProtocolMessage;
+import io.github.spencerpark.jupyter.messages.debug.adapters.DapCommandTypeAdapter;
+import io.github.spencerpark.jupyter.messages.debug.adapters.DapEventTypeAdapter;
+import io.github.spencerpark.jupyter.messages.debug.adapters.DapProtocolMessageAdapter;
 import io.github.spencerpark.jupyter.messages.publish.PublishStatus;
 import io.github.spencerpark.jupyter.messages.reply.ErrorReply;
 import io.github.spencerpark.jupyter.messages.request.HistoryRequest;
@@ -54,6 +60,9 @@ public abstract class JupyterSocket extends ZMQ.Socket {
     private static final Gson replyGson = JsonBox.registerTypeAdapters(new GsonBuilder())
             .registerTypeAdapter(HistoryEntry.class, HistoryEntryAdapter.INSTANCE)
             .registerTypeAdapter(ExpressionValue.class, ExpressionValueAdapter.INSTANCE)
+            .registerTypeAdapter(DapCommandType.class, DapCommandTypeAdapter.INSTANCE)
+            .registerTypeAdapter(DapEventType.class, DapEventTypeAdapter.INSTANCE)
+            .registerTypeAdapter(DapProtocolMessage.class, DapProtocolMessageAdapter.INSTANCE)
             .create();
     private static final Gson gson = JsonBox.registerTypeAdapters(new GsonBuilder())
             .registerTypeAdapter(KernelTimestamp.class, KernelTimestampAdapter.INSTANCE)
@@ -62,6 +71,9 @@ public abstract class JupyterSocket extends ZMQ.Socket {
             .registerTypeAdapter(PublishStatus.class, PublishStatusAdapter.INSTANCE)
             .registerTypeAdapter(HistoryRequest.class, HistoryRequestAdapter.INSTANCE)
             .registerTypeHierarchyAdapter(ReplyType.class, new ReplyTypeAdapter(replyGson))
+            .registerTypeAdapter(DapCommandType.class, DapCommandTypeAdapter.INSTANCE)
+            .registerTypeAdapter(DapEventType.class, DapEventTypeAdapter.INSTANCE)
+            .registerTypeAdapter(DapProtocolMessage.class, DapProtocolMessageAdapter.INSTANCE)
             //.setPrettyPrinting()
             .create();
     private static final byte[] EMPTY_JSON_OBJECT = "{}".getBytes(UTF_8);

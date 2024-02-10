@@ -15,7 +15,7 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":jupyter-jvm-runtime"))
+    api(project(":jupyter-jvm-runtime"))
     implementation(libs.jeromq)
     api(libs.gson)
     api(libs.slf4jApi)
