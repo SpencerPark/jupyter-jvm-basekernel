@@ -15,7 +15,7 @@ import io.github.spencerpark.jupyter.messages.debug.DapResponse;
 
 import java.lang.reflect.Type;
 
-public class DapProtocolMessageAdapter implements JsonDeserializer<DapProtocolMessage> {
+public class DapProtocolMessageAdapter implements JsonDeserializer<DapProtocolMessage<?>> {
     public static final DapProtocolMessageAdapter INSTANCE = new DapProtocolMessageAdapter();
 
     private DapProtocolMessageAdapter() {
@@ -23,7 +23,7 @@ public class DapProtocolMessageAdapter implements JsonDeserializer<DapProtocolMe
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
-    public DapProtocolMessage deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+    public DapProtocolMessage<?> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         JsonObject msgJson = json.getAsJsonObject();
         int seq = msgJson.getAsJsonPrimitive("seq").getAsInt();
         DapProtocolMessage.Type msgType = context.deserialize(msgJson.get("type"), DapProtocolMessage.Type.class);

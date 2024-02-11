@@ -12,14 +12,18 @@ import io.github.spencerpark.jupyter.messages.debug.DapCommandType;
 import java.lang.reflect.Type;
 
 public class DapCommandTypeAdapter implements JsonSerializer<DapCommandType<?, ?>>, JsonDeserializer<DapCommandType<?, ?>> {
-    public static final DapCommandTypeAdapter INSTANCE = new DapCommandTypeAdapter();
+    public static final DapCommandTypeAdapter INSTANCE = new DapCommandTypeAdapter(false);
+    public static final DapCommandTypeAdapter UNTYPED_INSTANCE = new DapCommandTypeAdapter(true);
 
-    private DapCommandTypeAdapter() {
+    private final boolean untyped;
+
+    private DapCommandTypeAdapter(boolean untyped) {
+        this.untyped = untyped;
     }
 
     @Override
     public DapCommandType<?, ?> deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext ctx) throws JsonParseException {
-        return DapCommandType.getType(jsonElement.getAsString());
+        return this.untyped ? DapCommandType.untyped(jsonElement.getAsString()) : DapCommandType.get(jsonElement.getAsString());
     }
 
     @Override

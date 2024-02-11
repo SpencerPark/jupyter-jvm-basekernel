@@ -1,5 +1,6 @@
 package io.github.spencerpark.jupyter.messages.request;
 
+import com.google.gson.JsonElement;
 import io.github.spencerpark.jupyter.messages.ContentType;
 import io.github.spencerpark.jupyter.messages.MessageType;
 import io.github.spencerpark.jupyter.messages.RequestType;
@@ -21,14 +22,14 @@ public class DebugRequest implements JsonBox, ContentType<DebugRequest>, Request
         return REPLY_MESSAGE_TYPE;
     }
 
-    protected final JsonBox.Wrapper dapRequest;
+    protected final JsonElement dapRequest;
 
-    public DebugRequest(JsonBox.Wrapper dapRequest) {
+    public DebugRequest(JsonElement dapRequest) {
         this.dapRequest = dapRequest;
     }
 
     @JsonBox.Unboxer
-    public JsonBox.Wrapper getDapRequest() {
+    public JsonElement getDapRequest() {
         return dapRequest;
     }
 }

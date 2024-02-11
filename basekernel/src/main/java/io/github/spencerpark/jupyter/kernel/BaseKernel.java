@@ -1,6 +1,7 @@
 package io.github.spencerpark.jupyter.kernel;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 import io.github.spencerpark.jupyter.channels.JupyterConnection;
 import io.github.spencerpark.jupyter.channels.JupyterSocket;
@@ -19,7 +20,6 @@ import io.github.spencerpark.jupyter.kernel.util.TextColor;
 import io.github.spencerpark.jupyter.messages.Header;
 import io.github.spencerpark.jupyter.messages.Message;
 import io.github.spencerpark.jupyter.messages.MessageType;
-import io.github.spencerpark.jupyter.messages.adapters.JsonBox;
 import io.github.spencerpark.jupyter.messages.publish.PublishError;
 import io.github.spencerpark.jupyter.messages.publish.PublishExecuteInput;
 import io.github.spencerpark.jupyter.messages.publish.PublishExecuteResult;
@@ -492,7 +492,7 @@ public abstract class BaseKernel {
             JupyterDebugEventPublisher pub = new JupyterDebugEventPublisher(env);
             env.defer(() -> pub.retractEnv(env));
 
-            JsonBox.Wrapper response = debugger.handleDapRequest(pub, request.getDapRequest());
+            JsonElement response = debugger.handleDapRequest(request.getDapRequest());
             env.defer().reply(new DebugReply(response));
         } catch (Exception e) {
             env.replyError(DebugReply.MESSAGE_TYPE.error(), ErrorReply.of(e));

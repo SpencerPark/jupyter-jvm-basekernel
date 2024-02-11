@@ -1,7 +1,7 @@
 package io.github.spencerpark.jupyter.kernel.debugger;
 
-import io.github.spencerpark.jupyter.messages.adapters.JsonBox;
+import com.google.gson.JsonElement;
 
 public interface DapEventPublisher {
-    void emit(JsonBox.Wrapper dapEvent);
+    void emit(JsonElement dapEvent);
 }

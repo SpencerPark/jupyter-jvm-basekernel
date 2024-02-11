@@ -1,6 +1,6 @@
 package io.github.spencerpark.jupyter.messages.debug;
 
-import io.github.spencerpark.jupyter.messages.adapters.JsonBox;
+import com.google.gson.JsonElement;
 import io.github.spencerpark.jupyter.messages.debug.arguments.CopyToGlobalsArguments;
 import io.github.spencerpark.jupyter.messages.debug.arguments.DumpCellArguments;
 import io.github.spencerpark.jupyter.messages.debug.arguments.RichInspectVariablesArguments;
@@ -11,6 +11,7 @@ import io.github.spencerpark.jupyter.messages.debug.bodies.InspectVariablesBody;
 import io.github.spencerpark.jupyter.messages.debug.bodies.RichInspectVariablesBody;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -21,12 +22,12 @@ public final class DapCommandType<A, B> {
         return Optional.ofNullable(TYPE_BY_NAME.get(name));
     }
 
-    public static DapCommandType<?, ?> getType(String name) {
+    public static DapCommandType<?, ?> get(String name) {
         DapCommandType<?, ?> type = TYPE_BY_NAME.get(name);
         return type == null ? unknown(name) : type;
     }
 
-    private static <A, B> DapCommandType<A, B> registerType(String name, Class<A> argumentsType, Class<B> bodyType) {
+    private static <A, B> DapCommandType<A, B> register(String name, Class<A> argumentsType, Class<B> bodyType) {
         DapCommandType<A, B> type = new DapCommandType<>(name, argumentsType, bodyType);
         if (TYPE_BY_NAME.size() < 1024) {
             TYPE_BY_NAME.put(name, type);
@@ -40,14 +41,18 @@ public final class DapCommandType<A, B> {
             return type;
         }
 
-        return registerType(name, JsonBox.Wrapper.class, JsonBox.Wrapper.class);
+        return register(name, JsonElement.class, JsonElement.class);
     }
 
-    public static final DapCommandType<DumpCellArguments, DumpCellBody> DUMP_CELL = registerType("dumpCell", DumpCellArguments.class, DumpCellBody.class);
-    public static final DapCommandType<Void, DebugInfoBody> DEBUG_INFO = registerType("debugInfo", void.class, DebugInfoBody.class);
-    public static final DapCommandType<Void, InspectVariablesBody> INSPECT_VARIABLES = registerType("inspectVariables", void.class, InspectVariablesBody.class);
-    public static final DapCommandType<RichInspectVariablesArguments, RichInspectVariablesBody> RIGHT_INSPECT_VARIABLES = registerType("richInspectVariables", RichInspectVariablesArguments.class, RichInspectVariablesBody.class);
-    public static final DapCommandType<CopyToGlobalsArguments, CopyToGlobalsBody> COPY_TO_GLOBALS = registerType("copyToGlobals", CopyToGlobalsArguments.class, CopyToGlobalsBody.class);
+    public static DapCommandType<JsonElement, JsonElement> untyped(String name) {
+        return new DapCommandType<>(name, JsonElement.class, JsonElement.class);
+    }
+
+    public static final DapCommandType<DumpCellArguments, DumpCellBody> DUMP_CELL = register("dumpCell", DumpCellArguments.class, DumpCellBody.class);
+    public static final DapCommandType<Void, DebugInfoBody> DEBUG_INFO = register("debugInfo", void.class, DebugInfoBody.class);
+    public static final DapCommandType<Void, InspectVariablesBody> INSPECT_VARIABLES = register("inspectVariables", void.class, InspectVariablesBody.class);
+    public static final DapCommandType<RichInspectVariablesArguments, RichInspectVariablesBody> RIGHT_INSPECT_VARIABLES = register("richInspectVariables", RichInspectVariablesArguments.class, RichInspectVariablesBody.class);
+    public static final DapCommandType<CopyToGlobalsArguments, CopyToGlobalsBody> COPY_TO_GLOBALS = register("copyToGlobals", CopyToGlobalsArguments.class, CopyToGlobalsBody.class);
 
     private final String name;
     private final Class<A> argumentsType;
@@ -77,5 +82,18 @@ public final class DapCommandType<A, B> {
     @Override
     public String toString() {
         return this.name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DapCommandType<?, ?> that = (DapCommandType<?, ?>) o;
+        return Objects.equals(name, that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name);
     }
 }
