@@ -1,5 +1,6 @@
 package io.github.spencerpark.jupyter.messages.reply;
 
+import com.google.gson.JsonElement;
 import io.github.spencerpark.jupyter.messages.ContentType;
 import io.github.spencerpark.jupyter.messages.MessageType;
 import io.github.spencerpark.jupyter.messages.ReplyType;
@@ -20,14 +21,14 @@ public class DebugReply implements JsonBox, ContentType<DebugReply>, ReplyType<D
         return REQUEST_MESSAGE_TYPE;
     }
 
-    protected final JsonBox.Wrapper dapResponse;
+    protected final JsonElement dapResponse;
 
-    public DebugReply(JsonBox.Wrapper dapResponse) {
+    public DebugReply(JsonElement dapResponse) {
         this.dapResponse = dapResponse;
     }
 
     @JsonBox.Unboxer
-    public JsonBox.Wrapper getDapResponse() {
+    public JsonElement getDapResponse() {
         return dapResponse;
     }
 }

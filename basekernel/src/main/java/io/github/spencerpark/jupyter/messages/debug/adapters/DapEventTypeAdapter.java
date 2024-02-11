@@ -12,14 +12,18 @@ import io.github.spencerpark.jupyter.messages.debug.DapEventType;
 import java.lang.reflect.Type;
 
 public class DapEventTypeAdapter implements JsonSerializer<DapEventType<?>>, JsonDeserializer<DapEventType<?>> {
-    public static final DapEventTypeAdapter INSTANCE = new DapEventTypeAdapter();
+    public static final DapEventTypeAdapter INSTANCE = new DapEventTypeAdapter(false);
+    public static final DapEventTypeAdapter UNTYPED_INSTANCE = new DapEventTypeAdapter(true);
 
-    private DapEventTypeAdapter() {
+    private final boolean untyped;
+
+    private DapEventTypeAdapter(boolean untyped) {
+        this.untyped = untyped;
     }
 
     @Override
     public DapEventType<?> deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext ctx) throws JsonParseException {
-        return DapEventType.getType(jsonElement.getAsString());
+        return this.untyped ? DapEventType.untyped(jsonElement.getAsString()) : DapEventType.get(jsonElement.getAsString());
     }
 
     @Override

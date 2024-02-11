@@ -2,7 +2,7 @@ package io.github.spencerpark.jupyter.messages.debug;
 
 import com.google.gson.annotations.SerializedName;
 
-public final class DapResponse<A, B> extends DapProtocolMessage {
+public final class DapResponse<A, B> extends DapProtocolMessage<DapResponse<A, B>> {
     public static final class ErrorBody {
         @SerializedName("error")
         private final DapErrorMessage error;
@@ -50,6 +50,11 @@ public final class DapResponse<A, B> extends DapProtocolMessage {
         this.success = success;
         this.message = message;
         this.body = body;
+    }
+
+    @Override
+    public DapResponse<A, B> withSeq(int seq) {
+        return new DapResponse<>(seq, this.requestSeq, this.command, this.success, this.message, this.body);
     }
 
     public int getRequestSeq() {

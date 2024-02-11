@@ -1,8 +1,9 @@
 package io.github.spencerpark.jupyter.kernel.debugger;
 
-import io.github.spencerpark.jupyter.messages.adapters.JsonBox;
+import com.google.gson.JsonElement;
 
 public interface Debugger {
+    Runnable subscribe(DapEventPublisher pub);
 
-    JsonBox.Wrapper handleDapRequest(DapEventPublisher pub, JsonBox.Wrapper dapRequest);
+    JsonElement handleDapRequest(JsonElement dapRequest);
 }

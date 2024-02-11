@@ -1,6 +1,6 @@
 package io.github.spencerpark.jupyter.messages.debug;
 
-import io.github.spencerpark.jupyter.messages.adapters.JsonBox;
+import com.google.gson.JsonElement;
 
 import java.util.Map;
 import java.util.Objects;
@@ -14,12 +14,12 @@ public final class DapEventType<B> {
         return Optional.ofNullable(TYPE_BY_NAME.get(name));
     }
 
-    public static DapEventType<?> getType(String name) {
+    public static DapEventType<?> get(String name) {
         DapEventType<?> type = TYPE_BY_NAME.get(name);
         return type == null ? unknown(name) : type;
     }
 
-    private static <B> DapEventType<B> registerType(String name, Class<B> bodyType) {
+    private static <B> DapEventType<B> register(String name, Class<B> bodyType) {
         DapEventType<B> type = new DapEventType<>(name, bodyType);
         if (TYPE_BY_NAME.size() < 1024) {
             TYPE_BY_NAME.put(name, type);
@@ -33,7 +33,11 @@ public final class DapEventType<B> {
             return type;
         }
 
-        return registerType(name, JsonBox.Wrapper.class);
+        return register(name, JsonElement.class);
+    }
+
+    public static DapEventType<JsonElement> untyped(String name) {
+        return new DapEventType<>(name, JsonElement.class);
     }
 
     private final String name;
